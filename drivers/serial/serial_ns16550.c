@@ -375,6 +375,11 @@ static __maybe_unused struct ns16550_drvdata tegra_drvdata = {
 	.linux_console_name = "ttyS",
 };
 
+static __maybe_unused struct ns16550_drvdata lpc40xx_drvdata = {
+	.init_port = ns16550_lpc40xx_init_port,
+	.linux_console_name = "ttyS",
+};
+
 static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
 {
 	struct resource *res;
