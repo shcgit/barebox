@@ -27,7 +27,7 @@
 #include <io.h>
 #include <net.h>
 #include <of_net.h>
-#include <net/designware.h>
+#include <platform_data/eth-designware.h>
 #include <linux/phy.h>
 #include <linux/err.h>
 #include "designware.h"
@@ -445,6 +445,7 @@ static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
 
 static int dwc_ether_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct dw_eth_dev *priv;
 	struct eth_device *edev;
 	struct mii_bus *miibus;
@@ -471,9 +472,10 @@ static int dwc_ether_probe(struct device_d *dev)
 			return ret;
 	}
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	priv->mac_regs_p = base;
 	dwc_version(dev, readl(&priv->mac_regs_p->version));

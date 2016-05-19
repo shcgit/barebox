@@ -266,19 +266,6 @@ endmenu
 
 menu "Boot"
 
-# TODO: isn't a command
-config FLEXIBLE_BOOTARGS
-	bool
-	prompt "flexible Linux bootargs generation"
-	depends on CMD_GLOBAL
-	help
-	  Select this to get a more flexible bootargs generation. With this
-	  option the bootargs are concatenated together from global variables
-	  beginning with 'global.linux.bootargs.' and 'global.linux.mtdparts.'
-	  This allows for more flexible scripting since with it it's possible
-	  to replace parts of the bootargs string without reconstructing it
-	  completely.
-
 config CMD_AT91_BOOT_TEST
 	bool "at91_boot_test"
 	depends on ARCH_AT91
@@ -348,7 +335,7 @@ config CMD_BOOTM
 	select UIMAGE
 	select UNCOMPRESS
 	select FILETYPE
-	select GLOBALVAR
+	depends on GLOBALVAR
 	prompt "bootm"
 	help
 	  Boot an application image
@@ -693,10 +680,7 @@ config CMD_UBI
 
 config CMD_UBIFORMAT
 	tristate
-	depends on MTD_UBI
-	select LIBMTD
-	select LIBSCAN
-	select LIBUBIGEN
+	depends on UBIFORMAT
 	prompt "ubiformat"
 
 config CMD_UMOUNT
@@ -716,7 +700,7 @@ endmenu
 menu "Environment"
 
 config CMD_NV
-	select GLOBALVAR
+	depends on NVVAR
 	tristate
 	prompt "nv"
 	help
@@ -742,13 +726,12 @@ config CMD_EXPORT
 
 config CMD_DEFAULTENV
 	tristate
-	select ENV_HANDLING
 	prompt "defaultenv"
 	help
 	  restore environment from default environment
 
 config CMD_GLOBAL
-	select GLOBALVAR
+	depends on GLOBALVAR
 	tristate
 	prompt "global"
 	help
@@ -763,7 +746,7 @@ config CMD_GLOBAL
 
 config CMD_LOADENV
 	tristate
-	select ENV_HANDLING
+	depends on ENV_HANDLING
 	prompt "loadenv"
 	help
 	  Load environment from ENVFS
@@ -807,7 +790,7 @@ config CMD_MAGICVAR_HELP
 
 config CMD_SAVEENV
 	tristate
-	select ENV_HANDLING
+	depends on ENV_HANDLING
 	prompt "saveenv"
 	help
 	  Save environment to persistent storage
@@ -1909,6 +1892,23 @@ config CMD_NANDTEST
 		  -o OFFS	start offset on flash
 		  -l LEN	length of flash to test
 
+config CMD_NAND_BITFLIP
+	tristate
+	depends on NAND
+	prompt "nand_bitflip"
+	help
+	  nand_bitflip - Create bitflips on Nand pages. This command is useful for testing
+	  purposes.
+
+	  Usage: nand_bitflip NANDDEV
+
+	  This command creates bitflips on Nand pages.
+	  Options:
+	          -b <block>      block to work on
+	          -o <offset>     offset in Nand
+	          -r      flip random bits
+	          -n <numbitflips>        Specify maximum number of bitflips to generate
+
 config CMD_POWEROFF
 	tristate
 	depends on HAS_POWEROFF
@@ -2113,6 +2113,22 @@ config CMD_OF_DISPLAY_TIMINGS
 		  -S		list path of all selected display-timings
 		  -s path	select display-timings and register oftree fixup
 		  -f dtb	work on dtb. Has no effect on -s option
+
+config CMD_OF_FIXUP_STATUS
+	tristate
+	select OFTREE
+	prompt "of_fixup_status"
+	help
+	  Register a fixup to enable or disable node
+
+	  Usage: of_fixup_node [-d] path
+
+	  Options:
+		  -d		disable node
+		  path		Node path or alias
+
+	  Register a fixup to enable or disable a device tree node.
+	  Nodes are enabled on default. Disabled with -d.
 
 config CMD_OFTREE
 	tristate

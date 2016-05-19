@@ -30,9 +30,8 @@
 #include <partition.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <nand.h>
-#include <mach/imx-flash-header.h>
 #include <mach/iomux-mx25.h>
 #include <mach/generic.h>
 #include <mach/iim.h>

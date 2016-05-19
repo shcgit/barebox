@@ -17,16 +17,20 @@
 #define pr_fmt(fmt) "fastboot: " fmt
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <malloc.h>
 #include <fcntl.h>
 #include <clock.h>
 #include <ioctl.h>
 #include <libbb.h>
+#include <bbu.h>
 #include <boot.h>
 #include <dma.h>
 #include <fs.h>
 #include <libfile.h>
+#include <ubiformat.h>
+#include <stdlib.h>
 #include <file-list.h>
 #include <progress.h>
 #include <environment.h>
@@ -193,7 +197,7 @@ static void fb_setvar(struct fb_variable *var, const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	var->value = vasprintf(fmt, ap);
+	var->value = bvasprintf(fmt, ap);
 	va_end(ap);
 }
 
@@ -203,7 +207,7 @@ static struct fb_variable *fb_addvar(struct f_fastboot *f_fb, const char *fmt, .
 	va_list ap;
 
 	va_start(ap, fmt);
-	var->name = vasprintf(fmt, ap);
+	var->name = bvasprintf(fmt, ap);
 	va_end(ap);
 
 	list_add_tail(&var->list, &f_fb->variables);
@@ -686,13 +690,31 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	}
 
 	if (filetype == filetype_ubi) {
-		char *cmd = asprintf("ubiformat -y -f %s %s", FASTBOOT_TMPFILE, filename);
+		int fd;
+		struct mtd_info_user meminfo;
+		struct ubiformat_args args = {
+			.yes = 1,
+			.image = FASTBOOT_TMPFILE,
+		};
+
+		fd = open(filename, O_RDONLY);
+		if (fd < 0)
+			goto copy;
+
+		ret = ioctl(fd, MEMGETINFO, &meminfo);
+		close(fd);
+		/* Not a MTD device, ubiformat is not a valid operation */
+		if (ret)
+			goto copy;
 
 		fastboot_tx_print(f_fb, "INFOThis is an UBI image...");
 
-		ret = run_command(cmd);
+		if (!IS_ENABLED(CONFIG_UBIFORMAT)) {
+			fastboot_tx_print(f_fb, "FAILubiformat is not available");
+			return;
+		}
 
-		free(cmd);
+		ret = ubiformat(meminfo.mtd, &args);
 
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
@@ -702,6 +724,37 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 		goto out;
 	}
 
+	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && filetype_is_barebox_image(filetype)) {
+		struct bbu_data data = {
+			.devicefile = filename,
+			.imagefile = FASTBOOT_TMPFILE,
+			.flags = BBU_FLAG_YES,
+		};
+
+		if (!barebox_update_handler_exists(&data))
+			goto copy;
+
+		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");
+
+		data.image = read_file(data.imagefile, &data.len);
+		if (!data.image) {
+			fastboot_tx_print(f_fb, "FAILreading barebox");
+			return;
+		}
+
+		ret = barebox_update(&data);
+
+		free(data.image);
+
+		if (ret) {
+			fastboot_tx_print(f_fb, "FAILupdate barebox: %s", strerror(-ret));
+			return;
+		}
+
+		goto out;
+	}
+
+copy:
 	ret = copy_file(FASTBOOT_TMPFILE, filename, 1);
 	if (ret) {
 		fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
@@ -738,7 +791,7 @@ static void cb_erase(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	if (fd < 0)
 		fastboot_tx_print(f_fb, "FAIL%s", strerror(-fd));
 
-	ret = erase(fd, ~0, 0);
+	ret = erase(fd, ERASE_SIZE_ALL, 0);
 
 	close(fd);
 
@@ -819,6 +872,11 @@ static void cb_oem_exec(struct usb_ep *ep, struct usb_request *req, const char *
 {
 	struct f_fastboot *f_fb = req->context;
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
+		fastboot_tx_print(f_fb, "FAILno command support available");
+		return;
+	}
 
 	ret = run_command(cmd);
 	if (ret < 0)

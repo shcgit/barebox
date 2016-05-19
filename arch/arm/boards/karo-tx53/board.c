@@ -16,7 +16,7 @@
 #include <bootsource.h>
 #include <environment.h>
 #include <fcntl.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <fs.h>
 #include <init.h>
 #include <nand.h>
@@ -34,7 +34,6 @@
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>
-#include <mach/imx-flash-header.h>
 #include <mach/bbu.h>
 
 #include <asm/armlinux.h>

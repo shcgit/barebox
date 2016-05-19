@@ -1,5 +1,5 @@
 VERSION = 2016
-PATCHLEVEL = 03
+PATCHLEVEL = 05
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -965,7 +965,7 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
 		barebox.efi barebox.canon-a1100.bin
 
 # Directories & files removed with 'make mrproper'
-MRPROPER_DIRS  += include/config usr/include include/generated
+MRPROPER_DIRS  += include/config usr/include include/generated Documentation/commands
 MRPROPER_FILES += .config .config.old .version .old_version \
                   include/config.h           \
 		  Module.symvers tags TAGS cscope*

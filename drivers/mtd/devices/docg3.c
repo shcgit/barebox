@@ -849,7 +849,7 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 	uint64_t len;
 	int block0, block1, page, ret, ofs = 0;
 
-	doc_dbg("doc_erase(from=%d, len=%d\n", info->addr, info->len);
+	doc_dbg("doc_erase(from=%lld, len=%lld\n", info->addr, info->len);
 	doc_set_device_id(docg3, docg3->device_id);
 
 	info->state = MTD_ERASE_PENDING;
@@ -1058,8 +1058,8 @@ static void __init doc_set_driver_info(int chip_id, struct mtd_info *mtd)
 
 	switch (chip_id) {
 	case DOC_CHIPID_G3:
-		mtd->name = asprintf("DiskOnChip G3 floor %d",
-				      docg3->device_id);
+		mtd->name = basprintf("DiskOnChip G3 floor %d",
+					docg3->device_id);
 		docg3->max_block = 2047;
 		break;
 	}
@@ -1146,11 +1146,15 @@ nomem1:
 
 static int __init docg3_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct mtd_info *mtd;
 	void __iomem *base;
 	int ret, floor, found = 0;
 
-	base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	ret = -ENOMEM;
 	docg3_bch = init_bch(DOC_ECC_BCH_M, DOC_ECC_BCH_T,

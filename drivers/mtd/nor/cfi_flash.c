@@ -956,6 +956,7 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->erasesize = erasesize;
 
 	mtd->writesize = 1;
+	mtd->writebufsize = info->buffer_size;
 	mtd->subpage_sft = 0;
 	mtd->eraseregions = info->eraseregions;
 	mtd->numeraseregions = info->numeraseregions;
@@ -966,13 +967,15 @@ static void cfi_init_mtd(struct flash_info *info)
 
 static int cfi_probe_one(struct flash_info *info, int num)
 {
+	struct resource *iores;
 	int ret;
 
 	info->flash_id = FLASH_UNKNOWN;
 	info->cmd_reset = FLASH_CMD_RESET;
-	info->base = dev_request_mem_region(info->dev, num);
-	if (IS_ERR(info->base))
-		return PTR_ERR(info->base);
+	iores = dev_request_mem_resource(info->dev, num);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	info->base = IOMEM(iores->start);
 
 	ret = flash_detect_size(info);
 	if (ret) {

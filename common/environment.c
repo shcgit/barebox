@@ -29,6 +29,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <fs.h>
+#include <crc.h>
 #include <fcntl.h>
 #include <envfs.h>
 #include <xfuncs.h>
@@ -79,7 +80,7 @@ static int do_compare_file(const char *filename, const char *base)
 	char *cmp;
 	const char *relname = filename + strlen(base) + 1;
 
-	cmp = asprintf("%s/%s", TMPDIR, relname);
+	cmp = basprintf("%s/%s", TMPDIR, relname);
 	ret = compare_file(cmp, filename);
 
 	free(cmp);
@@ -88,6 +89,7 @@ static int do_compare_file(const char *filename, const char *base)
 }
 
 #else
+#define ERASE_SIZE_ALL 0
 static inline int protect(int fd, size_t count, unsigned long offset, int prot)
 {
 	return 0;
@@ -192,7 +194,7 @@ static int file_remove_action(const char *filename, struct stat *statbuf,
 
 	filename += sizeof(TMPDIR) - 1;
 
-	envname = asprintf("%s/%s", data->base, filename);
+	envname = basprintf("%s/%s", data->base, filename);
 
 	ret = stat(envname, &s);
 	if (ret) {
@@ -329,7 +331,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 		goto out;
 	}
 
-	ret = erase(envfd, ~0, 0);
+	ret = erase(envfd, ERASE_SIZE_ALL, 0);
 
 	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
 	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {

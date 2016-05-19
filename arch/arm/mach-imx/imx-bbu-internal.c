@@ -30,7 +30,6 @@
 #include <linux/stat.h>
 #include <ioctl.h>
 #include <mach/bbu.h>
-#include <mach/imx-flash-header.h>
 
 #define FLASH_HEADER_OFFSET_MMC		0x400
 
@@ -131,6 +130,9 @@ static int imx_bbu_check_prereq(struct bbu_data *data)
 	ret = bbu_confirm(data);
 	if (ret)
 		return ret;
+
+	if (!strncmp(data->devicefile, "/dev/", 5))
+		device_detect_by_name(data->devicefile + 5);
 
 	return 0;
 }

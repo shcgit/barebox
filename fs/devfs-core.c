@@ -192,6 +192,7 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 
 	switch (request) {
 	case MEMSETBADBLOCK:
+	case MEMSETGOODBLOCK:
 	case MEMGETBADBLOCK:
 		offset = *_buf;
 		offset += cdev->offset;
@@ -259,7 +260,7 @@ int cdev_ioctl(struct cdev *cdev, int request, void *buf)
 	return cdev->ops->ioctl(cdev, request, buf);
 }
 
-int cdev_erase(struct cdev *cdev, size_t count, loff_t offset)
+int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
 	if (!cdev->ops->erase)
 		return -ENOSYS;

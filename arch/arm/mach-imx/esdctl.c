@@ -171,11 +171,11 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
  * MMDC - found on i.MX6
  */
 
-static inline unsigned long imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
+static inline u64 imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 {
 	u32 ctlval = readl(mmdcbase + MDCTL);
 	u32 mdmisc = readl(mmdcbase + MDMISC);
-	unsigned long size;
+	u64 size;
 	int rows, cols, width = 2, banks = 8;
 
 	if (cs == 0 && !(ctlval & MMDCx_MDCTL_SDE0))
@@ -201,7 +201,7 @@ static inline unsigned long imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 	if (mdmisc & MMDCx_MDMISC_DDR_4_BANKS)
 		banks = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
+	size = (u64)(1 << cols) * (1 << rows) * banks * width;
 
 	return size;
 }
@@ -308,6 +308,7 @@ static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 
 static int imx_esdctl_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_esdctl_data *data;
 	int ret;
 	void *base;
@@ -316,9 +317,10 @@ static int imx_esdctl_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	if (imx_esdctl_disabled)
 		return 0;
@@ -432,7 +434,7 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_serial_driver = {
+static struct driver_d imx_esdctl_driver = {
 	.name   = "imx-esdctl",
 	.probe  = imx_esdctl_probe,
 	.id_table = imx_esdctl_ids,
@@ -441,7 +443,7 @@ static struct driver_d imx_serial_driver = {
 
 static int imx_esdctl_init(void)
 {
-	return platform_driver_register(&imx_serial_driver);
+	return platform_driver_register(&imx_esdctl_driver);
 }
 
 mem_initcall(imx_esdctl_init);

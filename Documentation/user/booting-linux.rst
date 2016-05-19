@@ -6,7 +6,7 @@ Booting Linux
 Introduction
 ------------
 
-The basic boot command in barebox is :ref:`command_bootm`. This command
+The lowlevel boot command in barebox is :ref:`command_bootm`. This command
 can be used directly, but there is also a :ref:`command_boot` command
 which offers additional features like a boot sequence which tries to
 boot different entries until one succeeds.
@@ -14,7 +14,7 @@ boot different entries until one succeeds.
 The bootm command
 -----------------
 
-The :ref:`command_bootm` command is the basic boot command. Depending on the
+The :ref:`command_bootm` command is the lowlevel boot command. Depending on the
 architecture the bootm command handles different image types. On ARM the
 following images are supported:
 
@@ -99,6 +99,20 @@ with addpart to the Kernel:
   Kernel command line: mtdparts=physmap-flash.0:512k(bootloader),512k(env),4M(kernel),-(root);
 			mxc_nand:1M(bootloader),1M(env),4M(kernel),-(root)
 
+Creating root= options for the Kernel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It's a common case that the Linux Kernel is loaded from a filesystem
+that later becomes the root filesystem for the Kernel. For several
+filesystems barebox can automatically append a suitable root= option
+to the Kernel command line. This is done when ``global.bootm.appendroot``
+is true. How the root= option is appended depends on the device type
+and filesystem the kernel is booted from. For disk like devices (SD/MMC,
+ATA) the partition UUID will be used, the root= option will be something
+like ``root=PARTUUID=deadbeef-1``. For UBIFS fileystems it will be
+``root=ubi0:volname ubi.mtd=mtdpartname rootfstype=ubifs``. NFS
+filesystems will result in ``root=/dev/nfs nfsroot=ip:/path/to/nfsroot,v3,tcp``.
+The ``v3,tcp`` part is configurable in ``global.linux.rootnfsopts``.
 
 The boot command
 ----------------

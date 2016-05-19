@@ -28,7 +28,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <ata_drive.h>
-#include <platform_ide.h>
+#include <platform_data/ide.h>
 #include <io.h>
 #include <of.h>
 #include <linux/err.h>
@@ -153,6 +153,7 @@ static int pata_imx_detect(struct device_d *dev)
 
 static int imx_pata_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ide_port *ide;
 	struct clk *clk;
 	void __iomem *base;
@@ -160,9 +161,10 @@ static int imx_pata_probe(struct device_d *dev)
 	const char *devname = NULL;
 
 	ide = xzalloc(sizeof(*ide));
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk)) {

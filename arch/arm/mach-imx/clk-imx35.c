@@ -14,6 +14,7 @@
 #include <linux/clkdev.h>
 #include <linux/err.h>
 #include <mach/imx35-regs.h>
+#include <reset_source.h>
 
 #include "clk.h"
 
@@ -90,14 +91,35 @@ static const char *ipg_per_sel[] = {
 
 static int imx35_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	u32 pdr0, consumer_sel, hsp_sel;
 	struct arm_ahb_div *aad;
 	unsigned char *hsp_div;
 	void __iomem *base;
+	u32 reg;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
+
+	/* Check reset source */
+	reg = readl(base + CCM_RCSR);
+
+	switch (reg & 0x0F) {
+	case 0x00:
+		reset_source_set_priority(RESET_POR, 200);
+		break;
+	case 0x02:
+		reset_source_set_priority(RESET_JTAG, 200);
+		break;
+	case 0x04:
+		reset_source_set_priority(RESET_RST, 200);
+		break;
+	case 0x08:
+		reset_source_set_priority(RESET_WDG, 200);
+		break;
+	}
 
 	writel(0xffffffff, base + CCM_CGR0);
 	writel(0xffffffff, base + CCM_CGR1);

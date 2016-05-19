@@ -34,7 +34,15 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
-int mtd_all_ff(const void *buf, unsigned int len)
+/**
+ * mtd_buf_all_ff - check if buffer contains only 0xff
+ * @buf: buffer to check
+ * @size: buffer size in bytes
+ *
+ * This function returns %1 if there are only 0xff bytes in @buf, and %0 if
+ * something else was also found.
+ */
+int mtd_buf_all_ff(const void *buf, unsigned int len)
 {
 	while ((unsigned long)buf & 0x3) {
 		if (*(const uint8_t *)buf != 0xff)
@@ -66,15 +74,33 @@ int mtd_all_ff(const void *buf, unsigned int len)
 	return 1;
 }
 
+/**
+ * mtd_buf_check_pattern - check if buffer contains only a certain byte pattern.
+ * @buf: buffer to check
+ * @patt: the pattern to check
+ * @size: buffer size in bytes
+ *
+ * This function returns %1 in there are only @patt bytes in @buf, and %0 if
+ * something else was also found.
+ */
+int mtd_buf_check_pattern(const void *buf, uint8_t patt, int size)
+{
+	int i;
+
+	for (i = 0; i < size; i++)
+		if (((const uint8_t *)buf)[i] != patt)
+			return 0;
+	return 1;
+}
+
 static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
-			  loff_t _offset, ulong flags)
+			  loff_t offset, ulong flags)
 {
 	struct mtd_info *mtd = cdev->priv;
 	size_t retlen;
 	int ret;
-	unsigned long offset = _offset;
 
-	dev_dbg(cdev->dev, "read ofs: 0x%08lx count: 0x%08zx\n",
+	dev_dbg(cdev->dev, "read ofs: 0x%08llx count: 0x%08zx\n",
 			offset, count);
 
 	ret = mtd_read(mtd, offset, count, &retlen, buf);
@@ -115,13 +141,13 @@ static struct mtd_erase_region_info *mtd_find_erase_region(struct mtd_info *mtd,
 	return NULL;
 }
 
-static int mtd_erase_align(struct mtd_info *mtd, size_t *count, loff_t *offset)
+static int mtd_erase_align(struct mtd_info *mtd, loff_t *count, loff_t *offset)
 {
 	struct mtd_erase_region_info *e;
 	loff_t ofs;
 
 	if (mtd->numeraseregions == 0) {
-		ofs = *offset & ~(mtd->erasesize - 1);
+		ofs = *offset & ~(loff_t)(mtd->erasesize - 1);
 		*count += (*offset - ofs);
 		*count = ALIGN(*count, mtd->erasesize);
 		*offset = ofs;
@@ -145,11 +171,11 @@ static int mtd_erase_align(struct mtd_info *mtd, size_t *count, loff_t *offset)
 	return 0;
 }
 
-static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
+static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct erase_info erase;
-	uint32_t addr;
+	loff_t addr;
 	int ret;
 
 	ret = mtd_erase_align(mtd, &count, &offset);
@@ -169,7 +195,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {
-		dev_dbg(cdev->dev, "erase %d %d\n", addr, erase.len);
+		dev_dbg(cdev->dev, "erase 0x%08llx len: 0x%08llx\n", addr, erase.len);
 
 		if (mtd->allow_erasebad || (mtd->master && mtd->master->allow_erasebad))
 			ret = 0;
@@ -179,7 +205,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 		erase.addr = addr;
 
 		if (ret > 0) {
-			printf("Skipping bad block at 0x%08x\n", addr);
+			printf("Skipping bad block at 0x%08llx\n", addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
 			if (ret)
@@ -231,6 +257,10 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 	case MEMSETBADBLOCK:
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08llx\n", *offset);
 		ret = mtd_block_markbad(mtd, *offset);
+		break;
+	case MEMSETGOODBLOCK:
+		dev_dbg(cdev->dev, "MEMSETGOODBLOCK: 0x%08llx\n", *offset);
+		ret = mtd_block_markgood(mtd, *offset);
 		break;
 	case MEMERASE:
 		ret = mtd_op_erase(cdev, ei->length, ei->start + cdev->offset);
@@ -310,8 +340,23 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
 	int ret;
 
+	if (ofs < 0 || ofs >= mtd->size)
+		return -EINVAL;
+
 	if (mtd->block_markbad)
 		ret = mtd->block_markbad(mtd, ofs);
+	else
+		ret = -ENOSYS;
+
+	return ret;
+}
+
+int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	int ret;
+
+	if (mtd->block_markgood)
+		ret = mtd->block_markgood(mtd, ofs);
 	else
 		ret = -ENOSYS;
 
@@ -323,6 +368,11 @@ int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 {
 	int ret_code;
 	*retlen = 0;
+
+	if (from < 0 || from >= mtd->size || len > mtd->size - from)
+		return -EINVAL;
+	if (!len)
+		return 0;
 
 	/*
 	 * In the absence of an error, drivers return a non-negative integer
@@ -342,11 +392,28 @@ int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 {
 	*retlen = 0;
 
+	if (to < 0 || to >= mtd->size || len > mtd->size - to)
+		return -EINVAL;
+	if (!mtd->write || !(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	if (!len)
+		return 0;
+
 	return mtd->write(mtd, to, len, retlen, buf);
 }
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
+	if (instr->addr >= mtd->size || instr->len > mtd->size - instr->addr)
+		return -EINVAL;
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
+	if (!instr->len) {
+		instr->state = MTD_ERASE_DONE;
+		mtd_erase_callback(instr);
+		return 0;
+	}
 	return mtd->erase(mtd, instr);
 }
 
@@ -403,10 +470,10 @@ static int mtd_partition_set(struct device_d *dev, struct param_d *p, const char
 static char *print_size(uint64_t s)
 {
 	if (!(s & ((1 << 20) - 1)))
-		return asprintf("%lldM", s >> 20);
+		return basprintf("%lldM", s >> 20);
 	if (!(s & ((1 << 10) - 1)))
-		return asprintf("%lldk", s >> 10);
-	return asprintf("0x%lld", s);
+		return basprintf("%lldk", s >> 10);
+	return basprintf("0x%lld", s);
 }
 
 static int print_part(char *buf, int bufsize, struct mtd_info *mtd, uint64_t last_ofs,
@@ -510,7 +577,8 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 
 	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
 		int na, ns, len = 0;
-		char *name = asprintf("partition@%0llx", partmtd->master_offset);
+		char *name = basprintf("partition@%0llx",
+					 partmtd->master_offset);
 		void *p;
 		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
 
@@ -608,7 +676,8 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	if (device_id == DEVICE_ID_SINGLE)
 		mtd->cdev.name = xstrdup(devname);
 	else
-		mtd->cdev.name = asprintf("%s%d", devname, mtd->class_dev.id);
+		mtd->cdev.name = basprintf("%s%d", devname,
+					     mtd->class_dev.id);
 
 	INIT_LIST_HEAD(&mtd->partitions);
 
@@ -692,4 +761,26 @@ int del_mtd_device (struct mtd_info *mtd)
 void mtdcore_add_hook(struct mtddev_hook *hook)
 {
 	list_add(&hook->hook, &mtd_register_hooks);
+}
+
+const char *mtd_type_str(struct mtd_info *mtd)
+{
+	switch (mtd->type) {
+	case MTD_ABSENT:
+		return "absent";
+	case MTD_RAM:
+		return "ram";
+	case MTD_ROM:
+		return "rom";
+	case MTD_NORFLASH:
+		return "nor";
+	case MTD_NANDFLASH:
+		return "nand";
+	case MTD_DATAFLASH:
+		return"dataflash";
+	case MTD_UBIVOLUME:
+		return "ubi";
+	default:
+		return "unknown";
+	}
 }

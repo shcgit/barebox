@@ -21,10 +21,6 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
-config ENV_HANDLING
-	select CRC32
-	bool
-
 config HAS_CACHE
 	bool
 	help
@@ -78,9 +74,6 @@ config FITIMAGE_SIGNATURE
 config LOGBUF
 	bool
 
-config GLOBALVAR
-	bool
-
 config STDDEV
 	bool
 
@@ -112,6 +105,13 @@ config BAREBOX_UPDATE_IMX_NAND_FCB
 	depends on BAREBOX_UPDATE
 	depends on MTD_WRITE
 	depends on NAND_MXS
+	default y
+
+config UBIFORMAT
+	bool
+	select LIBSCAN
+	select LIBUBIGEN
+	depends on MTD_UBI
 	default y
 
 menu "General Settings"
@@ -158,6 +158,30 @@ config MEMINFO
 
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
+
+config GLOBALVAR
+	bool "global environment variables support"
+	default y if !SHELL_NONE
+	help
+	  Global environment variables begin with "global.". Unlike normal
+	  shell variables they have the same values in all contexts. Global
+	  variables are used to control several aspects of the system behaviour.
+	  If unsure, say yes here.
+
+config NVVAR
+	bool "Non volatile global environment variables support"
+	default y if !SHELL_NONE
+	depends on GLOBALVAR
+	depends on ENV_HANDLING
+	help
+	  Non volatile environment variables begin with "nv.". They behave like
+	  global variables above, but their values are saved in the environment
+	  storage with 'saveenv' and thus are persistent over restarts. nv variables
+	  are coupled with global variables of the same name. Setting "nv.foo" results
+	  in "global.foo" changed also (but not the other way round: setting "global.foo"
+	  leaves "nv.foo" untouched). The idea is that nv variables can store defaults
+	  while global variables can be changed during runtime without changing the
+	  default.
 
 menu "memory layout"
 
@@ -536,12 +560,25 @@ config BLSPEC
 	  on a device and it allows the Operating System to install / update
 	  kernels.
 
+config FLEXIBLE_BOOTARGS
+	bool
+	prompt "flexible Linux bootargs generation"
+	depends on GLOBALVAR
+	help
+	  Select this to get a more flexible bootargs generation. With this
+	  option the bootargs are concatenated together from global variables
+	  beginning with 'global.linux.bootargs.' and 'global.linux.mtdparts.'
+	  This allows for more flexible scripting since with it it's possible
+	  to replace parts of the bootargs string without reconstructing it
+	  completely.
+
 config IMD
 	bool "barebox metadata support"
 
 config IMD_TARGET
 	bool "build bareboximd target tool"
 	depends on IMD
+	depends on !SANDBOX
 
 config KERNEL_INSTALL_TARGET
 	bool
@@ -639,10 +676,20 @@ config PARTITION
 
 source common/partitions/Kconfig
 
+config ENV_HANDLING
+	select CRC32
+	bool "Support environment files storage"
+	default y if !SHELL_NONE
+	help
+	  Enabling this option will give you environment files which can be stored
+	  over reboots. The "saveenv" command will store all files under /env/ to
+	  the persistent environment, the "loadenv" command (also executed during
+	  startup) will bring them back. If unsure, say yes.
+
 config DEFAULT_ENVIRONMENT
 	bool
 	default y
-	select ENV_HANDLING
+	depends on ENV_HANDLING
 	prompt "Compile in default environment"
 	help
 	  Enabling this option will give you a default environment when
@@ -768,7 +815,6 @@ config POLLER
 
 config STATE
 	bool "generic state infrastructure"
-	depends on OF_BAREBOX_DRIVERS
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER

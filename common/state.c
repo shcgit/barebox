@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <crc.h>
 #include <init.h>
 #include <ioctl.h>
 #include <libbb.h>
@@ -703,8 +704,8 @@ static int state_convert_node_variable(struct state *state,
 		*indexs = 0;
 
 	/* construct full name */
-	name = asprintf("%s%s%s",
-			parent_name, parent_name[0] ? "." : "", short_name);
+	name = basprintf("%s%s%s", parent_name, parent_name[0] ? "." : "",
+			   short_name);
 	free(short_name);
 
 	if ((conv == STATE_CONVERT_TO_NODE) ||
@@ -999,6 +1000,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	return 0;
 
  out:
+	dev_err(&state->dev, "error fixing up device tree with boot state\n");
 	of_delete_node(new_node);
 	return ret;
 }

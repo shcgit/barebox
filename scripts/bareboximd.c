@@ -33,8 +33,11 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <linux/err.h>
 
 #include "../include/image-metadata.h"
+
+#define eprintf(args...) fprintf(stderr, ## args)
 
 static void debug(const char *fmt, ...)
 {

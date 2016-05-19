@@ -337,12 +337,14 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb)
 
 static int imx6_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
 
 	anatop_base = (void *)MX6_ANATOP_BASE_ADDR;
-	ccm_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ccm_base))
-		return PTR_ERR(ccm_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ccm_base = IOMEM(iores->start);
 
 	base = anatop_base;
 
@@ -443,6 +445,9 @@ static int imx6_ccm_probe(struct device_d *dev)
 
 	/*                                            name             parent_name          reg         shift */
 	clks[IMX6QDL_CLK_APBH_DMA]     = imx_clk_gate2("apbh_dma",      "usdhc3",            base + 0x68, 4);
+	clks[IMX6QDL_CLK_CAAM_MEM]     = imx_clk_gate2("caam_mem",      "ahb",               base + 0x68, 8);
+	clks[IMX6QDL_CLK_CAAM_ACLK]    = imx_clk_gate2("caam_aclk",     "ahb",               base + 0x68, 10);
+	clks[IMX6QDL_CLK_CAAM_IPG]     = imx_clk_gate2("caam_ipg",      "ipg",               base + 0x68, 12);
 	clks[IMX6QDL_CLK_ECSPI1]       = imx_clk_gate2("ecspi1",        "ecspi_root",        base + 0x6c, 0);
 	clks[IMX6QDL_CLK_ECSPI2]       = imx_clk_gate2("ecspi2",        "ecspi_root",        base + 0x6c, 2);
 	clks[IMX6QDL_CLK_ECSPI3]       = imx_clk_gate2("ecspi3",        "ecspi_root",        base + 0x6c, 4);
@@ -477,6 +482,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_USDHC2]       = imx_clk_gate2("usdhc2",        "usdhc2_podf",       base + 0x80, 4);
 	clks[IMX6QDL_CLK_USDHC3]       = imx_clk_gate2("usdhc3",        "usdhc3_podf",       base + 0x80, 6);
 	clks[IMX6QDL_CLK_USDHC4]       = imx_clk_gate2("usdhc4",        "usdhc4_podf",       base + 0x80, 8);
+	clks[IMX6QDL_CLK_EIM_SLOW]     = imx_clk_gate2("eim_slow",      "eim_slow_podf",     base + 0x80, 10);
 	clks[IMX6QDL_CLK_CKO1]         = imx_clk_gate("cko1",           "cko1_podf",         base + 0x60, 7);
 	clks[IMX6QDL_CLK_CKO2]         = imx_clk_gate("cko2",           "cko2_podf",         base + 0x60, 24);
 
@@ -501,6 +507,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clk_data.clk_num = IMX6QDL_CLK_END;
 	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
 
+	clk_enable(clks[IMX6QDL_CLK_MMDC_CH0_AXI_PODF]);
 	clk_enable(clks[IMX6QDL_CLK_PLL6_ENET]);
 	clk_enable(clks[IMX6QDL_CLK_SATA_REF_100M]);
 	clk_enable(clks[IMX6QDL_CLK_ENFC_PODF]);
