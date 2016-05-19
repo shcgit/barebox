@@ -1,0 +1,17 @@
+if ARCH_LPC408X
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x00000000 if MACH_HYLPC4088
+
+choice
+	prompt "NXP408x Board Type"
+
+config MACH_HYLPC4088
+	bool "HAOYU LPC4088 SDK"
+	help
+	  Say Y here if you are using the HAOYU LPC4088-SDK board.
+
+endchoice
+
+endif

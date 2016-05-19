@@ -13,6 +13,7 @@
 #define CPU_ARCH_ARMv5TEJ	7
 #define CPU_ARCH_ARMv6		8
 #define CPU_ARCH_ARMv7		9
+#define CPU_ARCH_ARMv7M		10
 
 #define CPU_IS_ARM720		0x41007200
 #define CPU_IS_ARM720_MASK	0xff00fff0
@@ -110,6 +111,14 @@
 #define cpu_is_cortex_a9() (0)
 #define cpu_is_cortex_a7() (0)
 #define cpu_is_cortex_a15() (0)
+#endif
+
+#ifdef CONFIG_CPU_32v7M
+#ifdef ARM_ARCH
+#define ARM_MULTIARCH
+#else
+#define ARM_ARCH CPU_ARCH_ARMv7M
+#endif
 #endif
 
 #ifndef __ASSEMBLY__

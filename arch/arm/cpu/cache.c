@@ -101,6 +101,10 @@ int arm_set_cache_functions(void)
 		cache_fns = &cache_fns_armv7;
 		break;
 #endif
+#ifdef CONFIG_CPU_32v7M
+	case CPU_ARCH_ARMv7M:
+		break;
+#endif
 	default:
 		while(1);
 	}

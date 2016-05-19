@@ -70,6 +70,11 @@ config CPU_V7
 	bool
 	select CPU_32v7
 
+# ARMv7M
+config CPU_V7M
+	bool
+	select CPU_32v7M
+
 # Xscale PXA25x, PXA27x
 config CPU_XSCALE
 	bool
@@ -87,6 +92,9 @@ config CPU_32v6
 	bool
 
 config CPU_32v7
+	bool
+
+config CPU_32v7M
 	bool
 
 comment "processor features"

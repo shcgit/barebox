@@ -1,0 +1,54 @@
+#!/bin/sh
+
+FILEUPD=SMALLIA.BIN
+
+if [ -d /disk ]; then
+	echo "USB function is disabled. Please reset the device."
+	exit
+fi
+
+mkdir /disk
+
+usb
+
+for i in /dev/disk*.0; do
+	mount $i fat /disk
+
+	if [ -f "/disk/$FILEUPD" ]; then
+		echo "Found image /disk/$FILEUPD"
+
+		# Beep Start
+		gpio_direction_output 31 1
+		msleep 1000
+		gpio_direction_output 31 0
+
+		echo -n "Erasing... "
+
+		addpart -n /dev/m25p0 6M(system)
+		erase /dev/system
+
+		echo "Done."
+		echo -n "Flashing... "
+
+		cp /disk/$FILEUPD /dev/system
+		echo "Done."
+
+		# Beep Stop
+		gpio_direction_output 31 1
+		msleep 150
+		gpio_direction_output 31 0
+		msleep 50
+		gpio_direction_output 31 1
+		msleep 150
+		gpio_direction_output 31 0
+		msleep 50
+		gpio_direction_output 31 1
+		msleep 150
+		gpio_direction_output 31 0
+
+		umount /disk
+		exit
+	fi
+
+	umount /disk
+done

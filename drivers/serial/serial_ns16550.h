@@ -40,6 +40,7 @@
 #define lsr		5
 #define msr		6
 #define scr		7
+#define fdr		10
 
 #define thr		rbr
 #define iir		fcr

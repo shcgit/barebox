@@ -30,8 +30,10 @@ ENTRY(setup_c)
 #ifdef CONFIG_MMU
 	bl	arm_early_mmu_cache_flush
 #endif
+#ifndef CONFIG_CPU_V7M
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
+#endif
 	add	lr, r5, r4		/* adjust return address to new location */
 	pop	{r4, r5}
 	mov	pc, lr
@@ -76,8 +78,10 @@ ENTRY(relocate_to_adr)
 #ifdef CONFIG_MMU
 	bl	arm_early_mmu_cache_flush
 #endif
+#ifndef CONFIG_CPU_V7M
 	mov	r0,#0
 	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
+#endif
 
 	ldr	r0,=1f
 	sub	r0, r0, r8

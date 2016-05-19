@@ -174,7 +174,7 @@ static void pkt_print(struct urb_priv *purb, struct usb_device *dev,
 		      unsigned long pipe, void *buffer, int transfer_len,
 		      struct devrequest *setup, char *str, int small)
 {
-	debug("%s URB:[%4x] dev:%2lu,ep:%2lu-%c,type:%s,len:%d/%d stat:%#lx\n",
+	printf("%s URB:[%4x] dev:%2lu,ep:%2lu-%c,type:%s,len:%d/%d stat:%#lx\n",
 			str,
 			sohci_get_current_frame_number(dev),
 			usb_pipedevice(pipe),
@@ -203,7 +203,7 @@ static void pkt_print(struct urb_priv *purb, struct usb_device *dev,
 					(purb ? purb->actual_length : 0);
 			for (i = 0; i < 16 && i < len; i++)
 				printf(" %02x", ((__u8 *) buffer)[i]);
-			printf("%s\n", i < leni ? "..." : "");
+			printf("%s\n", i < len ? "..." : "");
 		}
 	}
 #endif
@@ -233,7 +233,7 @@ void ep_print_int_eds(struct ohci *ohci, char *str)
 
 static void ohci_dump_intr_mask(char *label, __u32 mask)
 {
-	debug("%s: 0x%08x%s%s%s%s%s%s%s%s%s\n",
+	printf("%s: 0x%08x%s%s%s%s%s%s%s%s%s\n",
 		label,
 		mask,
 		(mask & OHCI_INTR_MIE) ? " MIE" : "",
@@ -253,11 +253,11 @@ static void maybe_print_eds(char *label, __u32 value)
 	struct ed *edp = (struct ed *)value;
 
 	if (value) {
-		debug("%s %08x\n", label, value);
-		debug("%08x\n", edp->hwINFO);
-		debug("%08x\n", edp->hwTailP);
-		debug("%08x\n", edp->hwHeadP);
-		debug("%08x\n", edp->hwNextED);
+		printf("%s %08x\n", label, value);
+		printf("%08x\n", edp->hwINFO);
+		printf("%08x\n", edp->hwTailP);
+		printf("%08x\n", edp->hwHeadP);
+		printf("%08x\n", edp->hwNextED);
 	}
 }
 
@@ -281,10 +281,10 @@ static void ohci_dump_status(struct ohci *controller)
 
 	temp = readl(&regs->revision) & 0xff;
 	if (temp != 0x10)
-		debug("spec %d.%d\n", (temp >> 4), (temp & 0x0f));
+		printf("spec %d.%d\n", (temp >> 4), (temp & 0x0f));
 
 	temp = readl(&regs->control);
-	debug("control: 0x%08x%s%s%s HCFS=%s%s%s%s%s CBSR=%d\n", temp,
+	printf("control: 0x%08x%s%s%s HCFS=%s%s%s%s%s CBSR=%d\n", temp,
 		(temp & OHCI_CTRL_RWE) ? " RWE" : "",
 		(temp & OHCI_CTRL_RWC) ? " RWC" : "",
 		(temp & OHCI_CTRL_IR) ? " IR" : "",
@@ -297,7 +297,7 @@ static void ohci_dump_status(struct ohci *controller)
 		);
 
 	temp = readl(&regs->cmdstatus);
-	debug("cmdstatus: 0x%08x SOC=%d%s%s%s%s\n", temp,
+	printf("cmdstatus: 0x%08x SOC=%d%s%s%s%s\n", temp,
 		(temp & OHCI_SOC) >> 16,
 		(temp & OHCI_OCR) ? " OCR" : "",
 		(temp & OHCI_BLF) ? " BLF" : "",
@@ -329,7 +329,7 @@ static void ohci_dump_roothub(struct ohci *controller, int verbose)
 	ndp = (ndp == 2) ? 1 : 0;
 #endif
 	if (verbose) {
-		debug("roothub.a: %08x POTPGT=%d%s%s%s%s%s NDP=%d\n", temp,
+		printf("roothub.a: %08x POTPGT=%d%s%s%s%s%s NDP=%d\n", temp,
 			((temp & RH_A_POTPGT) >> 24) & 0xff,
 			(temp & RH_A_NOCP) ? " NOCP" : "",
 			(temp & RH_A_OCPM) ? " OCPM" : "",
@@ -339,13 +339,13 @@ static void ohci_dump_roothub(struct ohci *controller, int verbose)
 			ndp
 			);
 		temp = roothub_b(controller);
-		debug("roothub.b: %08x PPCM=%04x DR=%04x\n",
+		printf("roothub.b: %08x PPCM=%04x DR=%04x\n",
 			temp,
 			(temp & RH_B_PPCM) >> 16,
 			(temp & RH_B_DR)
 			);
 		temp = roothub_status(controller);
-		debug("roothub.status: %08x%s%s%s%s%s%s\n",
+		printf("roothub.status: %08x%s%s%s%s%s%s\n",
 			temp,
 			(temp & RH_HS_CRWE) ? " CRWE" : "",
 			(temp & RH_HS_OCIC) ? " OCIC" : "",
@@ -358,7 +358,7 @@ static void ohci_dump_roothub(struct ohci *controller, int verbose)
 
 	for (i = 0; i < ndp; i++) {
 		temp = roothub_portstatus(controller, i);
-		debug("roothub.portstatus [%d] = 0x%08x%s%s%s%s%s%s%s%s%s%s%s%s\n",
+		printf("roothub.portstatus [%d] = 0x%08x%s%s%s%s%s%s%s%s%s%s%s%s\n",
 			i,
 			temp,
 			(temp & RH_PS_PRSC) ? " PRSC" : "",
@@ -381,13 +381,13 @@ static void ohci_dump_roothub(struct ohci *controller, int verbose)
 
 static void ohci_dump(struct ohci *controller, int verbose)
 {
-	debug("OHCI controller usb-%s state\n", controller->slot_name);
+	printf("OHCI controller usb-%s state\n", controller->slot_name);
 
 	/* dumps some of the state we know about */
 	ohci_dump_status(controller);
 	if (verbose)
 		ep_print_int_eds(controller, "hcca");
-	debug("hcca frame #%04x\n", controller->hcca->frame_no);
+	printf("hcca frame #%04x\n", controller->hcca->frame_no);
 	ohci_dump_roothub(controller, 1);
 }
 #else /* DEBUG */
@@ -1810,13 +1810,14 @@ static int ohci_probe(struct device_d *dev)
 		return -ENOMEM;
 	memset(ohci->ohci_dev, 0, sizeof(*ohci->ohci_dev));
 
-	usb_register_host(host);
-
 	ohci->regs = dev_request_mem_region(dev, 0);
 	if (IS_ERR(ohci->regs))
 		return PTR_ERR(ohci->regs);
 
-	return 0;
+	/* Put the USB host controller into reset */
+	writel(0, &ohci->regs->control);
+
+	return usb_register_host(host);
 }
 
 static struct driver_d ohci_driver = {

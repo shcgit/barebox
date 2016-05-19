@@ -39,6 +39,7 @@
 #include <malloc.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/math64.h>
 
 #include "serial_ns16550.h"
 #include <ns16550.h>
@@ -243,6 +244,64 @@ static void ns16550_jz_init_port(struct console_device *cdev)
 	ns16550_serial_init_port(cdev);
 }
 
+static int ns16550_lpc40xx_setbaudrate(struct console_device *cdev,
+				       int baud_rate)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	u32 dl_best, div_best, mul_best;
+	int err, err_best = -1;
+	u32 dl, div, mul;
+
+	for (mul = 0x1; mul <= 0xf; mul++) {
+		for (div = 0x0; div < mul; div++) {
+			/* Calculate divisor  */
+			u64 nom = priv->plat.clock;
+			u32 den = 16 * baud_rate * (mul + div);
+			nom *= mul;
+			nom += den / 2;
+			do_div(nom, den);
+			dl = nom;
+
+			/* Calculate baudrate */
+			nom = priv->plat.clock;
+			den = 16 * dl * (mul + div);
+			nom *= mul;
+			nom += den / 2;
+			do_div(nom, den);
+			err = abs(nom - baud_rate);
+
+			/* Choose best result */
+			if ((err_best < 0) || (err < err_best)) {
+				err_best = err;
+				dl_best = dl;
+				div_best = div;
+				mul_best = mul;
+			}
+		}
+	}
+
+	ns16550_write(cdev, LCR_BKSE, lcr);
+	ns16550_write(cdev, dl_best & 0xff, dll);
+	ns16550_write(cdev, (dl_best >> 8) & 0xff, dlm);
+	ns16550_write(cdev, (mul_best << 4) | div_best, fdr);
+	ns16550_write(cdev, LCRVAL, lcr);
+	ns16550_write(cdev, MCRVAL, mcr);
+	ns16550_write(cdev, priv->fcrval, fcr);
+
+	return 0;
+}
+
+static void ns16550_lpc40xx_init_port(struct console_device *cdev)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	priv->plat.shift = 2;
+	cdev->setbrg = ns16550_lpc40xx_setbaudrate;
+
+	ns16550_serial_init_port(cdev);
+}
+
 /*********** Exposed Functions **********************************/
 
 /**
@@ -309,6 +368,10 @@ static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 
 static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 	.init_port = ns16550_jz_init_port,
+};
+
+static __maybe_unused struct ns16550_drvdata lpc40xx_drvdata = {
+	.init_port = ns16550_lpc40xx_init_port,
 };
 
 static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
@@ -491,9 +554,15 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 };
 
 static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
+#if IS_ENABLED(CONFIG_ARCH_OMAP)
 	{
 		.name = "omap-uart",
 		.driver_data = (unsigned long)&omap_drvdata,
+	},
+#endif
+	{
+		.name = "lpc40xx-uart",
+		.driver_data = (unsigned long)&lpc40xx_drvdata,
 	}, {
 		/* sentinel */
 	},
@@ -503,11 +572,9 @@ static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
  * @brief Driver registration structure
  */
 static struct driver_d ns16550_serial_driver = {
-	.name = "ns16550_serial",
-	.probe = ns16550_probe,
-	.of_compatible = DRV_OF_COMPAT(ns16550_serial_dt_ids),
-#if IS_ENABLED(CONFIG_ARCH_OMAP)
-	.id_table = ns16550_serial_ids,
-#endif
+	.name		= "ns16550_serial",
+	.probe		= ns16550_probe,
+	.of_compatible	= DRV_OF_COMPAT(ns16550_serial_dt_ids),
+	.id_table	= ns16550_serial_ids,
 };
 console_platform_driver(ns16550_serial_driver);

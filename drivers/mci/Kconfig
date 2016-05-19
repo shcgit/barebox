@@ -42,6 +42,9 @@ config MCI_DW
 	  block, this provides host support for SD and MMC interfaces, in both
 	  PIO and external DMA modes.
 
+config MCI_LPC40XX
+	bool "NXP LPC40xx MCI"
+
 config MCI_MXS
 	bool "i.MX23/i.MX28"
 	depends on ARCH_MXS

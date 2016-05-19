@@ -1,0 +1,24 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+autoboot_timeout=3
+
+PS1="\e[1;34mbarebox\e[1;37m@\e[1;34m\w\e[0m # "
+
+# Start Beep
+gpio_direction_output 31 1
+msleep 220
+gpio_direction_output 31 0
+
+export SerialCRC
+
+echo -e -n "\nHit any key to stop autoboot: "
+timeout -a $autoboot_timeout
+if [ $? != 0 ]; then
+	exit
+fi
+
+update
+mmstart

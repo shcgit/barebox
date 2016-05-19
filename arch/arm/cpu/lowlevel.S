@@ -2,6 +2,8 @@
 #include <init.h>
 #include <asm/system.h>
 
+#ifndef CONFIG_CPU_V7M
+
 .section ".text_bare_init_","ax"
 ENTRY(arm_cpu_lowlevel_init)
 	mov	r2, lr
@@ -38,3 +40,5 @@ ENTRY(arm_cpu_lowlevel_init)
 
 	mov	pc, r2
 ENDPROC(arm_cpu_lowlevel_init)
+
+#endif

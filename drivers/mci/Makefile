@@ -3,6 +3,7 @@ obj-$(CONFIG_MCI_ATMEL)		+= atmel_mci.o
 obj-$(CONFIG_MCI_BCM2835)	+= mci-bcm2835.o
 obj-$(CONFIG_MCI_IMX)		+= imx.o
 obj-$(CONFIG_MCI_IMX_ESDHC)	+= imx-esdhc.o
+obj-$(CONFIG_MCI_LPC40XX)	+= mci-lpc40xx.o
 obj-$(CONFIG_MCI_MXS)		+= mxs.o
 obj-$(CONFIG_MCI_OMAP_HSMMC)	+= omap_hsmmc.o
 obj-$(CONFIG_MCI_PXA)		+= pxamci.o

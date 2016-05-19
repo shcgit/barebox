@@ -95,8 +95,6 @@ void mmu_disable(void)
  */
 void arch_shutdown(void)
 {
-	uint32_t r;
-
 	mmu_disable();
 	flush_icache();
 	/*
@@ -104,9 +102,16 @@ void arch_shutdown(void)
 	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
 	 * disabled before exiting.
 	 */
-	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
-	r |= PSR_I_BIT;
-	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+#ifdef CONFIG_CPU_V7M
+	__asm__ __volatile__("cpsid i");
+#else
+	{
+		uint32_t r;
+		__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
+		r |= PSR_I_BIT;
+		__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+	}
+#endif
 }
 
 extern unsigned long arm_stack_top;

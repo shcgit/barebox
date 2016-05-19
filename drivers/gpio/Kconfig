@@ -47,6 +47,12 @@ config GPIO_JZ4740
 	help
 	  Say yes here to enable the GPIO driver for the Ingenic SoCs.
 
+config GPIO_LPC408X
+	bool "GPIO support for NXP LPC408x"
+	select GPIO_GENERIC
+	help
+	  Say yes here to enable the GPIO driver for the NXP LPC408x CPUs.
+
 config GPIO_MALTA_FPGA_I2C
 	bool "Malta CBUS FPGA I2C GPIO"
 	depends on MACH_MIPS_MALTA

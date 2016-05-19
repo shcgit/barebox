@@ -68,6 +68,7 @@ static struct variant_data variant_arm = {
 	.fifosize		= 16 * 4,
 	.fifohalfsize		= 8 * 4,
 	.datalength_bits	= 16,
+	.clkreg			= MCI_CLK_ENABLE,
 	.pwrreg_powerup		= MCI_PWR_UP,
 };
 
@@ -450,7 +451,7 @@ static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 	struct mmci_host *host = to_mci_host(mci);
 	struct variant_data *variant = host->variant;
 
-	u32 pwr = variant->pwrreg_powerup;
+	u32 pwr = 0x03/*variant->pwrreg_powerup*/;
 
 	if (variant->signal_direction) {
 		/*
@@ -575,7 +576,7 @@ static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 	host->variant = variant;
 	host->plat = plat;
 
-	mmci_writel(host, MMCIPOWER, plat->sigdir | variant->pwrreg_powerup);
+	mmci_writel(host, MMCIPOWER, 0x02/*plat->sigdir | variant->pwrreg_powerup*/);
 
 	mmci_writel(host, MMCICLOCK,
 		plat->clkdiv_init | variant->clkreg_enable | variant->clkreg);
