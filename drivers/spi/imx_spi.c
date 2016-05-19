@@ -29,6 +29,7 @@
 #include <mach/generic.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <clock.h>
 
 #define CSPI_0_0_RXDATA		0x00
 #define CSPI_0_0_TXDATA		0x04
@@ -457,17 +458,34 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
 	struct spi_transfer *t;
+	unsigned int cs_change;
+	const int nsecs = 50;
 
 	imx->chipselect(spi, 1);
+
+	cs_change = 0;
 
 	mesg->actual_length = 0;
 
 	list_for_each_entry(t, &mesg->transfers, transfer_list) {
+		if (cs_change) {
+			ndelay(nsecs);
+			imx->chipselect(spi, 0);
+			ndelay(nsecs);
+			imx->chipselect(spi, 1);
+		}
+
+		cs_change = t->cs_change;
+
 		imx_spi_do_transfer(spi, t);
 		mesg->actual_length += t->len;
+
+		if (cs_change)
+			imx->chipselect(spi, 1);
 	}
 
-	imx->chipselect(spi, 0);
+	if (!cs_change)
+		imx->chipselect(spi, 0);
 
 	return 0;
 }
@@ -521,7 +539,7 @@ static int imx_spi_probe(struct device_d *dev)
 	struct spi_imx_devtype_data *devdata = NULL;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devdata);
+	ret = dev_get_drvdata(dev, (const void **)&devdata);
 	if (ret)
 		return -ENODEV;
 
@@ -569,19 +587,19 @@ static __maybe_unused struct of_device_id imx_spi_dt_ids[] = {
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0)
 	{
 		.compatible = "fsl,imx27-cspi",
-		.data = (unsigned long)&spi_imx_devtype_data_0_0,
+		.data = &spi_imx_devtype_data_0_0,
 	},
 #endif
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_7)
 	{
 		.compatible = "fsl,imx35-cspi",
-		.data = (unsigned long)&spi_imx_devtype_data_0_7,
+		.data = &spi_imx_devtype_data_0_7,
 	},
 #endif
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_2_3)
 	{
 		.compatible = "fsl,imx51-ecspi",
-		.data = (unsigned long)&spi_imx_devtype_data_2_3,
+		.data = &spi_imx_devtype_data_2_3,
 	},
 #endif
 	{

@@ -129,14 +129,17 @@ struct dsps_glue {
 	struct musb_hdrc_platform_data pdata;
 };
 
+static struct dsps_glue *to_dsps_glue(struct musb *musb)
+{
+	return container_of(musb, struct dsps_glue, musb);
+}
+
 /**
  * dsps_musb_enable - enable interrupts
  */
 static void dsps_musb_enable(struct musb *musb)
 {
-	struct device_d *dev = musb->controller;
-	struct device_d *pdev = dev;
-	struct dsps_glue *glue = pdev->priv;
+	struct dsps_glue *glue = to_dsps_glue(musb);
 	const struct dsps_musb_wrapper *wrp = glue->wrp;
 	void __iomem *reg_base = musb->ctrl_base;
 	u32 epmask, coremask;
@@ -158,9 +161,7 @@ static void dsps_musb_enable(struct musb *musb)
  */
 static void dsps_musb_disable(struct musb *musb)
 {
-	struct device_d *dev = musb->controller;
-	struct device_d *pdev = dev;
-	struct dsps_glue *glue = pdev->priv;
+	struct dsps_glue *glue = to_dsps_glue(musb);
 	const struct dsps_musb_wrapper *wrp = glue->wrp;
 	void __iomem *reg_base = musb->ctrl_base;
 
@@ -173,8 +174,7 @@ static void dsps_musb_disable(struct musb *musb)
 static irqreturn_t dsps_interrupt(struct musb *musb)
 {
 	void __iomem *reg_base = musb->ctrl_base;
-	struct device_d *dev = musb->controller;
-	struct dsps_glue *glue = dev->priv;
+	struct dsps_glue *glue = to_dsps_glue(musb);
 	const struct dsps_musb_wrapper *wrp = glue->wrp;
 	unsigned long flags;
 	irqreturn_t ret = IRQ_NONE;
@@ -213,8 +213,7 @@ out:
 
 static int dsps_musb_init(struct musb *musb)
 {
-	struct device_d *dev = musb->controller;
-	struct dsps_glue *glue = dev->priv;
+	struct dsps_glue *glue = to_dsps_glue(musb);
 	const struct dsps_musb_wrapper *wrp = glue->wrp;
 	u32 rev, val, mode;
 
@@ -357,7 +356,7 @@ static int dsps_probe(struct device_d *dev)
 	struct dsps_glue *glue;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&wrp);
+	ret = dev_get_drvdata(dev, (const void **)&wrp);
 	if (ret)
 		return ret;
 
@@ -376,8 +375,6 @@ static int dsps_probe(struct device_d *dev)
 
 	glue->dev = dev;
 	glue->wrp = wrp;
-
-	dev->priv = glue;
 
 	pdata = &glue->pdata;
 
@@ -445,7 +442,7 @@ static const struct dsps_musb_wrapper am33xx_driver_data = {
 static __maybe_unused struct of_device_id musb_dsps_dt_ids[] = {
 	{
 		.compatible = "ti,musb-am33xx",
-		.data = (unsigned long) &am33xx_driver_data,
+		.data = &am33xx_driver_data,
 	}, {
 		/* sentinel */
 	},

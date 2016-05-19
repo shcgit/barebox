@@ -89,7 +89,7 @@ static int ohci_platform_probe(struct device_d *dev)
 	struct resource *res;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&data);
+	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
 		return ret;
 
