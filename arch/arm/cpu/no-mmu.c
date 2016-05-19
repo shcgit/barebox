@@ -34,6 +34,7 @@
 
 static int nommu_v7_vectors_init(void)
 {
+#ifndef CONFIG_CPU_V7M
 	void *vectors;
 	u32 cr;
 
@@ -55,6 +56,7 @@ static int nommu_v7_vectors_init(void)
 	memcpy(vectors, __exceptions_start, __exceptions_size);
 
 	set_vbar((unsigned int)vectors);
+#endif
 
 	return 0;
 }
