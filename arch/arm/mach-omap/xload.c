@@ -14,6 +14,7 @@
 #include <xymodem.h>
 #include <mach/generic.h>
 #include <mach/am33xx-generic.h>
+#include <mach/omap3-generic.h>
 #include <net.h>
 #include <environment.h>
 #include <dhcp.h>
@@ -118,12 +119,13 @@ static void *omap_xload_boot_mmc(void)
 
 	ret = mount(partname, "fat", "/", NULL);
 
-	free(partname);
-
 	if (ret) {
 		printf("Unable to mount %s (%d)\n", partname, ret);
+		free(partname);
 		return NULL;
 	}
+
+	free(partname);
 
 	buf = read_file("/barebox.bin", &len);
 	if (!buf) {
@@ -284,13 +286,17 @@ static __noreturn int omap_xload(void)
 		func = omap_xload_boot_mmc();
 		break;
 	case BOOTSOURCE_USB:
-		if (IS_ENABLED(CONFIG_FS_OMAP4_USBBOOT)) {
+		if (IS_ENABLED(CONFIG_OMAP3_USBBOOT) && cpu_is_omap3()) {
+			printf("booting from USB\n");
+			func = omap3_xload_boot_usb();
+		} else if (IS_ENABLED(CONFIG_FS_OMAP4_USBBOOT)) {
 			printf("booting from USB\n");
 			func = omap4_xload_boot_usb();
-			break;
 		} else {
 			printf("booting from USB not enabled\n");
+			func = NULL;
 		}
+		break;
 	case BOOTSOURCE_NAND:
 		printf("booting from NAND\n");
 		func = omap_xload_boot_nand(barebox_part->nand_offset,

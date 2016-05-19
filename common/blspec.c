@@ -30,6 +30,7 @@
 #include <of.h>
 #include <linux/stat.h>
 #include <linux/err.h>
+#include <mtd/ubi-user.h>
 
 /*
  * blspec_entry_var_set - set a variable to a value
@@ -436,6 +437,35 @@ err_out:
 }
 
 /*
+ * blspec_scan_ubi - scan over a cdev containing UBI volumes
+ *
+ * This function attaches a cdev as UBI devices and collects all blspec
+ * entries found in the UBI volumes
+ *
+ * returns the number of entries found or a negative error code if some unexpected
+ * error occured.
+ */
+static int blspec_scan_ubi(struct blspec *blspec, struct cdev *cdev)
+{
+	struct device_d *child;
+	int ret, found = 0;
+
+	pr_debug("%s: %s\n", __func__, cdev->name);
+
+	ret = ubi_attach_mtd_dev(cdev->mtd, UBI_DEV_NUM_AUTO, 0, 20);
+	if (ret && ret != -EEXIST)
+		return 0;
+
+	device_for_each_child(cdev->dev, child) {
+		ret = blspec_scan_device(blspec, child);
+		if (ret > 0)
+			found += ret;
+	}
+
+	return found;
+}
+
+/*
  * blspec_scan_cdev - scan over a cdev
  *
  * Given a cdev this function mounts the filesystem and collects all blspec
@@ -446,9 +476,9 @@ err_out:
  */
 static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 {
-	int ret;
+	int ret, found = 0;
 	void *buf = xzalloc(512);
-	enum filetype type;
+	enum filetype type, filetype;
 	const char *rootpath;
 
 	pr_debug("%s: %s\n", __func__, cdev->name);
@@ -460,16 +490,26 @@ static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 	}
 
 	type = file_detect_partition_table(buf, 512);
+	filetype = file_detect_type(buf, 512);
 	free(buf);
 
 	if (type == filetype_mbr || type == filetype_gpt)
 		return -EINVAL;
 
-	rootpath = cdev_mount_default(cdev, NULL);
-	if (IS_ERR(rootpath))
-		return PTR_ERR(rootpath);
+	if (filetype == filetype_ubi && IS_ENABLED(CONFIG_MTD_UBI)) {
+		ret = blspec_scan_ubi(blspec, cdev);
+		if (ret > 0)
+			found += ret;
+	}
 
-	return blspec_scan_directory(blspec, rootpath);
+	rootpath = cdev_mount_default(cdev, NULL);
+	if (!IS_ERR(rootpath)) {
+		ret = blspec_scan_directory(blspec, rootpath);
+		if (ret > 0)
+			found += ret;
+	}
+
+	return found;
 }
 
 /*
@@ -575,17 +615,10 @@ int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 {
 	struct device_d *dev;
 	struct cdev *cdev;
-	const char *colon;
 
 	pr_debug("%s: %s\n", __func__, devname);
 
-	colon = strchr(devname, '.');
-	if (colon) {
-		char *name = xstrdup(devname);
-		*strchr(name, '.') = 0;
-		device_detect_by_name(name);
-		free(name);
-	}
+	device_detect_by_name(devname);
 
 	cdev = cdev_by_name(devname);
 	if (cdev) {
@@ -599,6 +632,29 @@ int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 		return -ENODEV;
 
 	return blspec_scan_device(blspec, dev);
+}
+
+static int blspec_append_root(struct blspec_entry *entry)
+{
+	const char *appendroot;
+	char *rootarg;
+
+	appendroot = blspec_entry_var_get(entry, "linux-appendroot");
+	if (!appendroot || strcmp(appendroot, "true"))
+		return 0;
+
+	rootarg = path_get_linux_rootarg(entry->rootpath);
+	if (IS_ERR(rootarg)) {
+		pr_err("Getting root argument for %s failed with: %s\n",
+				entry->rootpath, strerror(-PTR_ERR(rootarg)));
+		return PTR_ERR(rootarg);
+	}
+
+	globalvar_add_simple("linux.bootargs.dyn.blspec.appendroot", rootarg);
+
+	free(rootarg);
+
+	return 0;
 }
 
 /*
@@ -650,6 +706,10 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 
 	globalvar_add_simple("linux.bootargs.dyn.blspec", options);
 
+	ret = blspec_append_root(entry);
+	if (ret)
+		goto err_out;
+
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
 			entry->cdev ? dev_name(entry->cdev->dev) : "none");
 
@@ -668,7 +728,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	ret = bootm_boot(&data);
 	if (ret)
 		pr_err("Booting failed\n");
-
+err_out:
 	free((char *)data.oftree_file);
 	free((char *)data.initrd_file);
 	free((char *)data.os_file);

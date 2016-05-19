@@ -75,6 +75,8 @@ quiet_cmd_pblx ?= PBLX    $@
 
 $(obj)/%.pblx: $(obj)/%.pblb $(obj)/barebox.z FORCE
 	$(call if_changed,pblx,$(@F))
+	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_PBLX_SIZE))
+
 
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
@@ -105,6 +107,7 @@ include $(srctree)/images/Makefile.imx
 include $(srctree)/images/Makefile.imxhabv4
 include $(srctree)/images/Makefile.mvebu
 include $(srctree)/images/Makefile.mxs
+include $(srctree)/images/Makefile.omap3
 include $(srctree)/images/Makefile.rockchip
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.tegra

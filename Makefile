@@ -1,5 +1,5 @@
 VERSION = 2015
-PATCHLEVEL = 07
+PATCHLEVEL = 08
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -455,6 +455,8 @@ CFLAGS          += $(call cc-option, -fno-stack-protector)
 CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 
 CFLAGS += $(call cc-disable-warning, trampolines)
+
+CFLAGS += $(call cc-option, -fno-delete-null-pointer-checks,)
 
 # arch Makefile may override CC so keep this after arch Makefile is included
 NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
