@@ -8,11 +8,11 @@
  */
 
 #include <common.h>
-#include <io.h>
-#include <sizes.h>
 #include <debug_ll.h>
+#include <io.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
+#include <linux/sizes.h>
 #include <mach/hardware.h>
 
 #define LPC4088_FLASHCFG	(LPC4088_SYSCTRL + 0x000)

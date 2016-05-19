@@ -14,8 +14,8 @@
 #include <fcntl.h>
 #include <init.h>
 #include <io.h>
-#include <sizes.h>
 #include <i2c/i2c.h>
+#include <linux/sizes.h>
 #include <linux/stat.h>
 
 #include <mach/hardware.h>

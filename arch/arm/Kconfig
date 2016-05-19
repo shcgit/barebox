@@ -131,6 +131,7 @@ config ARCH_MVEBU
 
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"
+	select GPIOLIB
 	select GENERIC_GPIO
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
@@ -308,14 +309,6 @@ config ARM_BOARD_APPEND_ATAG
 endmenu
 
 menu "ARM specific settings"
-
-config CPU_V7_DCACHE_SKIP
-	bool "Skip DCache Invalidate"
-	depends on CPU_V7
-	default n
-	help
-	  If your architecture configuration uses some other method of disabling caches, enable this
-	  So that the D-Cache invalidation logic is skipped
 
 config ARM_OPTIMZED_STRING_FUNCTIONS
 	bool "use assembler optimized string functions"

@@ -13,10 +13,11 @@
 #include <init.h>
 #include <io.h>
 #include <malloc.h>
-#include <sizes.h>
+
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/mtd/mtd.h>
+#include <linux/sizes.h>
 
 #define IAP_OFFSET	(0x1ff1)
 

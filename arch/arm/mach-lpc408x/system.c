@@ -11,8 +11,8 @@
 #include <init.h>
 #include <io.h>
 #include <ns16550.h>
-#include <sizes.h>
 
+#include <linux/sizes.h>
 #include <mach/hardware.h>
 
 #define WDT_MOD		(LPC4088_WDT + 0x00)

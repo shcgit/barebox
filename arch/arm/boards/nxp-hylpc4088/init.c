@@ -12,11 +12,11 @@
 #include <gpio.h>
 #include <init.h>
 #include <io.h>
-#include <sizes.h>
 
 #include <asm/armlinux.h>
-#include <mach/hardware.h>
 #include <i2c/i2c.h>
+#include <linux/sizes.h>
+#include <mach/hardware.h>
 #include <spi/spi.h>
 
 #if 0
