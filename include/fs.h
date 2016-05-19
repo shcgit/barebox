@@ -30,7 +30,7 @@ typedef struct filep {
 	loff_t size;           /* The size of this inode                       */
 	ulong flags;          /* the O_* flags from open                      */
 
-	void *inode;         /* private to the filesystem driver              */
+	void *priv;         /* private to the filesystem driver              */
 
 	/* private fields. Mapping between FILE and filedescriptor number     */
 	int no;
@@ -147,8 +147,8 @@ int mount (const char *device, const char *fsname, const char *path,
 int umount(const char *pathname);
 
 /* not-so-standard functions */
-int erase(int fd, size_t count, unsigned long offset);
-int protect(int fd, size_t count, unsigned long offset, int prot);
+int erase(int fd, size_t count, loff_t offset);
+int protect(int fd, size_t count, loff_t offset, int prot);
 int protect_file(const char *file, int prot);
 void *memmap(int fd, int flags);
 

@@ -130,53 +130,6 @@ static struct nand_bbt_descr bb_descrip_flashbased = {
 	.pattern = scan_ff_pattern,
 };
 
-/** Large Page x8 NAND device Layout */
-static struct nand_ecclayout ecc_lp_x8 = {
-	.eccbytes = 12,
-	.eccpos = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
-	.oobfree = {
-		{
-			.offset = 60,
-			.length = 2,
-		}
-	}
-};
-
-/** Large Page x16 NAND device Layout */
-static struct nand_ecclayout ecc_lp_x16 = {
-	.eccbytes = 12,
-	.eccpos = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
-	.oobfree = {
-		{
-			.offset = 60,
-			.length = 2,
-		}
-	}
-};
-
-/** Small Page x8 NAND device Layout */
-static struct nand_ecclayout ecc_sp_x8 = {
-	.eccbytes = 3,
-	.eccpos = {1, 2, 3},
-	.oobfree = {
-		{
-			.offset = 14,
-			.length = 2,
-		}
-	}
-};
-
-/** Small Page x16 NAND device Layout */
-static struct nand_ecclayout ecc_sp_x16 = {
-	.eccbytes = 3,
-	.eccpos = {2, 3, 4},
-	.oobfree = {
-		{
-			.offset = 14,
-			.length = 2 }
-	}
-};
-
 /**
  * @brief calls the platform specific dev_ready functionds
  *
@@ -345,37 +298,45 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	int i, j, eccsize, eccflag, count, totalcount;
+	int i, j, eccflag, count, totalcount, actual_eccsize;
 	unsigned int err_loc[8];
-	int blocks = 0;
 	int select_4_8;
 
-	if (oinfo->ecc_mode == OMAP_ECC_BCH4_CODE_HW) {
-		eccsize = 7;
-		select_4_8 = 0;
-	} else {
-		eccsize = 13;
-		select_4_8 = 1;
-	}
+	int eccsteps = oinfo->nand.ecc.steps;
+	int eccsize = oinfo->nand.ecc.bytes;
 
-	if (nand->ecc.size  == 2048)
-		blocks = 4;
-	else
-		blocks = 1;
+	switch (oinfo->ecc_mode) {
+	case OMAP_ECC_BCH4_CODE_HW:
+		actual_eccsize = eccsize;
+		select_4_8 = 0;
+		break;
+	case OMAP_ECC_BCH8_CODE_HW:
+		eccsize /= eccsteps;
+		actual_eccsize = eccsize;
+		select_4_8 = 1;
+		break;
+	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
+		actual_eccsize = eccsize - 1;
+		select_4_8 = 1;
+		break;
+	default:
+		dev_err(oinfo->pdev, "invalid driver configuration\n");
+		return -EINVAL;
+	}
 
 	totalcount = 0;
 
-	for (i = 0; i < blocks; i++) {
+	for (i = 0; i < eccsteps; i++) {
 		/* check if any ecc error */
 		eccflag = 0;
-		for (j = 0; (j < eccsize) && (eccflag == 0); j++) {
+		for (j = 0; (j < actual_eccsize) && (eccflag == 0); j++) {
 			if (calc_ecc[j] != 0)
 				eccflag = 1;
 		}
 
 		if (eccflag == 1) {
 			eccflag = 0;
-			for (j = 0; (j < eccsize) &&
+			for (j = 0; (j < actual_eccsize) &&
 					(eccflag == 0); j++)
 				if (read_ecc[j] != 0xFF)
 					eccflag = 1;
@@ -397,7 +358,7 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 			/* else, not interested to correct ecc */
 		}
 
-		calc_ecc = calc_ecc + eccsize;
+		calc_ecc = calc_ecc + actual_eccsize;
 		read_ecc = read_ecc + eccsize;
 		dat += 512;
 	}
@@ -891,7 +852,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	struct mtd_info *minfo;
 	void __iomem *cs_base;
 	int err;
-	struct nand_ecclayout *layout, *lsp, *llp;
 
 	pdata = (struct gpmc_nand_platform_data *)pdev->platform_data;
 	if (pdata == NULL) {
@@ -1011,26 +971,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 
 	gpmc_set_buswidth(nand, nand->options & NAND_BUSWIDTH_16);
-
-	if (nand->options & NAND_BUSWIDTH_16) {
-		lsp = &ecc_sp_x16;
-		llp = &ecc_lp_x16;
-	} else {
-		lsp = &ecc_sp_x8;
-		llp = &ecc_lp_x8;
-	}
-
-	switch (minfo->writesize) {
-	case 512:
-		layout = lsp;
-		break;
-	case 2048:
-		layout = llp;
-		break;
-	default:
-		err = -EINVAL;
-		goto out_release_mem;
-	}
 
 	nand->read_buf   = omap_read_buf_pref;
 	if (IS_ENABLED(CONFIG_MTD_WRITE))
