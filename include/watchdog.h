@@ -15,27 +15,39 @@
 
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
+	const char *name;
+	struct device_d *dev;
+	unsigned int priority;
+	struct list_head list;
 };
 
 #ifdef CONFIG_WATCHDOG
 int watchdog_register(struct watchdog *);
 int watchdog_deregister(struct watchdog *);
 int watchdog_set_timeout(unsigned);
+unsigned int of_get_watchdog_priority(struct device_node *node);
 #else
 static inline int watchdog_register(struct watchdog *w)
 {
 	return 0;
 }
 
-int watchdog_deregister(struct watchdog *w)
+static inline int watchdog_deregister(struct watchdog *w)
 {
 	return 0;
 }
 
-int watchdog_set_timeout(unsigned t)
+static inline int watchdog_set_timeout(unsigned t)
+{
+	return 0;
+}
+
+static inline unsigned int of_get_watchdog_priority(struct device_node *node)
 {
 	return 0;
 }
 #endif
+
+#define WATCHDOG_DEFAULT_PRIORITY 100
 
 #endif /* INCLUDE_WATCHDOG_H */

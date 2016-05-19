@@ -259,13 +259,6 @@ static int state_enum32_export(struct state_variable *var,
 			return ret;
 	}
 
-	if (conv == STATE_CONVERT_FIXUP)
-		return 0;
-
-	ret = of_property_write_u32(node, "value", enum32->value);
-	if (ret)
-		return ret;
-
 	len = 0;
 
 	for (i = 0; i < enum32->num_names; i++)
@@ -280,6 +273,13 @@ static int state_enum32_export(struct state_variable *var,
 	ret = of_set_property(node, "names", prop, len, 1);
 
 	free(prop);
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
+
+	ret = of_property_write_u32(node, "value", enum32->value);
+	if (ret)
+		return ret;
 
 	return ret;
 }
@@ -318,6 +318,10 @@ static struct state_variable *state_enum32_create(struct state *state,
 	enum32 = xzalloc(sizeof(*enum32));
 
 	num_names = of_property_count_strings(node, "names");
+	if (num_names < 0) {
+		dev_err(&state->dev, "enum32 node without \"names\" property\n");
+		return ERR_PTR(-EINVAL);
+	}
 
 	enum32->names = xzalloc(sizeof(char *) * num_names);
 	enum32->num_names = num_names;
