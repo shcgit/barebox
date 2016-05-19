@@ -412,7 +412,7 @@ static int do_mmstart(int argc, char *argv[])
 	if ((addr > LPC4088_SPIFI_BUFFER) && (addr < (LPC4088_SPIFI_BUFFER + SZ_8K))) {
 		console_flush();
 		shutdown_barebox();
-		do_execute(func, argc, argv);
+		func(argc - 1, &argv[1]);
 		hang();
 	} else
 		printf("SPIFI start address is not set.\n");
