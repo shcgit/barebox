@@ -449,6 +449,14 @@ config PASSWD_SUM_SHA256
 	bool "SHA256"
 	select SHA256
 
+config PASSWD_SUM_SHA512
+	bool "SHA512"
+	select SHA512
+
+config PASSWD_CRYPTO_PBKDF2
+	bool "PBKDF2"
+	select CRYPTO_PBKDF2
+
 endchoice
 
 endif
@@ -697,6 +705,13 @@ config BAREBOXCRC32_TARGET
 
 config POLLER
 	bool "generic polling infrastructure"
+
+config STATE
+	bool "generic state infrastructure"
+	depends on OF_BAREBOX_DRIVERS
+	select ENVIRONMENT_VARIABLES
+	select OFTREE
+	select PARAMETER
 
 config RESET_SOURCE
 	bool "detect Reset cause"
