@@ -93,7 +93,7 @@ void mmu_disable(void)
  * This function is called by shutdown_barebox to get a clean
  * memory/cache state.
  */
-void arch_shutdown(void)
+static void arch_shutdown(void)
 {
 	mmu_disable();
 	flush_icache();
@@ -113,6 +113,7 @@ void arch_shutdown(void)
 	}
 #endif
 }
+archshutdown_exitcall(arch_shutdown);
 
 extern unsigned long arm_stack_top;
 

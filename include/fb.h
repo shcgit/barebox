@@ -99,6 +99,7 @@ struct display_timings {
 
 	unsigned int num_modes;
 	struct fb_videomode *modes;
+	void *edid;
 };
 
 struct i2c_adapter;
@@ -143,8 +144,12 @@ struct fb_info {
 };
 
 struct display_timings *of_get_display_timings(struct device_node *np);
+void display_timings_release(struct display_timings *);
 
 int register_framebuffer(struct fb_info *info);
+
+int fb_enable(struct fb_info *info);
+int fb_disable(struct fb_info *info);
 
 #define FBIOGET_SCREENINFO	_IOR('F', 1, loff_t)
 #define	FBIO_ENABLE		_IO('F', 2)
@@ -159,5 +164,8 @@ int fb_register_simplefb(struct fb_info *info);
 int edid_to_display_timings(struct display_timings *, unsigned char *edid);
 void *edid_read_i2c(struct i2c_adapter *adapter);
 void fb_edid_add_modes(struct fb_info *info);
+void fb_of_reserve_add_fixup(struct fb_info *info);
+
+int register_fbconsole(struct fb_info *fb);
 
 #endif /* __FB_H */
