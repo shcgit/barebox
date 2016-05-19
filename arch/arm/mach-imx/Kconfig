@@ -109,12 +109,16 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	bool
 	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
 	depends on BAREBOX_UPDATE
+	depends on MTD
+	depends on MTD_WRITE
 	default y
 
 config BAREBOX_UPDATE_IMX6_NAND
 	bool
 	depends on ARCH_IMX6
 	depends on BAREBOX_UPDATE
+	depends on MTD
+	depends on MTD_WRITE
 	default y
 
 comment "Freescale i.MX System-on-Chip"
@@ -196,6 +200,9 @@ config MACH_PCA100
 config MACH_PCM038
 	bool "phyCORE-i.MX27"
 	select ARCH_IMX27
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_IMX_EXTERNAL_BOOT_NAND
 	help
@@ -205,6 +212,9 @@ config MACH_PCM038
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 	help
 	  Choose this to compile barebox for the Efika MX Smartbook
 
@@ -217,10 +227,16 @@ config MACH_EMBEDSKY_E9
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
+	select I2C
+	select I2C_IMX
+	select MFD_MC13XXX
 
 config MACH_TQMA53
 	bool "TQ i.MX53 TQMa53"
@@ -264,6 +280,8 @@ config MACH_TQMA6X
 config MACH_TX6X
 	bool "Karo TX6x"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
@@ -294,10 +312,14 @@ config MACH_UDOO
 config MACH_VARISCITE_MX6
 	bool "Variscite i.MX6 Quad SOM"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 config MACH_GW_VENTANA
 	bool "Gateworks Ventana SBC"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 endif
 
@@ -442,7 +464,7 @@ config MACH_GUF_CUPID
 comment "i.MX51 Boards"
 
 config MACH_EUKREA_CPUIMX51SD
-	bool "Ka-Ro TX51"
+	bool "EUKREA CPUIMX51"
 	select ARCH_IMX51
 	help
 	  Say Y here if you are using Eukrea's CPUIMX51 equipped

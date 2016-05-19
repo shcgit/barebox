@@ -481,7 +481,6 @@ config CMD_LOADS
 	  Load S-Record file over serial line with offset OFFS.
 
 config CMD_LOADY
-	select CRC16
 	select XYMODEM
 	depends on !CONSOLE_NONE
 	tristate
@@ -810,6 +809,16 @@ config CMD_CP
 
 	  Options:
 		  -v	verbose
+
+config CMD_CMP
+	tristate
+	prompt "cmp"
+	help
+	  compare two files
+
+	  Usage: cmp FILE1 FILE2
+
+	  Returns successfully if the two files are the same, return with an error if not
 
 config CMD_DIRNAME
 	tristate

@@ -370,8 +370,9 @@ static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 	.init_port = ns16550_jz_init_port,
 };
 
-static __maybe_unused struct ns16550_drvdata lpc40xx_drvdata = {
-	.init_port = ns16550_lpc40xx_init_port,
+static __maybe_unused struct ns16550_drvdata tegra_drvdata = {
+	.init_port = ns16550_serial_init_port,
+	.linux_console_name = "ttyS",
 };
 
 static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
@@ -481,6 +482,7 @@ static int ns16550_probe(struct device_d *dev)
 			ret = PTR_ERR(priv->clk);
 			goto err;
 		}
+		clk_enable(priv->clk);
 		priv->plat.clock = clk_get_rate(priv->clk);
 	}
 
@@ -504,10 +506,7 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->setbrg = ns16550_setbaudrate;
 	cdev->linux_console_name = devtype->linux_console_name;
 
-	if (plat && (plat->flags & NS16650_FLAG_DISABLE_FIFO))
-		priv->fcrval = FCRVAL & ~FCR_FIFO_EN;
-	else
-		priv->fcrval = FCRVAL;
+	priv->fcrval = FCRVAL;
 
 	devtype->init_port(cdev);
 
@@ -540,6 +539,12 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "ti,omap4-uart",
 		.data = (unsigned long)&omap_drvdata,
+	},
+#endif
+#if IS_ENABLED(CONFIG_ARCH_TEGRA)
+	{
+		.compatible = "nvidia,tegra20-uart",
+		.data = (unsigned long)&tegra_drvdata,
 	},
 #endif
 #if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)

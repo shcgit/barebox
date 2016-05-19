@@ -97,6 +97,7 @@ config DRIVER_NET_EP93XX
 
 config DRIVER_NET_ETHOC
 	bool "OpenCores ethernet MAC driver"
+	depends on OPENRISC
 	depends on HAS_CACHE
 	select PHYLIB
 	help
@@ -151,10 +152,19 @@ config DRIVER_NET_ORION
 config DRIVER_NET_RTL8139
 	bool "RealTek RTL-8139 PCI Ethernet driver"
 	depends on PCI
+	depends on MIPS
 	select PHYLIB
 	help
 	  This is a driver for the Fast Ethernet PCI network cards based on
 	  the RTL 8139 chips.
+
+config DRIVER_NET_RTL8169
+	bool "RealTek RTL-8169 PCI Ethernet driver"
+	depends on PCI
+	select PHYLIB
+	help
+	  This is a driver for the Fast Ethernet PCI network cards based on
+	  the RTL 8169 chips.
 
 config DRIVER_NET_SMC911X
 	bool "smc911x ethernet driver"
