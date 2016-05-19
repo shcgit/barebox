@@ -32,12 +32,6 @@
 
 #include <asm/mmu.h>
 
-#include <mach/generic.h>
-#include <mach/clock.h>
-#ifndef CONFIG_ARCH_MXS
-# include <mach/iim.h>
-#endif
-
 #include "fec_imx.h"
 
 struct fec_frame {
@@ -771,6 +765,9 @@ static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 		.data = FEC_TYPE_IMX28,
 	}, {
 		.compatible = "fsl,imx6q-fec",
+		.data = FEC_TYPE_IMX6,
+	},  {
+		.compatible = "fsl,imx6sx-fec",
 		.data = FEC_TYPE_IMX6,
 	}, {
 		/* sentinel */
