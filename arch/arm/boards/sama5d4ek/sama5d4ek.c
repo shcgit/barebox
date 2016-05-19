@@ -18,7 +18,7 @@
 #include <io.h>
 #include <mach/hardware.h>
 #include <nand.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
@@ -40,6 +40,7 @@ static struct atmel_nand_data nand_pdata = {
 	.rdy_pin	= -EINVAL,
 	.enable_pin	= -EINVAL,
 	.ecc_mode	= NAND_ECC_HW,
+	.has_pmecc	= 1,
 	.pmecc_sector_size = 512,
 	.pmecc_corr_cap = 8,
 	.on_flash_bbt	= 1,
