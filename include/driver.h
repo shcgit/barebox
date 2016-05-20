@@ -203,8 +203,14 @@ void *dev_get_mem_region(struct device_d *dev, int num);
 
 /*
  * exlusively request register base 'num' for a device
+ * deprecated, use dev_request_mem_resource instead
  */
 void __iomem *dev_request_mem_region(struct device_d *dev, int num);
+
+/*
+ * exlusively request resource 'num' for a device
+ */
+struct resource *dev_request_mem_resource(struct device_d *dev, int num);
 
 /*
  * exlusively request register base 'num' for a device
@@ -425,7 +431,7 @@ struct file_operations {
 	int (*open)(struct cdev*, unsigned long flags);
 	int (*close)(struct cdev*);
 	int (*flush)(struct cdev*);
-	int (*erase)(struct cdev*, size_t count, loff_t offset);
+	int (*erase)(struct cdev*, loff_t count, loff_t offset);
 	int (*protect)(struct cdev*, size_t count, loff_t offset, int prot);
 	int (*memmap)(struct cdev*, void **map, int flags);
 };
@@ -470,7 +476,7 @@ int cdev_flush(struct cdev *cdev);
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
-int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
+int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset);
 
 #define DEVFS_PARTITION_FIXED		(1U << 0)
 #define DEVFS_PARTITION_READONLY	(1U << 1)

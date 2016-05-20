@@ -91,6 +91,7 @@ static struct notifier_block imx_clock_notifier = {
 
 static int imx_gpt_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int i;
 	int ret;
 	unsigned long rate;
@@ -103,9 +104,10 @@ static int imx_gpt_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	timer_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(timer_base))
-		return PTR_ERR(timer_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	timer_base = IOMEM(iores->start);
 
 	/* setup GP Timer 1 */
 	writel(TCTL_SWR, timer_base + GPT_TCTL);
@@ -136,6 +138,9 @@ static int imx_gpt_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_gpt_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-gpt",
+		.data = &regs_imx1,
+	}, {
+		.compatible = "fsl,imx21-gpt",
 		.data = &regs_imx1,
 	}, {
 		.compatible = "fsl,imx31-gpt",
