@@ -10,6 +10,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <restart.h>
 
 #include <linux/sizes.h>
 #include <mach/hardware.h>
@@ -20,10 +21,8 @@
 # define WDRESET	BIT(1)
 #define WDT_FEED	(LPC4088_WDT + 0x08)
 
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn lpc4088_restart_soc(struct restart_handler *rst)
 {
-	shutdown_barebox();
-
 	/* Enable watchdog timer */
 	writel(WDEN, WDT_MOD);
 	writel(0xaa, WDT_FEED);
@@ -32,12 +31,22 @@ void __noreturn reset_cpu(unsigned long addr)
 	/* Enable watchdog reset */
 	writel(WDEN | WDRESET, WDT_MOD);
 
+	shutdown_barebox();
+
 	/* Initiate immediate reset by wrong sequence */
 	writel(0xaa, WDT_FEED);
 	writel(0xff, WDT_FEED);
 
 	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(lpc4088_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);
 
 static const resource_size_t LPC4088_UART[] = {
 	LPC4088_UART0, LPC4088_UART1, LPC4088_UART2, LPC4088_UART3,
