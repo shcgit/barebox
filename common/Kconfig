@@ -66,6 +66,15 @@ config UIMAGE
 	select CRC32
 	bool
 
+config FITIMAGE
+	bool
+	select OFTREE
+	select DIGEST
+
+config FITIMAGE_SIGNATURE
+	select CRYPTO_RSA
+	bool
+
 config LOGBUF
 	bool
 
@@ -610,6 +619,19 @@ config PBL_CONSOLE
 	  printf/pr_* need a valid C environment, so the binary
 	  must be running at the address it's linked at and bss must
 	  be cleared. On ARM that would be after setup_c().
+
+config CONSOLE_RATP
+	bool
+	select RATP
+	select CRC16
+	select POLLER
+	depends on CONSOLE_FULL
+	prompt "RATP console support"
+	help
+	  This option adds support for remote controlling barebox via serial
+	  port. The regular console is designed for human interaction whereas
+	  this option adds a machine readable interface for controlling barebox.
+	  Say yes here if you want to control barebox from a remote host.
 
 config PARTITION
 	bool

@@ -67,6 +67,42 @@ static int sdram_start_and_size(unsigned long *start, unsigned long *size)
 	return 0;
 }
 
+static void get_kernel_addresses(unsigned long mem_start, size_t image_size,
+				 int verbose, unsigned long *load_address,
+				 unsigned long *spacing)
+{
+	/*
+	 * We don't know the exact decompressed size so just use a conservative
+	 * default of 4 times the size of the compressed image.
+	 */
+	size_t image_decomp_size = PAGE_ALIGN(image_size * 4);
+
+	/*
+	 * By default put oftree/initrd close behind compressed kernel image to
+	 * avoid placing it outside of the kernels lowmem region.
+	 */
+	*spacing = SZ_1M;
+
+	if (*load_address == UIMAGE_INVALID_ADDRESS) {
+		/*
+		 * Place the kernel at an address where it does not need to
+		 * relocate itself before decompression.
+		 */
+		*load_address = mem_start + image_decomp_size;
+		if (verbose)
+			printf("no OS load address, defaulting to 0x%08lx\n",
+				*load_address);
+	} else if (*load_address <= mem_start + image_decomp_size) {
+		/*
+		 * If the user/image specified an address where the kernel needs
+		 * to relocate itself before decompression we need to extend the
+		 * spacing to allow this relocation to happen without
+		 * overwriting anything placed behind the kernel.
+		 */
+		*spacing += image_decomp_size;
+	}
+}
+
 static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int swap)
 {
 	unsigned long kernel;
@@ -86,9 +122,11 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		}
 	}
 
-	ret = bootm_load_initrd(data, initrd_start);
-	if (ret)
-		return ret;
+	if (bootm_has_initrd(data)) {
+		ret = bootm_load_initrd(data, initrd_start);
+		if (ret)
+			return ret;
+	}
 
 	if (data->initrd_res) {
 		initrd_start = data->initrd_res->start;
@@ -110,6 +148,9 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		printf("...\n");
 	}
 
+	if (data->dryrun)
+		return 0;
+
 	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree);
 
 	restart_machine();
@@ -119,7 +160,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 
 static int do_bootm_linux(struct image_data *data)
 {
-	unsigned long load_address, mem_start, mem_size, mem_free;
+	unsigned long load_address, mem_start, mem_size, mem_free, spacing;
 	int ret;
 
 	ret = sdram_start_and_size(&mem_start, &mem_size);
@@ -128,28 +169,14 @@ static int do_bootm_linux(struct image_data *data)
 
 	load_address = data->os_address;
 
-	if (load_address == UIMAGE_INVALID_ADDRESS) {
-		/*
-		 * Just use a conservative default of 4 times the size of the
-		 * compressed image, to avoid the need for the kernel to
-		 * relocate itself before decompression.
-		 */
-		load_address = mem_start + PAGE_ALIGN(
-		               uimage_get_size(data->os, data->os_num) * 4);
-		if (bootm_verbose(data))
-			printf("no OS load address, defaulting to 0x%08lx\n",
-				load_address);
-	}
+	get_kernel_addresses(mem_start, bootm_get_os_size(data),
+			     bootm_verbose(data), &load_address, &spacing);
 
 	ret = bootm_load_os(data, load_address);
 	if (ret)
 		return ret;
 
-	/*
-	 * put oftree/initrd close behind compressed kernel image to avoid
-	 * placing it outside of the kernels lowmem.
-	 */
-	mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+	mem_free = PAGE_ALIGN(data->os_res->end + spacing);
 
 	return __do_bootm_linux(data, mem_free, 0);
 }
@@ -223,6 +250,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 			ret = -EINVAL;
 			goto err_free;
 		}
+		free(oftree);
 	} else {
 		data->oftree = oftree;
 	}
@@ -245,7 +273,7 @@ static int do_bootz_linux(struct image_data *data)
 	u32 end, start;
 	size_t image_size;
 	unsigned long load_address = data->os_address;
-	unsigned long mem_start, mem_size, mem_free;
+	unsigned long mem_start, mem_size, mem_free, spacing;
 
 	ret = sdram_start_and_size(&mem_start, &mem_size);
 	if (ret)
@@ -285,20 +313,10 @@ static int do_bootz_linux(struct image_data *data)
 	}
 
 	image_size = end - start;
+	load_address = data->os_address;
 
-	if (load_address == UIMAGE_INVALID_ADDRESS) {
-		/*
-		 * Just use a conservative default of 4 times the size of the
-		 * compressed image, to avoid the need for the kernel to
-		 * relocate itself before decompression.
-		 */
-		data->os_address = mem_start + PAGE_ALIGN(image_size * 4);
-
-		load_address = data->os_address;
-		if (bootm_verbose(data))
-			printf("no OS load address, defaulting to 0x%08lx\n",
-				load_address);
-	}
+	get_kernel_addresses(mem_start, image_size, bootm_verbose(data),
+			     &load_address, &spacing);
 
 	data->os_res = request_sdram_region("zimage", load_address, image_size);
 	if (!data->os_res) {
@@ -334,11 +352,7 @@ static int do_bootz_linux(struct image_data *data)
 
 	close(fd);
 
-	/*
-	 * put oftree/initrd close behind compressed kernel image to avoid
-	 * placing it outside of the kernels lowmem.
-	 */
-	mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+	mem_free = PAGE_ALIGN(data->os_res->end + spacing);
 
 	return __do_bootm_linux(data, mem_free, swap);
 
@@ -354,37 +368,9 @@ static struct image_handler zimage_handler = {
 	.filetype = filetype_arm_zimage,
 };
 
-static int do_bootm_barebox(struct image_data *data)
-{
-	void *barebox;
-
-	barebox = read_file(data->os_file, NULL);
-	if (!barebox)
-		return -EINVAL;
-
-	if (IS_ENABLED(CONFIG_OFTREE) && data->of_root_node) {
-		data->oftree = of_get_fixed_tree(data->of_root_node);
-		fdt_add_reserve_map(data->oftree);
-		of_print_cmdline(data->of_root_node);
-		if (bootm_verbose(data) > 1)
-			of_print_nodes(data->of_root_node, 0);
-	}
-
-	if (bootm_verbose(data)) {
-		printf("\nStarting barebox at 0x%p", barebox);
-		if (data->oftree)
-			printf(", oftree at 0x%p", data->oftree);
-		printf("...\n");
-	}
-
-	start_linux(barebox, 0, 0, 0, data->oftree);
-
-	restart_machine();
-}
-
 static struct image_handler barebox_handler = {
 	.name = "ARM barebox",
-	.bootm = do_bootm_barebox,
+	.bootm = do_bootm_linux,
 	.filetype = filetype_arm_barebox,
 };
 
@@ -553,6 +539,12 @@ BAREBOX_MAGICVAR(aimage_noverwrite_bootargs, "Disable overwrite of the bootargs 
 BAREBOX_MAGICVAR(aimage_noverwrite_tags, "Disable overwrite of the tags addr with the one present in aimage");
 #endif
 
+static struct image_handler arm_fit_handler = {
+        .name = "FIT image",
+        .bootm = do_bootm_linux,
+        .filetype = filetype_oftree,
+};
+
 static struct binfmt_hook binfmt_aimage_hook = {
 	.type = filetype_aimage,
 	.exec = "bootm",
@@ -578,6 +570,8 @@ static int armlinux_register_image_handler(void)
 		register_image_handler(&aimage_handler);
 		binfmt_register(&binfmt_aimage_hook);
 	}
+	if (IS_BUILTIN(CONFIG_CMD_BOOTM_FITIMAGE))
+	        register_image_handler(&arm_fit_handler);
 	binfmt_register(&binfmt_arm_zimage_hook);
 	binfmt_register(&binfmt_barebox_hook);
 
