@@ -274,7 +274,7 @@ int console_register(struct console_device *newcdev)
 	}
 
 	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev)) {
-		activate = 1;
+		//activate = 1;
 		console_set_stdoutpath(newcdev);
 	}
 
