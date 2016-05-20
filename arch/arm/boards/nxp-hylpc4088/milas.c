@@ -9,6 +9,7 @@
 
 #include <command.h>
 #include <common.h>
+#include <crc.h>
 #include <errno.h>
 #include <fs.h>
 #include <fcntl.h>

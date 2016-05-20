@@ -10,10 +10,10 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <ns16550.h>
 
 #include <linux/sizes.h>
 #include <mach/hardware.h>
+#include <platform_data/serial-ns16550.h>
 
 #define WDT_MOD		(LPC4088_WDT + 0x00)
 # define WDEN		BIT(0)

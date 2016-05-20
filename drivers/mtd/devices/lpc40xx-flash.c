@@ -8,6 +8,7 @@
  */
 
 #include <common.h>
+#include <crc.h>
 #include <environment.h>
 #include <errno.h>
 #include <init.h>
