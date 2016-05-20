@@ -29,6 +29,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/log2.h>
+#include <linux/spinlock.h>
 #include <malloc.h>
 #include <printk.h>
 #include <stdio.h>
@@ -454,7 +455,8 @@ static int ramoops_probe(struct ramoops_platform_data *pdata)
 		  ramoops_ecc);
 	globalvar_add_simple("linux.bootargs.ramoops", kernelargs);
 
-	of_add_reserve_entry(cxt->phys_addr, cxt->phys_addr + mem_size);
+	if (IS_ENABLED(CONFIG_OFTREE))
+		of_add_reserve_entry(cxt->phys_addr, cxt->phys_addr + mem_size);
 
 	return 0;
 

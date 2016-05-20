@@ -75,6 +75,13 @@ static const char * const bootm_verify_names[] = {
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
 
+static int uimage_part_num(const char *partname)
+{
+	if (!partname)
+		return 0;
+	return simple_strtoul(partname, NULL, 0);
+}
+
 /*
  * bootm_load_os() - load OS to RAM
  *
@@ -109,7 +116,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (data->os) {
 		int num;
 
-		num = simple_strtoul(data->os_part, NULL, 0);
+		num = uimage_part_num(data->os_part);
 
 		data->os_res = uimage_load_to_sdram(data->os,
 			num, load_address);
@@ -224,7 +231,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 			return ret;
 		}
 
-		num = simple_strtoul(data->initrd_part, NULL, 0);
+		num = uimage_part_num(data->initrd_part);
 
 		data->initrd_res = uimage_load_to_sdram(data->initrd,
 			num, load_address);
@@ -246,9 +253,9 @@ done:
 		printf(", multifile image %s", data->initrd_part);
 	printf("\n");
 done1:
-	printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
-		data->initrd_res->start,
-		data->initrd_res->end);
+	printf("initrd is at %pa-%pa\n",
+		&data->initrd_res->start,
+		&data->initrd_res->end);
 
 	return 0;
 }
@@ -258,7 +265,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 {
 	enum filetype ft;
 	const char *oftree = data->oftree_file;
-	int num = simple_strtoul(data->oftree_part, NULL, 0);
+	int num = uimage_part_num(data->oftree_part);
 	struct uimage_handle *of_handle;
 	int release = 0;
 
@@ -288,6 +295,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	if (ft != filetype_oftree) {
 		printf("%s is not an oftree but %s\n",
 			data->oftree_file, file_type_to_string(ft));
+		free(*fdt);
 		return -EINVAL;
 	}
 
@@ -336,6 +344,7 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 			ret = bootm_open_oftree_uimage(data, &size, &oftree);
 			break;
 		case filetype_oftree:
+			printf("Loading devicetree from '%s'\n", data->oftree_file);
 			ret = read_file_2(data->oftree_file, &size, (void *)&oftree,
 					  FILESIZE_MAX);
 			break;
@@ -405,8 +414,7 @@ int bootm_get_os_size(struct image_data *data)
 	int ret;
 
 	if (data->os)
-		return uimage_get_size(data->os,
-				       simple_strtoul(data->os_part, NULL, 0));
+		return uimage_get_size(data->os, uimage_part_num(data->os_part));
 	if (data->os_fit)
 		return data->os_fit->kernel_size;
 
@@ -456,9 +464,9 @@ static int bootm_open_os_uimage(struct image_data *data)
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
-		printf("OS image is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
-				data->os_res->start,
-				data->os_res->end);
+		printf("OS image is at %pa-%pa\n",
+				&data->os_res->start,
+				&data->os_res->end);
 	else
 		printf("OS image not yet relocated\n");
 }
@@ -504,8 +512,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data = xzalloc(sizeof(*data));
 
 	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
-	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_part, &data->os_part);
-	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_part, &data->os_part);
+	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_file, &data->oftree_part);
+	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_file, &data->initrd_part);
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;
@@ -572,7 +580,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 			data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
-		printf(", multifile image %s", data->os_part);
+		printf(", multifile image %d", uimage_part_num(data->os_part));
 	printf("\n");
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
