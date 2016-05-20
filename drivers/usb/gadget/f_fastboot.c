@@ -17,6 +17,7 @@
 #define pr_fmt(fmt) "fastboot: " fmt
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <malloc.h>
 #include <fcntl.h>
@@ -28,6 +29,8 @@
 #include <dma.h>
 #include <fs.h>
 #include <libfile.h>
+#include <ubiformat.h>
+#include <stdlib.h>
 #include <file-list.h>
 #include <progress.h>
 #include <environment.h>
@@ -194,7 +197,7 @@ static void fb_setvar(struct fb_variable *var, const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	var->value = vasprintf(fmt, ap);
+	var->value = bvasprintf(fmt, ap);
 	va_end(ap);
 }
 
@@ -204,7 +207,7 @@ static struct fb_variable *fb_addvar(struct f_fastboot *f_fb, const char *fmt, .
 	va_list ap;
 
 	va_start(ap, fmt);
-	var->name = vasprintf(fmt, ap);
+	var->name = bvasprintf(fmt, ap);
 	va_end(ap);
 
 	list_add_tail(&var->list, &f_fb->variables);
@@ -687,9 +690,12 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	}
 
 	if (filetype == filetype_ubi) {
-		char *cmd;
 		int fd;
 		struct mtd_info_user meminfo;
+		struct ubiformat_args args = {
+			.yes = 1,
+			.image = FASTBOOT_TMPFILE,
+		};
 
 		fd = open(filename, O_RDONLY);
 		if (fd < 0)
@@ -701,13 +707,14 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 		if (ret)
 			goto copy;
 
-		cmd = asprintf("ubiformat -y -f %s %s", FASTBOOT_TMPFILE, filename);
-
 		fastboot_tx_print(f_fb, "INFOThis is an UBI image...");
 
-		ret = run_command(cmd);
+		if (!IS_ENABLED(CONFIG_UBIFORMAT)) {
+			fastboot_tx_print(f_fb, "FAILubiformat is not available");
+			return;
+		}
 
-		free(cmd);
+		ret = ubiformat(meminfo.mtd, &args);
 
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
@@ -865,6 +872,11 @@ static void cb_oem_exec(struct usb_ep *ep, struct usb_request *req, const char *
 {
 	struct f_fastboot *f_fb = req->context;
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
+		fastboot_tx_print(f_fb, "FAILno command support available");
+		return;
+	}
 
 	ret = run_command(cmd);
 	if (ret < 0)

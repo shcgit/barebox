@@ -243,7 +243,7 @@ static int ata_port_init(struct ata_port *port)
 		rc = cdev_find_free_index("ata");
 		if (rc == -1)
 			pr_err("Cannot find a free index for the disk node\n");
-		port->blk.cdev.name = asprintf("ata%d", rc);
+		port->blk.cdev.name = basprintf("ata%d", rc);
 	}
 
 	port->blk.num_blocks = ata_id_n_sectors(port->id);
@@ -303,6 +303,14 @@ static int ata_detect(struct device_d *dev)
 	return ata_port_detect(port);
 }
 
+static void ata_info(struct device_d *dev)
+{
+	struct ata_port *port = container_of(dev, struct ata_port, class_dev);
+
+	if (port->initialized)
+		ata_dump_id(port->id);
+}
+
 /**
  * Register an ATA drive behind an IDE like interface
  * @param dev The interface device
@@ -322,6 +330,7 @@ int ata_port_register(struct ata_port *port)
 	}
 
 	port->class_dev.parent = port->dev;
+	port->class_dev.info   = ata_info;
 	port->class_dev.detect = ata_detect;
 
 	ret = register_device(&port->class_dev);

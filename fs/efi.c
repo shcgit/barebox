@@ -30,8 +30,10 @@
 #include <fcntl.h>
 #include <wchar.h>
 #include <efi.h>
+#include <libfile.h>
 #include <mach/efi.h>
 #include <mach/efi-device.h>
+#include <linux/stddef.h>
 
 /* Open modes */
 #define EFI_FILE_MODE_READ      0x0000000000000001
@@ -91,8 +93,6 @@ struct efi_file_info {
 	uint64_t Attribute;
 	s16 FileName[1];
 };
-
-typedef unsigned short wchar_t;
 
 struct efifs_priv {
 	struct efi_file_handle *root_dir;
@@ -530,8 +530,8 @@ int efi_fs_probe(struct efi_device *efidev)
 	if (efi_loaded_image && efidev->protocol == volume)
 		path = xstrdup("/boot");
 	else
-		path = asprintf("/efi%d", index);
-	device = asprintf("%s", dev_name(&efidev->dev));
+		path = basprintf("/efi%d", index);
+	device = basprintf("%s", dev_name(&efidev->dev));
 
 	ret = make_directory(path);
 	if (ret)

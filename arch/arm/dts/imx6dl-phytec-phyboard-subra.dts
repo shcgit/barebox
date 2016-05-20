@@ -11,24 +11,9 @@
 
 /dts-v1/;
 #include "imx6s-phytec-pfla02.dtsi"
+#include "imx6qdl-phytec-phyboard-subra.dtsi"
 
 / {
 	model = "Phytec phyBOARD SUBRA";
 	compatible = "phytec,imx6dl-pbab05", "phytec,imx6s-pfla02", "fsl,imx6dl";
-
-	chosen {
-		stdout-path = &uart4;
-	};
-};
-
-&fec {
-	status = "okay";
-};
-
-&uart4 {
-	status = "okay";
-};
-
-&usdhc3 {
-	status = "okay";
 };

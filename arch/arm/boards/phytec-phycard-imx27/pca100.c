@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Sascha Hauer, Pengutronix 
+ * Copyright (C) 2007 Sascha Hauer, Pengutronix
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,7 +19,6 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx27-regs.h>
-#include <fec.h>
 #include <gpio.h>
 #include <linux/sizes.h>
 #include <asm/armlinux.h>
