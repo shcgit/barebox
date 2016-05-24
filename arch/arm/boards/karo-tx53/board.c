@@ -105,6 +105,7 @@ static struct esdhc_platform_data tx53_sd1_data = {
 	.cd_gpio = TX53_SD1_CD,
 	.cd_type = ESDHC_CD_GPIO,
 	.wp_type = ESDHC_WP_NONE,
+	.caps    = MMC_BUS_WIDTH_4,
 };
 
 struct imx_nand_platform_data nand_info = {

@@ -115,6 +115,7 @@ static struct esdhc_platform_data loco_sd1_data = {
 	.wp_gpio = LOCO_SD1_WP,
 	.cd_type = ESDHC_CD_GPIO,
 	.wp_type = ESDHC_WP_GPIO,
+	.caps    = MMC_BUS_WIDTH_4,
 };
 
 static struct esdhc_platform_data loco_sd3_data = {
