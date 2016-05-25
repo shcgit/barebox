@@ -66,6 +66,7 @@ enum state_variable_type {
 	STATE_TYPE_ENUM,
 	STATE_TYPE_U8,
 	STATE_TYPE_U32,
+	STATE_TYPE_S32,
 	STATE_TYPE_MAC,
 	STATE_TYPE_STRING,
 };
@@ -209,8 +210,8 @@ static struct state_variable *state_uint8_create(struct state *state,
 	return &su32->var;
 }
 
-static struct state_variable *state_uint32_create(struct state *state,
-		const char *name, struct device_node *node)
+static struct state_variable *state_int32_create(struct state *state,
+		const char *name, struct device_node *node, const char *format)
 {
 	struct state_uint32 *su32;
 	struct param_d *param;
@@ -218,7 +219,7 @@ static struct state_variable *state_uint32_create(struct state *state,
 	su32 = xzalloc(sizeof(*su32));
 
 	param = dev_add_param_int(&state->dev, name, state_set_dirty,
-				  NULL, &su32->value, "%u", state);
+				  NULL, &su32->value, format, state);
 	if (IS_ERR(param)) {
 		free(su32);
 		return ERR_CAST(param);
@@ -229,6 +230,18 @@ static struct state_variable *state_uint32_create(struct state *state,
 	su32->var.raw = &su32->value;
 
 	return &su32->var;
+}
+
+static struct state_variable *state_uint32_create(struct state *state,
+		const char *name, struct device_node *node)
+{
+	return state_int32_create(state, name, node, "%u");
+}
+
+static struct state_variable *state_sint32_create(struct state *state,
+		const char *name, struct device_node *node)
+{
+	return state_int32_create(state, name, node, "%d");
 }
 
 /*
@@ -605,6 +618,12 @@ static struct variable_type types[] =  {
 		.export = state_string_export,
 		.import = state_string_import,
 		.create = state_string_create,
+	}, {
+		.type = STATE_TYPE_S32,
+		.type_name = "int32",
+		.export = state_uint32_export,
+		.import = state_uint32_import,
+		.create = state_sint32_create,
 	},
 };
 
@@ -1564,16 +1583,16 @@ static int state_backend_raw_file_init_digest(struct state *state, struct state_
 	if (!p)			/* does not exist */
 		return 0;
 
+	ret = of_property_read_string(state->root, "algo", &algo);
+	if (ret)
+		return ret;
+
 	if (!IS_ENABLED(CONFIG_STATE_CRYPTO)) {
 		dev_err(&state->dev,
 			"algo %s specified, but crypto support for state framework (CONFIG_STATE_CRYPTO) not enabled.\n",
 			algo);
 		return -EINVAL;
 	}
-
-	ret = of_property_read_string(state->root, "algo", &algo);
-	if (ret)
-		return ret;
 
 	ret = keystore_get_secret(state->name, &key, &key_len);
 	if (ret == -ENOENT)	/* -ENOENT == does not exist */
