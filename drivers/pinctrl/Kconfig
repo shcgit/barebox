@@ -24,6 +24,13 @@ config PINCTRL_IMX_IOMUX_V3
 	help
 	  This iomux controller is found on i.MX25,35,51,53,6.
 
+config PINCTRL_ROCKCHIP
+	select PINCTRL
+	select GPIO_GENERIC
+	bool
+	help
+	  The pinmux controller found on Rockchip SoCs.
+
 config PINCTRL_SINGLE
 	select PINCTRL
 	bool "pinctrl single"
@@ -33,3 +40,9 @@ config PINCTRL_TEGRA20
 	bool
 	help
 	  The pinmux controller found on the Tegra 20 line of SoCs.
+
+config PINCTRL_TEGRA30
+	select PINCTRL
+	bool
+	help
+	  The pinmux controller found on the Tegra 30 line of SoCs.

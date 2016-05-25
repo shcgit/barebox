@@ -89,7 +89,7 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	return readl(fec->regs + FEC_MII_DATA);
+	return readl(fec->regs + FEC_MII_DATA) & 0xffff;
 }
 
 static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
@@ -732,9 +732,14 @@ static int fec_probe(struct device_d *dev)
 	fec->miibus.priv = fec;
 	fec->miibus.parent = dev;
 
-	mdiobus_register(&fec->miibus);
+	ret = mdiobus_register(&fec->miibus);
+	if (ret)
+		return ret;
 
-	eth_register(edev);
+	ret = eth_register(edev);
+	if (ret)
+		return ret;
+
 	return 0;
 
 err_free:

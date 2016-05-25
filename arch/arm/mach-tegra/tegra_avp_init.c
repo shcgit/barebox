@@ -87,10 +87,10 @@ static struct pll_config pllx_config_table[][4] = {
 		{1000, 26, 0, 12},	/* OSC 26.0 MHz */
 	}, /* TEGRA 20 */
 	{
-		{862, 8,  0, 8},
-		{583, 8,  0, 4},
-		{700, 6,  0, 8},
-		{700, 13, 0, 8},
+		{600,  13, 0, 8 },
+		{500,  16, 0, 8 },
+		{600,  12, 0, 8 },
+		{600,  26, 0, 8 },
 	}, /* TEGRA 30 */
 };
 
@@ -164,8 +164,8 @@ static void start_cpu0_clocks(void)
 		/* init MSELECT */
 		writel(CRC_RST_DEV_V_MSELECT,
 		       TEGRA_CLK_RESET_BASE + CRC_RST_DEV_V_SET);
-		writel((CRC_CLK_SOURCE_MSEL_SRC_PLLP <<
-		       CRC_CLK_SOURCE_MSEL_SRC_SHIFT) | 2,
+		writel((CRC_CLK_SOURCE_MSEL_SRC_CLKM <<
+		       CRC_CLK_SOURCE_MSEL_SRC_SHIFT),
 		       TEGRA_CLK_RESET_BASE + CRC_CLK_SOURCE_MSEL);
 		writel(CRC_CLK_OUT_ENB_V_MSELECT,
 		       TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_V);

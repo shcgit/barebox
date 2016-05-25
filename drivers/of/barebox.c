@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <partition.h>
 #include <envfs.h>
+#include <linux/mtd/mtd.h>
 
 struct of_partition {
 	struct list_head list;
@@ -34,20 +35,6 @@ struct of_partition {
 
 static LIST_HEAD(of_partition_list);
 
-struct device_d *of_find_device_by_node_path(const char *path)
-{
-	struct device_d *dev;
-
-	for_each_device(dev) {
-		if (!dev->device_node)
-			continue;
-		if (!strcmp(path, dev->device_node->full_name))
-			return dev;
-	}
-
-	return NULL;
-}
-
 static int environment_probe(struct device_d *dev)
 {
 	char *path;
@@ -56,6 +43,24 @@ static int environment_probe(struct device_d *dev)
 	ret = of_find_path(dev->device_node, "device-path", &path);
 	if (ret)
 		return ret;
+
+	/*
+	 * The environment support is not bad block aware, hence we
+	 * have to use the .bb device. Test if we have a nand device
+	 * and if yes, append .bb to the filename.
+	 */
+	if (!strncmp(path, "/dev/", 5)) {
+		struct cdev *cdev;
+		char *cdevname;
+
+		cdevname = path + 5;
+		cdev = cdev_by_name(cdevname);
+		if (cdev && cdev->mtd && mtd_can_have_bb(cdev->mtd)) {
+			char *bbpath = asprintf("%s.bb", path);
+			free(path);
+			path = bbpath;
+		}
+	}
 
 	dev_info(dev, "setting default environment path to %s\n", path);
 
