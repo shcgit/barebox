@@ -3,6 +3,7 @@ menu "Firmware Drivers"
 config FIRMWARE_ALTERA_SERIAL
 	bool "Altera SPI programming"
 	depends on OFDEVICE
+	depends on SPI
 	select FIRMWARE
 	help
 	  Programming an Altera FPGA via a few GPIOs for the control lines and
@@ -10,5 +11,6 @@ config FIRMWARE_ALTERA_SERIAL
 
 config FIRMWARE_ALTERA_SOCFPGA
 	bool "Altera SoCFPGA fpga loader"
+	depends on ARCH_SOCFPGA
 
 endmenu

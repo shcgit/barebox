@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <envfs.h>
+#include <disks.h>
 
 struct filetype_str {
 	const char *name;	/* human readable filetype */
@@ -57,6 +58,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_ch_image] = { "TI OMAP CH boot image", "ch-image" },
 	[filetype_ch_image_be] = {
 			"TI OMAP CH boot image (big endian)", "ch-image-be" },
+	[filetype_xz_compressed] = { "XZ compressed", "xz" },
 	[filetype_exe] = { "MS-DOS executable", "exe" },
 };
 
@@ -86,6 +88,10 @@ const char *file_type_to_short_string(enum filetype f)
 #define MBR_PART_sys_ind	4
 #define MBR_PART_start_sect	8
 #define MBR_OSTYPE_EFI_GPT	0xee
+
+#define FAT_BS_reserved		14
+#define FAT_BS_fats		16
+#define FAT_BS_media		21
 
 static inline int pmbr_part_valid(const uint8_t *buf)
 {
@@ -123,6 +129,49 @@ static int is_gpt_valid(const uint8_t *buf)
 		if (pmbr_part_valid(buf))
 			return 1;
 	}
+	return 0;
+}
+
+static inline int fat_valid_media(u8 media)
+{
+	return (0xf8 <= media || media == 0xf0);
+}
+
+static int is_fat_with_no_mbr(const unsigned char  *sect)
+{
+	if (!get_unaligned_le16(&sect[FAT_BS_reserved]))
+		return 0;
+
+	if (!sect[FAT_BS_fats])
+		return 0;
+
+	if (!fat_valid_media(sect[FAT_BS_media]))
+		return 0;
+
+	return 1;
+}
+
+int is_fat_boot_sector(const void *sect)
+{
+	struct partition_entry *p;
+	int slot;
+
+	p = (struct partition_entry *) (sect + MBR_Table);
+	/* max 4 partitions */
+	for (slot = 1; slot <= 4; slot++, p++) {
+		if (p->boot_indicator && p->boot_indicator != 0x80) {
+			/*
+			 * Even without a valid boot inidicator value
+			 * its still possible this is valid FAT filesystem
+			 * without a partition table.
+			 */
+			if (slot == 1 && is_fat_with_no_mbr(sect))
+				return 1;
+			 else
+				return -EINVAL;
+		}
+	}
+
 	return 0;
 }
 
@@ -224,6 +273,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf8[0] == 'B' && buf8[1] == 'Z' && buf8[2] == 'h' &&
 			buf8[3] > '0' && buf8[3] <= '9')
                 return filetype_bzip2;
+	if (buf8[0] == 0xfd && buf8[1] == 0x37 && buf8[2] == 0x7a &&
+			buf8[3] == 0x58 && buf8[4] == 0x5a && buf8[5] == 0x00)
+		return filetype_xz_compressed;
 	if (buf[0] == be32_to_cpu(0xd00dfeed))
 		return filetype_oftree;
 	if (strncmp(buf8, "ANDROID!", 8) == 0)

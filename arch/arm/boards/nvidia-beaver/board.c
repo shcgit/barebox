@@ -15,10 +15,12 @@
  */
 
 #include <common.h>
-#include <init.h>
+#include <dt-bindings/gpio/tegra-gpio.h>
+#include <gpio.h>
 #include <i2c/i2c.h>
+#include <init.h>
 
-static int nvidia_beaver_devices_init(void)
+static int nvidia_beaver_fs_init(void)
 {
 	struct i2c_client client;
 	u8 data;
@@ -33,6 +35,24 @@ static int nvidia_beaver_devices_init(void)
 	data = 0x65;
 	i2c_write_reg(&client, 0x32, &data, 1);
 
+	/* TPS659110: LDO1_REG = 1.05v, ACTIVE to PEX */
+	data = 0x15;
+	i2c_write_reg(&client, 0x30, &data, 1);
+
+	/* enable SYS_3V3_PEXS */
+	gpio_direction_output(TEGRA_GPIO(L, 7), 1);
+
 	return 0;
 }
-device_initcall(nvidia_beaver_devices_init);
+fs_initcall(nvidia_beaver_fs_init);
+
+static int nvidia_beaver_device_init(void)
+{
+	if (!of_machine_is_compatible("nvidia,beaver"))
+		return 0;
+
+	barebox_set_hostname("beaver");
+
+	return 0;
+}
+device_initcall(nvidia_beaver_device_init);

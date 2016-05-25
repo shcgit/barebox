@@ -414,6 +414,7 @@ config AUTO_COMPLETE
 config MENU
 	bool
 	prompt "Menu Framework"
+	select PROCESS_ESCAPE_SEQUENCE
 	help
 	  a menu framework that allow us to create list menu to simplify
 	  barebox and make it more user-frendly
@@ -478,8 +479,8 @@ config TIMESTAMP
 
 config BLSPEC
 	depends on BLOCK
+	depends on FLEXIBLE_BOOTARGS
 	select OFTREE
-	select FLEXIBLE_BOOTARGS
 	bool
 	prompt "Support bootloader spec"
 	help
@@ -582,6 +583,7 @@ choice
 	prompt "default compression for in-barebox binaries"
 	default DEFAULT_COMPRESSION_NONE if PBL_IMAGE
 	default DEFAULT_COMPRESSION_LZO if LZO_DECOMPRESS
+	default DEFAULT_COMPRESSION_XZ if XZ_DECOMPRESS
 	default DEFAULT_COMPRESSION_GZIP if ZLIB
 	default DEFAULT_COMPRESSION_LZ4 if LZ4_DECOMPRESS
 	default DEFAULT_COMPRESSION_BZIP2 if BZLIB
@@ -605,6 +607,10 @@ config DEFAULT_COMPRESSION_LZO
 config DEFAULT_COMPRESSION_LZ4
 	bool "lz4"
 	depends on LZ4_DECOMPRESS
+
+config DEFAULT_COMPRESSION_XZ
+	bool "xz"
+	depends on XZ_DECOMPRESS
 
 config DEFAULT_COMPRESSION_NONE
 	bool "no compression"
