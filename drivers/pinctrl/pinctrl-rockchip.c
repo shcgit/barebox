@@ -341,10 +341,10 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank,
 	}
 
 	res = request_iomem_region(dev_name(dev), node_res.start, node_res.end);
-	if (!res) {
+	if (IS_ERR(res)) {
 		dev_err(dev, "cannot request iomem region %08x\n",
 			node_res.start);
-		return -ENOENT;
+		return PTR_ERR(res);
 	}
 
 	bank->reg_base = (void __iomem *)res->start;
@@ -442,6 +442,9 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	ret = rockchip_gpiolib_register(dev, info);
 	if (ret)
 		return ret;
+
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return 0;
 
 	ret = pinctrl_register(&info->pctl_dev);
 	if (ret)

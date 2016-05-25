@@ -30,6 +30,7 @@
 #include <of.h>
 #include <usb/ehci.h>
 #include <asm/mmu.h>
+#include <linux/err.h>
 
 #include "ehci.h"
 
@@ -674,21 +675,23 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		break;
 	case USB_REQ_CLEAR_FEATURE | ((USB_DIR_OUT | USB_RT_PORT) << 8):
 		reg = ehci_readl(status_reg);
+		reg &= ~EHCI_PS_CLEAR;
 		switch (le16_to_cpu(req->value)) {
 		case USB_PORT_FEAT_ENABLE:
 			reg &= ~EHCI_PS_PE;
 			break;
 		case USB_PORT_FEAT_C_ENABLE:
-			reg = (reg & ~EHCI_PS_CLEAR) | EHCI_PS_PE;
+			reg |= EHCI_PS_PEC;
 			break;
 		case USB_PORT_FEAT_POWER:
 			if (HCS_PPC(ehci_readl(&ehci->hccr->cr_hcsparams)))
-				reg = reg & ~(EHCI_PS_CLEAR | EHCI_PS_PP);
+				reg &= ~ EHCI_PS_PP;
+			break;
 		case USB_PORT_FEAT_C_CONNECTION:
-			reg = (reg & ~EHCI_PS_CLEAR) | EHCI_PS_CSC;
+			reg |= EHCI_PS_CSC;
 			break;
 		case USB_PORT_FEAT_OVER_CURRENT:
-			reg = (reg & ~EHCI_PS_CLEAR) | EHCI_PS_OCC;
+			reg |= EHCI_PS_OCC;
 			break;
 		case USB_PORT_FEAT_C_RESET:
 			ehci->portreset &= ~(1 << le16_to_cpu(req->index));
@@ -924,6 +927,9 @@ static int ehci_probe(struct device_d *dev)
 		data.flags = EHCI_HAS_TT;
 
 	data.hccr = dev_request_mem_region(dev, 0);
+	if (IS_ERR(data.hccr))
+		return PTR_ERR(data.hccr);
+
 	if (dev->num_resources > 1)
 		data.hcor = dev_request_mem_region(dev, 1);
 	else

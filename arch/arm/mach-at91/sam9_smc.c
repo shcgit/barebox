@@ -14,12 +14,15 @@
 #include <mach/hardware.h>
 #include <mach/cpu.h>
 #include <mach/io.h>
+#include <linux/err.h>
 
 #include <mach/at91sam9_smc.h>
 
 #define AT91_SAM9_SMC_CS_STRIDE		0x10
 #define AT91_SAMA5_SMC_CS_STRIDE	0x14
-#define AT91_SMC_CS_STRIDE      ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? AT91_SAMA5_SMC_CS_STRIDE : AT91_SAM9_SMC_CS_STRIDE)
+#define AT91_SMC_CS_STRIDE	((at91_soc_initdata.type == AT91_SOC_SAMA5D3 \
+				 || at91_soc_initdata.type == AT91_SOC_SAMA5D4) \
+				 ? AT91_SAMA5_SMC_CS_STRIDE : AT91_SAM9_SMC_CS_STRIDE)
 #define AT91_SMC_CS(id, n)	(smc_base_addr[id] + ((n) * AT91_SMC_CS_STRIDE))
 
 static void __iomem *smc_base_addr[2];
@@ -29,7 +32,15 @@ static void sam9_smc_cs_write_mode(void __iomem *base,
 {
 	void __iomem *mode_reg;
 
-	mode_reg = base + ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? AT91_SAMA5_SMC_MODE : AT91_SAM9_SMC_MODE);
+	switch (at91_soc_initdata.type) {
+	case AT91_SOC_SAMA5D3:
+	case AT91_SOC_SAMA5D4:
+		mode_reg = base + AT91_SAMA5_SMC_MODE;
+		break;
+	default:
+		mode_reg = base + AT91_SAM9_SMC_MODE;
+		break;
+	}
 
 	__raw_writel(config->mode
 		   | AT91_SMC_TDF_(config->tdf_cycles),
@@ -95,7 +106,15 @@ static void sam9_smc_cs_read_mode(void __iomem *base,
 	u32 val;
 	void __iomem *mode_reg;
 
-	mode_reg = base + ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? AT91_SAMA5_SMC_MODE : AT91_SAM9_SMC_MODE);
+	switch (at91_soc_initdata.type) {
+	case AT91_SOC_SAMA5D3:
+	case AT91_SOC_SAMA5D4:
+		mode_reg = base + AT91_SAMA5_SMC_MODE;
+		break;
+	default:
+		mode_reg = base + AT91_SAM9_SMC_MODE;
+		break;
+	}
 
 	val = __raw_readl(mode_reg);
 
@@ -164,9 +183,9 @@ static int at91sam9_smc_probe(struct device_d *dev)
 	}
 
 	smc_base_addr[id] = dev_request_mem_region(dev, 0);
-	if (!smc_base_addr[id]) {
+	if (IS_ERR(smc_base_addr[id])) {
 		dev_err(dev, "Impossible to request smc.%d\n", id);
-		return -ENOMEM;
+		return PTR_ERR(smc_base_addr[id]);
 	}
 
 	return 0;

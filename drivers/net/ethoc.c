@@ -17,6 +17,7 @@
 #include <init.h>
 #include <io.h>
 #include <asm/cache.h>
+#include <linux/err.h>
 
 /* register offsets */
 #define	MODER		0x00
@@ -542,6 +543,8 @@ static int ethoc_probe(struct device_d *dev)
 
 	priv = edev->priv;
 	priv->iobase = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->iobase))
+		return PTR_ERR(priv->iobase);
 
 	priv->miibus.read = ethoc_mdio_read;
 	priv->miibus.write = ethoc_mdio_write;
@@ -565,8 +568,14 @@ static int ethoc_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct of_device_id ethoc_dt_ids[] = {
+	{ .compatible = "opencores,ethoc", },
+	{ }
+};
+
 static struct driver_d ethoc_driver = {
 	.name  = "ethoc",
 	.probe = ethoc_probe,
+	.of_compatible = DRV_OF_COMPAT(ethoc_dt_ids),
 };
 device_platform_driver(ethoc_driver);

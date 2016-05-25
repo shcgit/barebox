@@ -44,6 +44,7 @@
 
 /* DDR Freq is 266 MHZ for now*/
 /* Set Fdll = 400 MHZ , Fdll = M * 2 * CLKINP/ N + 1; clkout = Fdll /(2 * M2) */
+#define DDRPLL_M_200	200
 #define DDRPLL_M_266	266
 #define DDRPLL_M_303	303
 #define DDRPLL_M_400	400
@@ -74,6 +75,7 @@
 #define CM_CLKMODE_DPLL_PER             (CM_WKUP + 0x8c)
 #define CM_DIV_M2_DPLL_PER              (CM_WKUP + 0xAC)
 #define CM_IDLEST_DPLL_PER              (CM_WKUP + 0x70)
+#define CM_CLKDCOLDO_DPLL_PER           (CM_WKUP + 0x7C) /* for USB_PHY clock */
 
 /* Display PLL */
 #define CM_CLKSEL_DPLL_DISP             (CM_WKUP + 0x54)
@@ -140,6 +142,7 @@
 #define CM_PER_MMC0_CLKCTRL             (CM_PER + 0x3C)
 #define CM_PER_MMC1_CLKCTRL             (CM_PER + 0xF4)
 #define CM_PER_MMC2_CLKCTRL             (CM_PER + 0xF8)
+#define CM_PER_USB0_CLKCTRL             (CM_PER + 0x1c) /* USB */
 
 /* PRCM */
 #define CM_DPLL_OFFSET                  (AM33XX_PRM_BASE + 0x0300)

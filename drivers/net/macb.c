@@ -304,7 +304,6 @@ static void macb_configure_dma(struct macb_device *bp)
 	if (macb_is_gem(bp)) {
 		dmacfg = gem_readl(bp, DMACFG) & ~GEM_BF(RXBS, -1L);
 		dmacfg |= GEM_BF(RXBS, bp->rx_buffer_size / RX_BUFFER_MULTIPLE);
-		dmacfg |= GEM_BF(FBLDO, 16);
 		dmacfg |= GEM_BIT(TXPBMS) | GEM_BF(RXBMS, -1L);
 		dmacfg |= GEM_BIT(DDRP);
 		dmacfg &= ~GEM_BIT(ENDIA);
@@ -352,7 +351,10 @@ static void macb_init(struct macb_device *macb)
 		break;
 	case PHY_INTERFACE_MODE_RMII:
 		if (IS_ENABLED(CONFIG_ARCH_AT91))
-			val = MACB_BIT(RMII) | MACB_BIT(CLKEN);
+			if (macb_is_gem(macb))
+				val = GEM_BIT(RGMII);
+			else
+				val = MACB_BIT(RMII) | MACB_BIT(CLKEN);
 		else
 			val = 0;
 		break;
@@ -642,6 +644,8 @@ static int macb_probe(struct device_d *dev)
 	macb->phy_flags = pdata->phy_flags;
 
 	macb->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(macb->regs))
+		return PTR_ERR(macb->regs);
 
 	/*
 	 * Do some basic initialization so that we at least can talk

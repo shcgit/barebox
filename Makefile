@@ -1,5 +1,5 @@
 VERSION = 2014
-PATCHLEVEL = 10
+PATCHLEVEL = 11
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -300,6 +300,7 @@ LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
 CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
 CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+                   -Werror-implicit-function-declaration \
                    -fno-strict-aliasing -fno-common -Os -pipe
 AFLAGS          := -D__ASSEMBLY__
 

@@ -511,6 +511,7 @@ static void atmci_get_cap(struct atmel_mci *host)
 	host->caps.need_reset_after_xfer = 1;
 
 	switch (version & 0xf00) {
+	case 0x600:
 	case 0x500:
 		host->caps.has_odd_clk_div = 1;
 	case 0x400:
@@ -572,6 +573,8 @@ static int atmci_probe(struct device_d *hw_dev)
 	host->slot_b = pd->slot_b;
 
 	host->regs = dev_request_mem_region(hw_dev, 0);
+	if (IS_ERR(host->regs))
+		return PTR_ERR(host->regs);
 	host->hw_dev = hw_dev;
 	hw_dev->priv = host;
 	host->clk = clk_get(hw_dev, "mci_clk");
