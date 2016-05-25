@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# Buzzer ON
+gpio_direction_output 8 1
+# IDE0 RST LOW
+gpio_direction_output 24 0
+# IDE1 RST LOW
+gpio_direction_output 25 0
+# IDE0 VCC5
+gpio_direction_output 26 1
+# IDE0 VCC3
+gpio_direction_output 27 0
+# IDE1 VCC5
+gpio_direction_output 28 1
+# IDE1 VCC3
+gpio_direction_output 29 0
+
+# SYSCON1 (LCD OFF)
+mm 0x80000100 0x00000000 0x00001000
+# LCDCON
+mw 0x800002c0 0xe232695f
+# PALLSW
+mw 0x80000540 0x76543210
+# PALMSW
+mw 0x80000580 0xfedcba98
+# FBADDR
+mw -b 0x80001000 0x06
+# Clear
+memset 0x60000000 0x00 0xd000
+# SYSCON1 (LCD ON)
+mm 0x80000100 0x00001000 0x00001000
+
+# Load LOGO
+if [ -f /env/milas.bin ]; then
+	memcpy -s /env/milas.bin 0 0x60000000
+fi
+
+msleep 220
+
+# IDE0 RST HIGH
+gpio_set_value 24 1
+# IDE1 RST HIGH
+gpio_set_value 25 1
+# Buzzer OFF
+gpio_set_value 8 0
+
+#Load DTB
+oftree -l /env/clps711x.dtb

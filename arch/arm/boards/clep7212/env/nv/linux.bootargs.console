@@ -1,1 +1,1 @@
-earlyprintk console=ttyCL0,57600n8
+console=ttyCL0,57600n8
