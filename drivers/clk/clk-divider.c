@@ -19,13 +19,29 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/log2.h>
 
 #define div_mask(d)	((1 << ((d)->width)) - 1)
+
+static unsigned int _get_table_maxdiv(const struct clk_div_table *table)
+{
+	unsigned int maxdiv = 0;
+	const struct clk_div_table *clkt;
+
+	for (clkt = table; clkt->div; clkt++)
+		if (clkt->div > maxdiv)
+			maxdiv = clkt->div;
+	return maxdiv;
+}
 
 static unsigned int _get_maxdiv(struct clk_divider *divider)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div_mask(divider);
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return 1 << div_mask(divider);
+	if (divider->table)
+		return _get_table_maxdiv(divider->table);
 	return div_mask(divider) + 1;
 }
 
@@ -44,6 +60,8 @@ static unsigned int _get_div(struct clk_divider *divider, unsigned int val)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return val;
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return 1 << val;
 	if (divider->table)
 		return _get_table_div(divider->table, val);
 	return val + 1;
@@ -64,6 +82,8 @@ static unsigned int _get_val(struct clk_divider *divider, unsigned int div)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div;
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return __ffs(div);
 	if (divider->table)
 		return  _get_table_val(divider->table, div);
 	return div - 1;
@@ -102,6 +122,8 @@ static bool _is_valid_table_div(const struct clk_div_table *table,
 
 static bool _is_valid_div(struct clk_divider *divider, unsigned int div)
 {
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return is_power_of_2(div);
 	if (divider->table)
 		return _is_valid_table_div(divider->table, div);
 	return true;
@@ -197,6 +219,10 @@ static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
 	val = readl(divider->reg);
 	val &= ~(div_mask(divider) << divider->shift);
 	val |= value << divider->shift;
+
+	if (clk->flags & CLK_DIVIDER_HIWORD_MASK)
+		val |= div_mask(divider) << (divider->shift + 16);
+
 	writel(val, divider->reg);
 
 	return 0;
@@ -208,11 +234,10 @@ struct clk_ops clk_divider_ops = {
 	.round_rate = clk_divider_round_rate,
 };
 
-struct clk *clk_divider(const char *name, const char *parent,
+struct clk *clk_divider_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width, unsigned flags)
 {
 	struct clk_divider *div = xzalloc(sizeof(*div));
-	int ret;
 
 	div->shift = shift;
 	div->reg = reg;
@@ -224,13 +249,31 @@ struct clk *clk_divider(const char *name, const char *parent,
 	div->clk.parent_names = &div->parent;
 	div->clk.num_parents = 1;
 
-	ret = clk_register(&div->clk);
+	return &div->clk;
+}
+
+void clk_divider_free(struct clk *clk)
+{
+	struct clk_divider *d =  container_of(clk, struct clk_divider, clk);
+
+	free(d);
+}
+
+struct clk *clk_divider(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width, unsigned flags)
+{
+	struct clk *d;
+	int ret;
+
+	d = clk_divider_alloc(name , parent, reg, shift, width, flags);
+
+	ret = clk_register(d);
 	if (ret) {
-		free(div);
+		clk_divider_free(d);
 		return ERR_PTR(ret);
 	}
 
-	return &div->clk;
+	return d;
 }
 
 struct clk *clk_divider_one_based(const char *name, const char *parent,

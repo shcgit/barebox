@@ -1,1 +1,1 @@
-earlyprintk console=ttymxc0,115200n8 ubi.mtd=nand-bbox
+earlyprintk ubi.mtd=nand-bbox

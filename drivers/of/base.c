@@ -184,7 +184,7 @@ void of_alias_scan(void)
 			end--;
 		len = end - start;
 
-		id = simple_strtol(end, 0, 10);
+		id = simple_strtol(end, NULL, 10);
 		if (id < 0)
 			continue;
 
@@ -227,11 +227,11 @@ EXPORT_SYMBOL_GPL(of_alias_get_id);
 
 const char *of_alias_get(struct device_node *np)
 {
-	struct property *pp;
+	struct alias_prop *app;
 
-	list_for_each_entry(pp, &of_aliases->properties, list) {
-		if (!of_node_cmp(np->full_name, pp->value))
-			return pp->name;
+	list_for_each_entry(app, &aliases_lookup, link) {
+		if (np == app->np)
+			return app->alias;
 	}
 
 	return NULL;
@@ -280,7 +280,7 @@ struct device_node *of_find_node_by_phandle_from(phandle phandle,
 		root = root_node;
 
 	if (!root)
-		return 0;
+		return NULL;
 
 	of_tree_for_each_node_from(node, root)
 		if (node->phandle == phandle)

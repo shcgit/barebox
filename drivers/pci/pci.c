@@ -259,15 +259,17 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 	/* limit subordinate to last used bus number */
 	pci_write_config_byte(dev, PCI_SUBORDINATE_BUS, bus_index - 1);
 
-	if (last_mem)
+	if (last_mem) {
 		last_mem = ALIGN(last_mem, SZ_1M);
 		pci_write_config_word(dev, PCI_MEMORY_LIMIT,
 				      ((last_mem - 1) & 0xfff00000) >> 16);
+	}
 
-	if (last_mem_pref)
+	if (last_mem_pref) {
 		last_mem_pref = ALIGN(last_mem_pref, SZ_1M);
 		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT,
 				      ((last_mem_pref - 1) & 0xfff00000) >> 16);
+	}
 
 	if (last_io) {
 		last_io = ALIGN(last_io, SZ_4K);
@@ -346,6 +348,12 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			dev->rom_address = (l == 0xffffffff) ? 0 : l;
 
 			setup_device(dev, 6);
+			/*
+			 * If this device is on the root bus, there is no bridge
+			 * to configure, so we can activate it right away.
+			 */
+			if (!bus->parent_bus)
+				pci_register_device(dev);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:
 			setup_device(dev, 2);
@@ -354,6 +362,7 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			/* inherit parent properties */
 			child_bus->host = bus->host;
 			child_bus->ops = bus->host->pci_ops;
+			child_bus->parent_bus = bus;
 			child_bus->resource[PCI_BUS_RESOURCE_MEM] =
 				bus->resource[PCI_BUS_RESOURCE_MEM];
 			child_bus->resource[PCI_BUS_RESOURCE_MEM_PREF] =
