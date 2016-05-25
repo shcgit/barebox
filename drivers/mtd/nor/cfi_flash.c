@@ -404,9 +404,9 @@ static ulong flash_get_size (struct flash_info *info)
 				erase_region_count, erase_region_size);
 
 			region->offset = cur_offset;
-			region->erasesize = erase_region_size;
+			region->erasesize = erase_region_size * size_ratio;
 			region->numblocks = erase_region_count;
-			cur_offset += erase_region_size * erase_region_count;
+			cur_offset += erase_region_size * size_ratio * erase_region_count;
 
 			/* increase the space malloced for the sector start addresses */
 			info->start = xrealloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
@@ -978,8 +978,8 @@ static int cfi_probe (struct device_d *dev)
 	info->flash_id = FLASH_UNKNOWN;
 	info->cmd_reset = FLASH_CMD_RESET;
 	info->base = dev_request_mem_region(dev, 0);
-	info->size = flash_get_size(info);
 	info->dev = dev;
+	info->size = flash_get_size(info);
 
 	if (info->flash_id == FLASH_UNKNOWN) {
 		dev_warn(dev, "## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
