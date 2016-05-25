@@ -1002,7 +1002,7 @@ i2c_omap_probe(struct device_d *pdev)
 		goto err_free_mem;
 	}
 
-	r = dev_get_drvdata(pdev, (unsigned long *)&i2c_data);
+	r = dev_get_drvdata(pdev, (const void **)&i2c_data);
 	if (r)
 		return r;
 
@@ -1091,9 +1091,6 @@ i2c_omap_probe(struct device_d *pdev)
 	/* reset ASAP, clearing any IRQs */
 	omap_i2c_init(i2c_omap);
 
-	dev_info(pdev, "bus %d rev%d.%d at %d kHz\n",
-		 pdev->id, major, minor, i2c_omap->speed);
-
 	omap_i2c_idle(i2c_omap);
 
 	i2c_omap->adapter.master_xfer = omap_i2c_xfer,
@@ -1107,6 +1104,9 @@ i2c_omap_probe(struct device_d *pdev)
 		dev_err(pdev, "failure adding adapter\n");
 		goto err_unuse_clocks;
 	}
+
+	dev_info(pdev, "bus %d rev%d.%d at %d kHz\n",
+		 i2c_omap->adapter.nr, major, minor, i2c_omap->speed);
 
 	return 0;
 
@@ -1137,7 +1137,7 @@ static struct platform_device_id omap_i2c_ids[] = {
 static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 	{
 		.compatible = "ti,omap3-i2c",
-		.data = (unsigned long)&omap3_data,
+		.data = &omap3_data,
 	}, {
 		.compatible = "ti,omap4-i2c",
 	}, {

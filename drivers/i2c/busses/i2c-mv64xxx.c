@@ -487,9 +487,9 @@ mv64xxx_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
  *****************************************************************************
  */
 static struct of_device_id mv64xxx_i2c_of_match_table[] = {
-	{ .compatible = "marvell,mv64xxx-i2c", .data = (unsigned long)&mv64xxx_i2c_regs_mv64xxx},
-	{ .compatible = "marvell,mv78230-i2c", .data = (unsigned long)&mv64xxx_i2c_regs_mv64xxx},
-	{ .compatible = "marvell,mv78230-a0-i2c", .data = (unsigned long)&mv64xxx_i2c_regs_mv64xxx},
+	{ .compatible = "marvell,mv64xxx-i2c", .data = &mv64xxx_i2c_regs_mv64xxx},
+	{ .compatible = "marvell,mv78230-i2c", .data = &mv64xxx_i2c_regs_mv64xxx},
+	{ .compatible = "marvell,mv78230-a0-i2c", .data = &mv64xxx_i2c_regs_mv64xxx},
 	{}
 };
 
@@ -540,8 +540,7 @@ mv64xxx_of_config(struct mv64xxx_i2c_data *drv_data,
 	}
 	tclk = clk_get_rate(drv_data->clk);
 
-	rc = of_property_read_u32(np, "clock-frequency", &bus_freq);
-	if (rc)
+	if (of_property_read_u32(np, "clock-frequency", &bus_freq))
 		bus_freq = 100000; /* 100kHz by default */
 
 	if (!mv64xxx_find_baud_factors(bus_freq, tclk,
@@ -574,7 +573,7 @@ mv64xxx_of_config(struct mv64xxx_i2c_data *drv_data,
 		goto out;
 	}
 
-	dev_get_drvdata(pd, (unsigned long *)&mv64xxx_regs);
+	dev_get_drvdata(pd, (const void **)&mv64xxx_regs);
 	memcpy(&drv_data->reg_offsets, mv64xxx_regs,
 		sizeof(drv_data->reg_offsets));
 
