@@ -935,8 +935,10 @@ int erase(int fd, loff_t count, loff_t offset)
 	f = &files[fd];
 	if (offset >= f->size)
 		return 0;
-	if (count > f->size - offset)
+	if (count == ERASE_SIZE_ALL || count > f->size - offset)
 		count = f->size - offset;
+	if (count < 0)
+		return -EINVAL;
 
 	fsdrv = f->fsdev->driver;
 	if (fsdrv->erase)
@@ -1317,6 +1319,40 @@ err_free_path:
 }
 EXPORT_SYMBOL(mount);
 
+static int fsdev_umount(struct fs_device_d *fsdev)
+{
+	return unregister_device(&fsdev->dev);
+}
+
+/**
+ * umount_by_cdev Use a cdev struct to umount all mounted filesystems
+ * @param cdev cdev to the according device
+ * @return 0 on success or if cdev was not mounted, -errno otherwise
+ */
+int umount_by_cdev(struct cdev *cdev)
+{
+	struct fs_device_d *fs;
+	struct fs_device_d *fs_tmp;
+	int first_error = 0;
+
+	for_each_fs_device_safe(fs_tmp, fs) {
+		int ret;
+
+		if (fs->cdev == cdev) {
+			ret = fsdev_umount(fs);
+			if (ret) {
+				pr_err("Failed umounting %s, %d, continuing anyway\n",
+				       fs->path, ret);
+				if (!first_error)
+					first_error = ret;
+			}
+		}
+	}
+
+	return first_error;
+}
+EXPORT_SYMBOL(umount_by_cdev);
+
 int umount(const char *pathname)
 {
 	struct fs_device_d *fsdev = NULL, *f;
@@ -1326,6 +1362,16 @@ int umount(const char *pathname)
 		if (!strcmp(p, f->path)) {
 			fsdev = f;
 			break;
+		}
+	}
+
+	if (!fsdev) {
+		struct cdev *cdev = cdev_open(p, O_RDWR);
+
+		if (cdev) {
+			free(p);
+			cdev_close(cdev);
+			return umount_by_cdev(cdev);
 		}
 	}
 
@@ -1341,9 +1387,7 @@ int umount(const char *pathname)
 		return -EFAULT;
 	}
 
-	unregister_device(&fsdev->dev);
-
-	return 0;
+	return fsdev_umount(fsdev);
 }
 EXPORT_SYMBOL(umount);
 

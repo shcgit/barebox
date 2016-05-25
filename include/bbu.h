@@ -16,6 +16,7 @@ struct bbu_data {
 	const char *devicefile;
 	size_t len;
 	const char *handler_name;
+	struct imd_header *imd_data;
 };
 
 struct bbu_handler {
@@ -23,6 +24,7 @@ struct bbu_handler {
 	const char *name;
 	struct list_head list;
 #define BBU_HANDLER_FLAG_DEFAULT	(1 << 0)
+#define BBU_HANDLER_CAN_REFRESH		(1 << 1)
 	unsigned long flags;
 
 	/* default device file, can be overwritten on the command line */
