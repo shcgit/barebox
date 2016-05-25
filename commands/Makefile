@@ -1,5 +1,6 @@
 obj-$(CONFIG_STDDEV)		+= stddev.o
-obj-$(CONFIG_COMPILE_DIGEST)	+= digest.o
+obj-$(CONFIG_CMD_DIGEST)	+= digest.o
+obj-$(CONFIG_COMPILE_HASH)	+= hashsum.o
 obj-$(CONFIG_COMPILE_MEMORY)	+= mem.o
 obj-$(CONFIG_CMD_BOOTM)		+= bootm.o
 obj-$(CONFIG_CMD_UIMAGE)	+= uimage.o
@@ -109,3 +110,4 @@ obj-$(CONFIG_CMD_FIRMWARELOAD)	+= firmwareload.o
 obj-$(CONFIG_CMD_CMP)		+= cmp.o
 obj-$(CONFIG_CMD_NV)		+= nv.o
 obj-$(CONFIG_CMD_DEFAULTENV)	+= defaultenv.o
+obj-$(CONFIG_CMD_STATE)		+= state.o
