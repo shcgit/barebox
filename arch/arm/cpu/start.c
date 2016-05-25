@@ -70,7 +70,9 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 		endmem &= ~0x3fff;
 		endmem -= SZ_16K; /* ttb */
 
-		if (!IS_ENABLED(CONFIG_PBL_IMAGE)) {
+		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
+			arm_set_cache_functions();
+		} else {
 			arm_early_mmu_cache_invalidate();
 			mmu_early_enable(membase, memsize, endmem);
 		}
@@ -80,7 +82,7 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 	 * If boarddata is a pointer inside valid memory and contains a
 	 * FDT magic then use it as later to probe devices
 	 */
-	if (boarddata > membase && boarddata < membase + memsize &&
+	if (boarddata >= membase && boarddata < membase + memsize &&
 			get_unaligned_be32((void *)boarddata) == FDT_MAGIC) {
 		uint32_t totalsize = get_unaligned_be32((void *)boarddata + 4);
 		endmem -= ALIGN(totalsize, 64);

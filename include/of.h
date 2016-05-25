@@ -30,7 +30,6 @@ struct device_node {
 	struct list_head children;
 	struct list_head parent_list;
 	struct list_head list;
-	struct list_head phandles;
 	phandle phandle;
 };
 
@@ -62,7 +61,7 @@ struct device_d;
 struct driver_d;
 
 int of_fix_tree(struct device_node *);
-int of_register_fixup(int (*fixup)(struct device_node *));
+int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
 
 int of_match(struct device_d *dev, struct driver_d *drv);
 
