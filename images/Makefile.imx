@@ -14,6 +14,17 @@ $(obj)/%.imximg: $(obj)/% FORCE
 	$(call if_changed,imx_image)
 endif
 
+quiet_cmd_imx_sram_img ?= IMX-SRAM-IMG    $@
+      cmd_imx_sram_img ?= cat $(obj)/$(patsubst %.imx-sram-img,%.pblb,$(2)) > $@; \
+		  $(call size_append, $(obj)/barebox.z) >> $@; \
+		  $(CPP) $(imxcfg_cpp_flags) -o $(imximg-tmp) $(CFG_$(@F)) ; \
+		  $(objtree)/scripts/imx/imx-image -o $@ -b -c $(imximg-tmp) -f $@; \
+		  cat $(obj)/barebox.z >> $@; \
+		  $(objtree)/scripts/fix_size -f $@
+
+$(obj)/%.imx-sram-img: $(obj)/%.pblb $(obj)/barebox.z FORCE
+	$(call if_changed,imx_sram_img,$(@F))
+
 # ----------------------- i.MX25 based boards ---------------------------
 pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
 FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblx
@@ -69,6 +80,16 @@ pblx-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += start_imx53_vmx53
 CFG_start_imx53_vmx53.pblx.imximg = $(board)/freescale-mx53-vmx53/flash-header-imx53-vmx53.imxcfg
 FILE_barebox-freescale-imx53-vmx53.img = start_imx53_vmx53.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += barebox-freescale-imx53-vmx53.img
+
+pblx-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell
+CFG_start_imx53_guf_vincell.pblx.imximg = $(board)/guf-vincell/flash-header.imxcfg
+FILE_barebox-guf-vincell.img = start_imx53_guf_vincell.pblx.imximg
+image-$(CONFIG_MACH_GUF_VINCELL) += barebox-guf-vincell.img
+
+pblx-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell_lt
+CFG_start_imx53_guf_vincell_lt.pblx.imximg = $(board)/guf-vincell/flash-header.imxcfg
+FILE_barebox-guf-vincell-lt.img = start_imx53_guf_vincell_lt.pblx.imximg
+image-$(CONFIG_MACH_GUF_VINCELL) += barebox-guf-vincell-lt.img
 
 pblx-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_512mib
 CFG_start_imx53_mba53_512mib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-512mib.imxcfg
@@ -215,6 +236,16 @@ pblx-$(CONFIG_MACH_UDOO) += start_imx6_udoo
 CFG_start_imx6_udoo.pblx.imximg = $(board)/udoo/flash-header-mx6-udoo.imxcfg
 FILE_barebox-udoo-imx6q.img = start_imx6_udoo.pblx.imximg
 image-$(CONFIG_MACH_UDOO) += barebox-udoo-imx6q.img
+
+pblx-$(CONFIG_MACH_CM_FX6) += start_imx6_cm_fx6
+CFG_start_imx6_cm_fx6.imx-sram-img = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
+FILE_barebox-cm-fx6.img = start_imx6_cm_fx6.imx-sram-img
+image-$(CONFIG_MACH_CM_FX6) += barebox-cm-fx6.img
+
+pblx-$(CONFIG_MACH_CM_FX6) += start_imx6_utilite
+CFG_start_imx6_utilite.imx-sram-img = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
+FILE_barebox-utilite.img = start_imx6_utilite.imx-sram-img
+image-$(CONFIG_MACH_CM_FX6) += barebox-utilite.img
 
 pblx-$(CONFIG_MACH_VARISCITE_MX6) += start_variscite_custom
 CFG_start_variscite_custom.pblx.imximg = $(board)/variscite-mx6/flash-header-variscite.imxcfg

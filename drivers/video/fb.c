@@ -29,6 +29,30 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 	return 0;
 }
 
+int fb_enable(struct fb_info *info)
+{
+	if (info->enabled)
+		return 0;
+
+	info->fbops->fb_enable(info);
+
+	info->enabled = true;
+
+	return 0;
+}
+
+int fb_disable(struct fb_info *info)
+{
+	if (!info->enabled)
+		return 0;
+
+	info->fbops->fb_disable(info);
+
+	info->enabled = false;
+
+	return 0;
+}
+
 static int fb_enable_set(struct param_d *param, void *priv)
 {
 	struct fb_info *info = priv;
@@ -36,15 +60,10 @@ static int fb_enable_set(struct param_d *param, void *priv)
 
 	enable = info->p_enable;
 
-	if (enable == info->enabled)
-		return 0;
-
 	if (enable)
 		info->fbops->fb_enable(info);
 	else
 		info->fbops->fb_disable(info);
-
-	info->enabled = enable;
 
 	return 0;
 }
@@ -101,6 +120,27 @@ static int fb_setup_mode(struct fb_info *info)
 	dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
 
 	return 0;
+}
+
+static int fb_of_reserve_fixup(struct device_node *root, void *context)
+{
+	struct fb_info *info = context;
+
+	if (!info->enabled)
+		return 0;
+
+	of_add_reserve_entry((unsigned long)info->screen_base,
+			(unsigned long)info->screen_base + info->screen_size);
+
+	return 0;
+}
+
+void fb_of_reserve_add_fixup(struct fb_info *info)
+{
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	of_register_fixup(fb_of_reserve_fixup, info);
 }
 
 static int fb_set_modename(struct param_d *param, void *priv)
@@ -218,6 +258,9 @@ int register_framebuffer(struct fb_info *info)
 			dev_err(&info->dev, "failed to register simplefb: %s\n",
 					strerror(-ret));
 	}
+
+	if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE))
+		register_fbconsole(info);
 
 	return 0;
 

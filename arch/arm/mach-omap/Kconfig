@@ -43,7 +43,7 @@ config ARCH_AM33XX
 	select CPU_V7
 	select GENERIC_GPIO
 	select OFTREE
-	select OMAP_CLOCK_SOURCE_DMTIMER0
+	select OMAP_CLOCK_SOURCE_DMTIMER
 	help
 	  Say Y here if you are using Texas Instrument's AM33xx based platform
 
@@ -51,7 +51,7 @@ config ARCH_AM33XX
 config OMAP_CLOCK_SOURCE_S32K
 	bool
 
-config OMAP_CLOCK_SOURCE_DMTIMER0
+config OMAP_CLOCK_SOURCE_DMTIMER
 	bool
 
 config OMAP_GPMC
@@ -106,6 +106,7 @@ config AM33XX_NET_BOOT
 	bool "enable AM335x network boot"
 	select ENVIRONMENT_VARIABLES
 	select NET_DHCP
+	select FS_RAMFS
 	select FS_TFTP
 	select DRIVER_NET_CPSW
 	default n

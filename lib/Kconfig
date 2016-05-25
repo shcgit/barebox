@@ -57,6 +57,10 @@ config STMP_DEVICE
 
 source lib/gui/Kconfig
 
+source lib/fonts/Kconfig
+
+source lib/logo/Kconfig
+
 source lib/bootstrap/Kconfig
 
 config PRINTF_UUID
