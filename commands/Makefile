@@ -91,3 +91,5 @@ obj-$(CONFIG_CMD_FILETYPE)	+= filetype.o
 obj-$(CONFIG_CMD_BAREBOX_UPDATE)+= barebox-update.o
 obj-$(CONFIG_CMD_MIITOOL)	+= miitool.o
 obj-$(CONFIG_CMD_DETECT)	+= detect.o
+obj-$(CONFIG_CMD_BOOT)		+= boot.o
+obj-$(CONFIG_CMD_DEVINFO)	+= devinfo.o

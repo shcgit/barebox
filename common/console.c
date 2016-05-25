@@ -63,19 +63,21 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	unsigned int flag = 0, i = 0;
 
 	if (val) {
-		if (strchr(val, 'i') && cdev->f_caps & CONSOLE_STDIN) {
+		if (strchr(val, 'i') && cdev->getc) {
 			active[i++] = 'i';
 			flag |= CONSOLE_STDIN;
 		}
 
-		if (strchr(val, 'o') && cdev->f_caps & CONSOLE_STDOUT) {
-			active[i++] = 'o';
-			flag |= CONSOLE_STDOUT;
-		}
+		if (cdev->putc) {
+			if (strchr(val, 'o')) {
+				active[i++] = 'o';
+				flag |= CONSOLE_STDOUT;
+			}
 
-		if (strchr(val, 'e') && cdev->f_caps & CONSOLE_STDERR) {
-			active[i++] = 'e';
-			flag |= CONSOLE_STDERR;
+			if (strchr(val, 'e')) {
+				active[i++] = 'e';
+				flag |= CONSOLE_STDERR;
+			}
 		}
 	}
 
@@ -236,6 +238,9 @@ int getc(void)
 	unsigned char ch;
 	uint64_t start;
 
+	if (unlikely(!console_is_input_allow()))
+		return -EPERM;
+
 	/*
 	 * For 100us we read the characters from the serial driver
 	 * into a kfifo. This helps us not to lose characters
@@ -270,6 +275,9 @@ EXPORT_SYMBOL(fgetc);
 
 int tstc(void)
 {
+	if (unlikely(!console_is_input_allow()))
+		return 0;
+
 	return kfifo_len(console_input_fifo) || tstc_raw();
 }
 EXPORT_SYMBOL(tstc);

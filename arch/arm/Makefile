@@ -64,6 +64,7 @@ machine-$(CONFIG_ARCH_NETX)		:= netx
 machine-$(CONFIG_ARCH_OMAP)		:= omap
 machine-$(CONFIG_ARCH_PXA)		:= pxa
 machine-$(CONFIG_ARCH_SAMSUNG)		:= samsung
+machine-$(CONFIG_ARCH_SOCFPGA)		:= socfpga
 machine-$(CONFIG_ARCH_VERSATILE)	:= versatile
 machine-$(CONFIG_ARCH_VEXPRESS)		:= vexpress
 machine-$(CONFIG_ARCH_TEGRA)		:= tegra
@@ -142,8 +143,7 @@ KBUILD_IMAGE := barebox.s5p
 endif
 
 quiet_cmd_mlo ?= IFT     $@
-	cmd_mlo ?= scripts/omap_signGP $< $(TEXT_BASE) 1; \
-		     test -e $<.ift && mv $<.ift MLO
+	cmd_mlo ?= scripts/omap_signGP -o MLO -l $(TEXT_BASE) -c $<
 
 MLO: $(KBUILD_BINARY)
 	$(call if_changed,mlo)

@@ -10,7 +10,7 @@ config ARM
 config ARM_LINUX
 	bool
 	default y
-	depends on CMD_BOOTZ || CMD_BOOTU || CMD_BOOTM
+	depends on CMD_BOOTZ || CMD_BOOTU || BOOTM
 
 config HAVE_MACH_ARM_HEAD
 	bool
@@ -117,6 +117,17 @@ config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	select GENERIC_GPIO
 
+config ARCH_SOCFPGA
+	bool "Altera SOCFPGA cyclone5"
+	select HAS_DEBUG_LL
+	select ARM_SMP_TWD
+	select CPU_V7
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select GENERIC_GPIO
+	select GPIOLIB
+	select HAVE_PBL_MULTI_IMAGES
+
 config ARCH_S3C24xx
 	bool "Samsung S3C2410, S3C2440"
 	select ARCH_SAMSUNG
@@ -154,14 +165,16 @@ config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	select CPU_V7
 	select HAS_DEBUG_LL
-	select BUILTIN_DTB
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select GPIO_TEGRA
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
+	select RELOCATABLE
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
@@ -183,6 +196,7 @@ source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-pxa/Kconfig
 source arch/arm/mach-samsung/Kconfig
+source arch/arm/mach-socfpga/Kconfig
 source arch/arm/mach-versatile/Kconfig
 source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig
