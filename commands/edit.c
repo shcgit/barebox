@@ -21,6 +21,7 @@
 #include <fs.h>
 #include <linux/ctype.h>
 #include <fcntl.h>
+#include <libfile.h>
 #include <readkey.h>
 #include <errno.h>
 #include <xfuncs.h>
@@ -379,7 +380,16 @@ static int do_edit(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	screenwidth = 80;
-	screenheight = 25;
+
+	/*
+	 * The EFI simple text output protocol wraps to the next line and scrolls
+	 * down when we write to the right bottom screen position. Reduce the number
+	 * of rows by one to work around this.
+	 */
+	if (IS_ENABLED(CONFIG_ARCH_EFI))
+		screenheight = 24;
+	else
+		screenheight = 25;
 
 	/* check if we are called as "sedit" instead of "edit" */
 	if (*argv[0] == 's') {

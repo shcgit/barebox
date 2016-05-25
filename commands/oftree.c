@@ -26,6 +26,7 @@
 #include <common.h>
 #include <environment.h>
 #include <fdt.h>
+#include <libfile.h>
 #include <of.h>
 #include <command.h>
 #include <fs.h>
@@ -42,7 +43,7 @@
 static int do_oftree(int argc, char *argv[])
 {
 	struct fdt_header *fdt = NULL;
-	int size;
+	size_t size;
 	int opt;
 	int probe = 0;
 	char *load = NULL;

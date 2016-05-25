@@ -46,6 +46,8 @@ barebox.uimage
 barebox.map
 barebox.kwb
 barebox.kwbuart
+barebox.efi
+barebox.canon-a1100.bin
 barebox-flash-image
 System.map
 Module.symvers
@@ -66,7 +68,6 @@ include/linux/compile.h
 include/generated
 
 # Generated files
-Doxyfile.version
 Documentation/commands/*.rst
 doctrees/
 
@@ -82,6 +83,3 @@ cscope.*
 
 # patches
 *.patch
-scripts/gen_netx_image
-scripts/s5p_cksum
-scripts/bareboxenv-target

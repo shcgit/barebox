@@ -148,6 +148,15 @@ config CMD_IOMEM
 	  Show information about iomem/ioport usage. Pendant to
 	  'cat /proc/iomem' and 'cat /proc/ioports' under Linux.
 
+config CMD_IMD
+	tristate
+	prompt "imd"
+	select IMD
+	help
+	  barebox images can have metadata in them which contains information
+	  like the barebox version and the build time. Say yes here to get the
+	  imd command which can extract that information from images.
+
 config CMD_MEMINFO
 	tristate
 	prompt "meminfo"
@@ -1691,6 +1700,14 @@ config CMD_GPIO
 
 	  Usage: gpio_set_value GPIO VALUE
 
+config CMD_HWCLOCK
+	bool
+	depends on RTC_CLASS
+	prompt "hwclock command"
+	default y
+	help
+	  The hwclock command allows to query or set the hardware clock (RTC).
+
 config CMD_I2C
 	bool
 	depends on I2C
@@ -1818,7 +1835,7 @@ config CMD_LED_TRIGGER
 
 config CMD_USB
 	bool
-	depends on USB
+	depends on USB_HOST
 	prompt "usb command"
 	default y
 	help
@@ -1830,6 +1847,11 @@ config CMD_USB
 
 	  Options:
 		  -f	force rescan
+
+config CMD_USBGADGET
+	bool
+	depends on USB_GADGET
+	prompt "usbgadget"
 
 config CMD_WD
 	bool
@@ -1859,7 +1881,7 @@ endmenu
 
 
 
-menu "Miscelleanous"
+menu "Miscellaneous"
 
 config CMD_2048
 	tristate
@@ -1976,7 +1998,7 @@ config CMD_TIME
 	  Note: This command depends on COMMAND being interruptible,
 	  otherwise the timer may overrun resulting in incorrect results
 
-# end Miscelleanous commands
+# end Miscellaneous commands
 endmenu
 
 

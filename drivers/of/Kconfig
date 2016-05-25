@@ -4,7 +4,7 @@ config OFTREE
 
 config OFTREE_MEM_GENERIC
 	depends on OFTREE
-	depends on PPC || ARM
+	depends on PPC || ARM || ARCH_EFI
 	def_bool y
 
 config DTC
@@ -26,6 +26,12 @@ config OF_GPIO
 	depends on GPIOLIB
 	depends on OFDEVICE
 	def_bool y
+
+config OF_PCI
+	bool
+	depends on PCI
+	help
+	  OpenFirmware PCI bus accessors
 
 config OF_BAREBOX_DRIVERS
 	depends on OFDEVICE

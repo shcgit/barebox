@@ -39,10 +39,13 @@ struct console_device {
 
 	int (*tstc)(struct console_device *cdev);
 	void (*putc)(struct console_device *cdev, char c);
+	int (*puts)(struct console_device *cdev, const char *s);
 	int  (*getc)(struct console_device *cdev);
 	int (*setbrg)(struct console_device *cdev, int baudrate);
 	void (*flush)(struct console_device *cdev);
 	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
+
+	char *devname;
 
 	struct list_head list;
 

@@ -45,6 +45,10 @@ config DRIVER_SERIAL_LINUX_CONSOLE
 	default y
 	bool "linux console driver"
 
+config DRIVER_SERIAL_EFI_STDIO
+	depends on ARCH_EFI
+	bool "EFI stdio driver"
+
 config DRIVER_SERIAL_MPC5XXX
 	depends on MPC5200
 	default y
@@ -128,5 +132,9 @@ config DRIVER_SERIAL_CADENCE
 	bool "Cadence UART driver"
 	help
 	  Say Y here if you have a Cadence serial IP core.
+
+config DRIVER_SERIAL_DIGIC
+	bool "Canon DIGIC serial driver"
+	depends on ARCH_DIGIC
 
 endmenu

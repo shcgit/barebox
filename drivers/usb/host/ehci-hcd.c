@@ -57,66 +57,66 @@ struct ehci_priv {
 static struct descriptor {
 	struct usb_hub_descriptor hub;
 	struct usb_device_descriptor device;
-	struct usb_linux_config_descriptor config;
-	struct usb_linux_interface_descriptor interface;
+	struct usb_config_descriptor config;
+	struct usb_interface_descriptor interface;
 	struct usb_endpoint_descriptor endpoint;
 }  __attribute__ ((packed)) descriptor = {
-	{
-		0x8,		/* bDescLength */
-		0x29,		/* bDescriptorType: hub descriptor */
-		2,		/* bNrPorts -- runtime modified */
-		0,		/* wHubCharacteristics */
-		10,		/* bPwrOn2PwrGood */
-		0,		/* bHubCntrCurrent */
-		{},		/* Device removable */
-		{}		/* at most 7 ports! XXX */
+	.hub = {
+		.bLength		= USB_DT_HUB_NONVAR_SIZE +
+					  ((USB_MAXCHILDREN + 1 + 7) / 8),
+		.bDescriptorType	= USB_DT_HUB,
+		.bNbrPorts		= 2,	/* runtime modified */
+		.wHubCharacteristics	= 0,
+		.bPwrOn2PwrGood		= 10,
+		.bHubContrCurrent	= 0,
+		.u.hs.DeviceRemovable	= {},
+		.u.hs.PortPwrCtrlMask	= {}
 	},
-	{
-		0x12,		/* bLength */
-		1,		/* bDescriptorType: UDESC_DEVICE */
-		0x0002,		/* bcdUSB: v2.0 */
-		9,		/* bDeviceClass: UDCLASS_HUB */
-		0,		/* bDeviceSubClass: UDSUBCLASS_HUB */
-		1,		/* bDeviceProtocol: UDPROTO_HSHUBSTT */
-		64,		/* bMaxPacketSize: 64 bytes */
-		0x0000,		/* idVendor */
-		0x0000,		/* idProduct */
-		0x0001,		/* bcdDevice */
-		1,		/* iManufacturer */
-		2,		/* iProduct */
-		0,		/* iSerialNumber */
-		1		/* bNumConfigurations: 1 */
+	.device = {
+		.bLength		= USB_DT_DEVICE_SIZE,
+		.bDescriptorType	= USB_DT_DEVICE,
+		.bcdUSB			= __constant_cpu_to_le16(0x0002), /* v2.0 */
+		.bDeviceClass		= USB_CLASS_HUB,
+		.bDeviceSubClass	= 0,
+		.bDeviceProtocol	= 1,	/* bDeviceProtocol: UDPROTO_HSHUBSTT */
+		.bMaxPacketSize0	= 64,
+		.idVendor		= 0x0000,
+		.idProduct		= 0x0000,
+		.bcdDevice		= __constant_cpu_to_le16(0x0001),
+		.iManufacturer		= 1,
+		.iProduct		= 2,
+		.iSerialNumber		= 0,
+		.bNumConfigurations	= 1
 	},
-	{
-		0x9,
-		2,		/* bDescriptorType: UDESC_CONFIG */
-		cpu_to_le16(0x19),
-		1,		/* bNumInterface */
-		1,		/* bConfigurationValue */
-		0,		/* iConfiguration */
-		0x40,		/* bmAttributes: UC_SELF_POWER */
-		0		/* bMaxPower */
+	.config = {
+		.bLength		= USB_DT_CONFIG_SIZE,
+		.bDescriptorType	= USB_DT_CONFIG,
+		.wTotalLength		= __constant_cpu_to_le16(USB_DT_CONFIG_SIZE +
+					 USB_DT_INTERFACE_SIZE + USB_DT_ENDPOINT_SIZE),
+		.bNumInterfaces		= 1,
+		.bConfigurationValue	= 1,
+		.iConfiguration		= 0,
+		.bmAttributes		= USB_CONFIG_ATT_SELFPOWER,
+		.bMaxPower		= 0
 	},
-	{
-		0x9,		/* bLength */
-		4,		/* bDescriptorType: UDESC_INTERFACE */
-		0,		/* bInterfaceNumber */
-		0,		/* bAlternateSetting */
-		1,		/* bNumEndpoints */
-		9,		/* bInterfaceClass: UICLASS_HUB */
-		0,		/* bInterfaceSubClass: UISUBCLASS_HUB */
-		0,		/* bInterfaceProtocol: UIPROTO_HSHUBSTT */
-		0		/* iInterface */
+	.interface = {
+		.bLength		= USB_DT_INTERFACE_SIZE,
+		.bDescriptorType	= USB_DT_INTERFACE,
+		.bInterfaceNumber	= 0,
+		.bAlternateSetting	= 0,
+		.bNumEndpoints		= 1,
+		.bInterfaceClass	= USB_CLASS_HUB,
+		.bInterfaceSubClass	= 0,
+		.bInterfaceProtocol	= 0,	/* bInterfaceProtocol: UIPROTO_HSHUBSTT */
+		.iInterface		= 0
 	},
-	{
-		0x7,		/* bLength */
-		5,		/* bDescriptorType: UDESC_ENDPOINT */
-		0x81,		/* bEndpointAddress:
-				 * UE_DIR_IN | EHCI_INTR_ENDPT
-				 */
-		3,		/* bmAttributes: UE_INTERRUPT */
-		8, 0,		/* wMaxPacketSize */
-		255		/* bInterval */
+	.endpoint = {
+		.bLength		= USB_DT_ENDPOINT_SIZE,
+		.bDescriptorType	= USB_DT_ENDPOINT,
+		.bEndpointAddress	= 0x81,	/* UE_DIR_IN | EHCI_INTR_ENDPT */
+		.bmAttributes		= USB_ENDPOINT_XFER_INT,
+		.wMaxPacketSize		= __constant_cpu_to_le16((USB_MAXCHILDREN + 1 + 7) / 8),
+		.bInterval		= 255
 	},
 };
 
@@ -229,16 +229,29 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	qh = &ehci->qh_list[1];
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
-	c = (usb_pipespeed(pipe) != USB_SPEED_HIGH &&
+	c = (dev->speed != USB_SPEED_HIGH &&
 	     usb_pipeendpoint(pipe) == 0) ? 1 : 0;
 	endpt = (8 << 28) |
 	    (c << 27) |
 	    (usb_maxpacket(dev, pipe) << 16) |
 	    (0 << 15) |
 	    (1 << 14) |
-	    (usb_pipespeed(pipe) << 12) |
 	    (usb_pipeendpoint(pipe) << 8) |
 	    (0 << 7) | (usb_pipedevice(pipe) << 0);
+	switch (dev->speed) {
+	case USB_SPEED_FULL:
+		endpt |= 0 << 12;
+		break;
+	case USB_SPEED_LOW:
+		endpt |= 1 << 12;
+		break;
+	case USB_SPEED_HIGH:
+		endpt |= 2 << 12;
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	qh->qh_endpt1 = cpu_to_hc32(endpt);
 	endpt = (1 << 30) |
 	    (dev->portnr << 23) |
@@ -423,16 +436,6 @@ fail:
 	return -1;
 }
 
-static inline int min3(int a, int b, int c)
-{
-
-	if (b < a)
-		a = b;
-	if (c < a)
-		a = c;
-	return a;
-}
-
 #ifdef CONFIG_MACH_EFIKA_MX_SMARTBOOK
 #include <usb/ulpi.h>
 /*
@@ -490,12 +493,12 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		case USB_DT_DEVICE:
 			dev_dbg(ehci->dev, "USB_DT_DEVICE request\n");
 			srcptr = &descriptor.device;
-			srclen = 0x12;
+			srclen = descriptor.device.bLength;
 			break;
 		case USB_DT_CONFIG:
 			dev_dbg(ehci->dev, "USB_DT_CONFIG config\n");
 			srcptr = &descriptor.config;
-			srclen = 0x19;
+			srclen = le16_to_cpu(descriptor.config.wTotalLength);
 			break;
 		case USB_DT_STRING:
 			dev_dbg(ehci->dev, "USB_DT_STRING config\n");
@@ -530,7 +533,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		case USB_DT_HUB:
 			dev_dbg(ehci->dev, "USB_DT_HUB config\n");
 			srcptr = &descriptor.hub;
-			srclen = 0x8;
+			srclen = descriptor.hub.bLength;
 			break;
 		default:
 			dev_dbg(ehci->dev, "unknown value %x\n", le16_to_cpu(req->value));
@@ -704,7 +707,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	wait_ms(1);
-	len = min3(srclen, le16_to_cpu(req->length), length);
+	len = min3(srclen, (int)le16_to_cpu(req->length), length);
 	if (srcptr != NULL && len > 0)
 		memcpy(buffer, srcptr, len);
 	else
@@ -858,7 +861,7 @@ static int ehci_detect(struct device_d *dev)
 {
 	struct ehci_priv *ehci = dev->priv;
 
-	return usb_host_detect(&ehci->host, 0);
+	return usb_host_detect(&ehci->host);
 }
 
 int ehci_register(struct device_d *dev, struct ehci_data *data)
