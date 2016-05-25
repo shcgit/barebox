@@ -107,7 +107,7 @@ static int do_crc(int argc, char *argv[])
 	return err;
 }
 
-BAREBOX_CMD_HELP_START(crc)
+BAREBOX_CMD_HELP_START(crc32)
 BAREBOX_CMD_HELP_TEXT("Calculate a CRC32 checksum of a memory area.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
@@ -128,5 +128,5 @@ BAREBOX_CMD_START(crc32)
 #endif
 					  "vV] AREA")
 	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
-	BAREBOX_CMD_HELP(cmd_crc_help)
+	BAREBOX_CMD_HELP(cmd_crc32_help)
 BAREBOX_CMD_END

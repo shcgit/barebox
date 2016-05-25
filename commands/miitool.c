@@ -115,13 +115,13 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	for (i = 0; i < 32; i++)
 		mii_val[i] = mii->read(mii, phydev->addr, i);
 
+	printf("%s: %s%d: ", phydev->cdev.name,
+		mii->parent->name, mii->parent->id);
+
 	if (mii_val[MII_BMCR] == 0xffff || mii_val[MII_BMSR] == 0x0000) {
 		fprintf(stderr, "  No MII transceiver present!.\n");
 		return -1;
 	}
-
-	printf("%s: %s%d: ", phydev->cdev.name,
-		mii->parent->name, mii->parent->id);
 
 	/* Descriptive rename. */
 	bmcr = mii_val[MII_BMCR];
@@ -293,12 +293,6 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-v", "increase verbosity")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page miitool_command
-This utility checks or sets the status of a network interface's
-Media Independent Interface (MII) unit. Most fast ethernet
-adapters use an MII to autonegotiate link speed and duplex setting.
- */
 BAREBOX_CMD_START(miitool)
 	.cmd		= do_miitool,
 	BAREBOX_CMD_DESC("view media-independent interface status")
