@@ -5,7 +5,7 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-mtdparts="512k(barebox)ro,256k(bareboxenv),3328k(kernel),-(root)"
+mtdparts="512k(boot)ro,256k(env),3328k(kernel),28672k(root),-(nand-bbox)"
 kernelname="mxc_nand"
 
 mtdparts-add -b -d nand0 -k ${kernelname} -p ${mtdparts}

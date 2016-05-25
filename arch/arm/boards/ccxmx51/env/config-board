@@ -7,4 +7,13 @@ global.autoboot_timeout=2
 global.boot.default=nand
 
 # Board bootargs
-global.linux.bootargs.base="earlyprintk console=ttymxc0,115200n8"
+global.linux.bootargs.base="earlyprintk console=ttymxc0,115200n8 ubi.mtd=nand-bbox"
+
+# Beeper
+gpio_direction_output 87 1
+msleep 250
+gpio_direction_output 87 0
+
+# Backlight
+gpio_direction_output 64 1
+#i2c_write -a 0x30 -b 0 -r 0x00 0x0b
