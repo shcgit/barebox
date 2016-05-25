@@ -1,7 +1,10 @@
 bareboxenv
 bin2c
+fix_size
 gen_netx_image
 kallsyms
+kernel-install
+kernel-install-target
 kwbimage
 kwboot
 mk-am35xx-spi-image
@@ -10,3 +13,5 @@ mkublheader
 omap_signGP
 zynq_mkimage
 socfpga_mkimage
+bareboxcrc32
+bareboxcrc32-target

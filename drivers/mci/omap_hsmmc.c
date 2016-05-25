@@ -620,6 +620,12 @@ static int omap_mmc_probe(struct device_d *dev)
 			hsmmc->mci.devname = pdata->devname;
 	}
 
+	if (dev->device_node) {
+		const char *alias = of_alias_get(dev->device_node);
+		if (alias)
+			hsmmc->mci.devname = xstrdup(alias);
+	}
+
 	dev->priv = hsmmc;
 	dev->detect = omap_mmc_detect,
 
@@ -640,9 +646,22 @@ static struct platform_device_id omap_mmc_ids[] = {
 	},
 };
 
+static __maybe_unused struct of_device_id omap_mmc_dt_ids[] = {
+	{
+		.compatible = "ti,omap3-hsmmc",
+		.data = (unsigned long)&omap3_data,
+	}, {
+		.compatible = "ti,omap4-hsmmc",
+		.data = (unsigned long)&omap4_data,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d omap_mmc_driver = {
 	.name  = "omap-hsmmc",
 	.probe = omap_mmc_probe,
 	.id_table = omap_mmc_ids,
+	.of_compatible = DRV_OF_COMPAT(omap_mmc_dt_ids),
 };
 device_platform_driver(omap_mmc_driver);
