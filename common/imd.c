@@ -212,7 +212,7 @@ const char *imd_string_data(struct imd_header *imd, int index)
 	int len = imd_read_length(imd);
 	char *p = (char *)(imd + 1);
 
-	if (!imd_is_string(imd->type))
+	if (!imd_is_string(imd_read_type(imd)))
 		return NULL;
 
 	for (i = 0; total < len; total += l, p += l) {
@@ -239,7 +239,7 @@ char *imd_concat_strings(struct imd_header *imd)
 	char *str;
 	char *data = (char *)(imd + 1);
 
-	if (!imd_is_string(imd->type))
+	if (!imd_is_string(imd_read_type(imd)))
 		return NULL;
 
 	str = malloc(len);
@@ -306,7 +306,7 @@ int imd_command(int argc, char *argv[])
 		case 't':
 			type = imd_name_to_type(optarg);
 			if (type == IMD_TYPE_INVALID) {
-				fprintf(stderr, "no such type: %s\n", optarg);
+				eprintf("no such type: %s\n", optarg);
 				return -ENOSYS;
 			}
 			break;
@@ -325,7 +325,7 @@ int imd_command(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "No image given\n");
+		eprintf("No image given\n");
 		return -ENOSYS;
 	}
 

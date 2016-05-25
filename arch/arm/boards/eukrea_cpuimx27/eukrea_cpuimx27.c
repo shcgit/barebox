@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Eric Benard, Eukrea Electromatique
  * Based on pcm038.c which is :
- * Copyright (C) 2007 Sascha Hauer, Pengutronix 
+ * Copyright (C) 2007 Sascha Hauer, Pengutronix
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,7 +22,6 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx27-regs.h>
-#include <fec.h>
 #include <notifier.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
@@ -39,7 +38,7 @@
 #include <mach/imx-pll.h>
 #include <mach/weim.h>
 #include <mach/imxfb.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
 #include <mfd/lp3972.h>

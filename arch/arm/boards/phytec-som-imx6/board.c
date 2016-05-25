@@ -29,7 +29,8 @@
 #include <init.h>
 #include <of.h>
 #include <mach/bbu.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
+
 #include <globalvar.h>
 
 #include <linux/micrel_phy.h>
@@ -113,7 +114,8 @@ static int physom_imx6_devices_init(void)
 
 	} else if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")) {
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
 
 		barebox_set_hostname("phyCORE-i.MX6");
 		default_environment_path = "/chosen/environment-spinor";
@@ -124,20 +126,20 @@ static int physom_imx6_devices_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
-		environment_path = asprintf("/chosen/environment-sd%d",
-					bootsource_get_instance() + 1);
+		environment_path = basprintf("/chosen/environment-sd%d",
+					       bootsource_get_instance() + 1);
 		envdev = "MMC";
 		break;
 	case BOOTSOURCE_NAND:
-		environment_path = asprintf("/chosen/environment-nand");
+		environment_path = basprintf("/chosen/environment-nand");
 		envdev = "NAND flash";
 		break;
 	case BOOTSOURCE_SPI:
-		environment_path = asprintf("/chosen/environment-spinor");
+		environment_path = basprintf("/chosen/environment-spinor");
 		envdev = "SPI NOR flash";
 		break;
 	default:
-		environment_path = asprintf(default_environment_path);
+		environment_path = basprintf(default_environment_path);
 		envdev = default_envdev;
 		break;
 	}
@@ -152,15 +154,23 @@ static int physom_imx6_devices_init(void)
 
 	pr_notice("Using environment in %s\n", envdev);
 
-	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+	if (of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
+		imx6_bbu_internal_mmc_register_handler("mmc3",
+						"/dev/mmc3",
+						BBU_HANDLER_FLAG_DEFAULT);
+	} else {
+		imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+	}
 
 	defaultenv_append_directory(defaultenv_physom_imx6);
 
 	/* Overwrite file /env/init/automount */
 	if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")) {
-		defaultenv_append_directory(defaultenv_physom_imx6_mira);
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
+		defaultenv_append_directory(defaultenv_physom_imx6_phycore);
 	}
 
 	return 0;

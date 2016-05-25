@@ -19,6 +19,7 @@
 #include <init.h>
 #include <net.h>
 #include <notifier.h>
+#include <platform_data/eth-fec.h>
 #include <asm/armlinux.h>
 #include <linux/sizes.h>
 #include <mach/esdctl.h>
