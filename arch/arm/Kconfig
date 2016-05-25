@@ -17,6 +17,11 @@ config ARM_LINUX
 config HAVE_MACH_ARM_HEAD
 	bool
 
+config ARM_USE_COMPRESSED_DTB
+	bool
+	select UNCOMPRESS
+	select LZO_DECOMPRESS
+
 menu "System Type"
 
 config BUILTIN_DTB
@@ -324,6 +329,15 @@ config ARM_UNWIND
 	  compiler. The resulting kernel image is slightly bigger but
 	  the performance is not affected. Currently, this feature
 	  only works with EABI compilers. If unsure say Y.
+
+config ARM_SEMIHOSTING
+	bool "enable ARM semihosting support"
+	help
+	  This option enables ARM semihosting support in barebox. ARM
+	  semihosting is a communication discipline that allows code
+	  running on target ARM cpu perform system calls and access
+	  the data on the host computer connected to the target via
+	  debugging channel (JTAG, SWD). If unsure say N
 
 endmenu
 
