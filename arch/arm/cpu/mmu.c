@@ -1,6 +1,4 @@
 /*
- * start-pbl.c
- *
  * Copyright (c) 2009-2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
@@ -395,7 +393,7 @@ void *dma_alloc_coherent(size_t size)
 	return ret;
 }
 
-unsigned long virt_to_phys(void *virt)
+unsigned long virt_to_phys(volatile void *virt)
 {
 	return (unsigned long)virt;
 }

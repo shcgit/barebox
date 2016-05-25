@@ -54,10 +54,16 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	size_t retlen;
 	int ret, bytes = 0, now;
 
-	debug("%s 0x%08llx %d\n", __func__, offset, count);
+	debug("%s offset: 0x%08llx (raw: 0x%08llx) count: 0x%08x\n",
+			__func__, offset, bb->offset, count);
 
 	while (count) {
-		if (mtd_block_isbad(bb->mtd, offset)) {
+		loff_t max = bb->mtd->size - bb->offset;
+
+		if (max <= 0)
+			break;
+
+		if (mtd_block_isbad(bb->mtd, bb->offset)) {
 			printf("skipping bad block at 0x%08llx\n", bb->offset);
 			bb->offset += bb->mtd->erasesize;
 			continue;
@@ -65,6 +71,9 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 
 		now = min(count, (size_t)(bb->mtd->erasesize -
 				((size_t)bb->offset % bb->mtd->erasesize)));
+
+		if (now > max)
+			now = max;
 
 		ret = mtd_read(bb->mtd, bb->offset, now, &retlen, buf);
 		if (ret < 0)
@@ -90,6 +99,11 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 	loff_t cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
 
 	while (count) {
+		loff_t max = bb->mtd->size - bb->offset;
+
+		if (max <= 0)
+			return -ENOSPC;
+
 		if (mtd_block_isbad(bb->mtd, cur_ofs)) {
 			debug("skipping bad block at 0x%08llx\n", cur_ofs);
 			bb->offset += bb->mtd->erasesize;
@@ -98,6 +112,9 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 		}
 
 		now = min(count, (size_t)(bb->mtd->erasesize));
+		if (now > max)
+			return -ENOSPC;
+
 		ret = mtd_write(bb->mtd, cur_ofs, now, &retlen, buf);
 		if (ret < 0)
 			return ret;
@@ -115,7 +132,8 @@ static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
 	struct nand_bb *bb = cdev->priv;
 	int bytes = count, now, wroffs, ret;
 
-	debug("%s offset: 0x%08llx count: 0x%08x\n", __func__, offset, count);
+	debug("%s offset: 0x%08llx (raw: 0x%08llx) count: 0x%08x\n",
+			__func__, offset, bb->offset, count);
 
 	while (count) {
 		wroffs = bb->offset % BB_WRITEBUF_SIZE;
@@ -143,16 +161,34 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct nand_bb *bb = cdev->priv;
 	struct erase_info erase = {};
+	int ret;
 
 	if (offset != 0) {
 		printf("can only erase from beginning of device\n");
 		return -EINVAL;
 	}
 
-	erase.addr = 0;
-	erase.len = bb->mtd->size;
+	while (count) {
+		if (offset + bb->mtd->erasesize > bb->mtd->size)
+			return 0;
 
-	return mtd_erase(bb->mtd, &erase);
+		if (mtd_block_isbad(bb->mtd, offset)) {
+			offset += bb->mtd->erasesize;
+			continue;
+		}
+
+		erase.addr = offset;
+		erase.len = bb->mtd->erasesize;
+
+		ret = mtd_erase(bb->mtd, &erase);
+		if (ret)
+			return ret;
+
+		offset += bb->mtd->erasesize;
+		count -= bb->mtd->erasesize;
+	}
+
+	return 0;
 }
 #endif
 
