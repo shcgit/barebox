@@ -34,7 +34,9 @@
 	KEEP(*(.initcall.9))			\
 	KEEP(*(.initcall.10))			\
 	KEEP(*(.initcall.11))			\
-	KEEP(*(.initcall.12))
+	KEEP(*(.initcall.12))			\
+	KEEP(*(.initcall.13))			\
+	KEEP(*(.initcall.14))
 
 #define BAREBOX_CMDS	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))
 
@@ -45,7 +47,8 @@
 #define BAREBOX_CLK_TABLE()			\
 	. = ALIGN(8);				\
 	__clk_of_table_start = .;		\
-	KEEP(*(.__clk_of_table_*));		\
+	KEEP(*(.__clk_of_table));		\
+	KEEP(*(.__clk_of_table_end));		\
 	__clk_of_table_end = .;
 
 #define BAREBOX_DTB()				\

@@ -106,15 +106,23 @@ static void pr_puts(int level, const char *str)
 			log_clean(barebox_log_max_messages - 1);
 
 		if (barebox_log_max_messages >= 0) {
-			log = xzalloc(sizeof(*log));
-			log->msg = xstrdup(str);
+			log = malloc(sizeof(*log));
+			if (!log)
+				goto nolog;
+
+			log->msg = strdup(str);
+			if (!log->msg) {
+				free(log);
+				goto nolog;
+			}
+
 			log->timestamp = get_time_ns();
 			log->level = level;
 			list_add_tail(&log->list, &barebox_logbuf);
 			barebox_logbuf_num_messages++;
 		}
 	}
-
+nolog:
 	if (level > barebox_loglevel)
 		return;
 
@@ -259,6 +267,19 @@ struct console_device *console_get_by_dev(struct device_d *dev)
 	return NULL;
 }
 EXPORT_SYMBOL(console_get_by_dev);
+
+struct console_device *console_get_by_name(const char *name)
+{
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (!strcmp(cdev->devname, name))
+			return cdev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(console_get_by_name);
 
 /*
  * @brief returns current used console device
