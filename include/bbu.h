@@ -4,6 +4,7 @@
 #include <asm-generic/errno.h>
 #include <linux/list.h>
 #include <linux/types.h>
+#include <filetype.h>
 
 struct bbu_data {
 #define BBU_FLAG_FORCE	(1 << 0)
@@ -41,6 +42,9 @@ void bbu_handlers_list(void);
 
 int bbu_register_handler(struct bbu_handler *);
 
+int bbu_register_std_file_update(const char *name, unsigned long flags,
+		char *devicefile, enum filetype imagetype);
+
 #else
 
 static inline int bbu_register_handler(struct bbu_handler *unused)
@@ -48,6 +52,25 @@ static inline int bbu_register_handler(struct bbu_handler *unused)
 	return -EINVAL;
 }
 
+static inline int bbu_register_std_file_update(const char *name, unsigned long flags,
+		char *devicefile, enum filetype imagetype)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_BAREBOX_UPDATE_IMX_NAND_FCB)
+int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
+int imx28_bbu_nand_register_handler(const char *name, unsigned long flags);
+#else
+static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	return -ENOSYS;
+}
+static inline int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	return -ENOSYS;
+}
 #endif
 
 #endif /* __INCLUDE_BBU_H */

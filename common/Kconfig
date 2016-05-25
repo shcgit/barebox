@@ -97,6 +97,14 @@ config FILE_LIST
 config ARCH_DMA_ADDR_T_64BIT
 	bool
 
+config BAREBOX_UPDATE_IMX_NAND_FCB
+	bool
+	depends on ARCH_IMX6 || ARCH_IMX28
+	depends on BAREBOX_UPDATE
+	depends on MTD_WRITE
+	depends on NAND_MXS
+	default y
+
 menu "General Settings"
 
 config LOCALVERSION
@@ -200,6 +208,16 @@ config BAREBOX_MAX_BARE_INIT_SIZE
 	  Define the maximum size of bare_init
 	  this will allow your bare_init to fit in SRAM as example
 	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
+
+config BAREBOX_MAX_PBLX_SIZE
+	depends on PBL_MULTI_IMAGES
+	depends on IMAGE_COMPRESSION
+	prompt "Maximum PBLX size"
+	hex
+	default 0xffffffff
+	help
+	  Define the maximum size of the PBLX image.
+	  The pblx is a self extracting barebox binary.
 
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
