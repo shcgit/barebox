@@ -43,8 +43,8 @@ behaviour persistently over reboots.
 
 nv variables can be created or removed with the :ref:`command_nv`
 command. The nv variables are made persistent using the environment
-facilities of barebox, so a :ref:`saveenv` must be issued to store the actual
-values.
+facilities of barebox, so a :ref:`command_saveenv` must be issued to store the
+actual values.
 
 examples:
 
@@ -79,7 +79,7 @@ of all variables with special meaning along with a short description::
 
   barebox:/ magicvar
   OPTARG                           optarg for hush builtin getopt
-  PATH                             colon separated list of pathes to search for executables
+  PATH                             colon separated list of paths to search for executables
   PS1                              hush prompt
   armlinux_architecture            ARM machine ID
   armlinux_system_rev              ARM system revision

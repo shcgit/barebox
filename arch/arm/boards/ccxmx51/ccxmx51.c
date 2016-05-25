@@ -19,8 +19,8 @@
 #include <init.h>
 #include <net.h>
 #include <notifier.h>
-#include <sizes.h>
 #include <asm/armlinux.h>
+#include <linux/sizes.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
 #include <mach/iim.h>
