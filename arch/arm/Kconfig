@@ -192,6 +192,18 @@ config ARCH_TEGRA
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
+	select RESET_CONTROLLER
+
+config ARCH_UEMD
+	bool "RC Module UEMD Platform"
+	select CPU_ARM1176
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLKDEV_LOOKUP
+	select OFDEVICE
+	select OFTREE
+	select CLOCKSOURCE_UEMD
+	select HAS_DEBUG_LL
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
@@ -219,6 +231,7 @@ source arch/arm/mach-socfpga/Kconfig
 source arch/arm/mach-versatile/Kconfig
 source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig
+source arch/arm/mach-uemd/Kconfig
 source arch/arm/mach-zynq/Kconfig
 
 config ARM_ASM_UNIFIED
@@ -239,7 +252,7 @@ config THUMB2_BAREBOX
 	bool "Compile barebox in thumb-2 mode (read help)"
 	help
 	  This enables compilation of barebox in thumb-2 mode which generates
-	  ~25% smaller binaries. Arm Assembly code needs some fixups to be able
+	  ~25% smaller binaries. ARM assembly code needs some fixups to be able
 	  to work correctly in thumb-2 mode. the barebox core should have these
 	  fixups since most assembly code is derived from the Kernel. However,
 	  your board lowlevel init code may break in thumb-2 mode. You have been
@@ -254,22 +267,7 @@ config ARM_BOARD_APPEND_ATAG
 
 endmenu
 
-menu "Arm specific settings"
-
-config CMD_ARM_CPUINFO
-	bool "cpuinfo command"
-	default y
-	help
-	  Say yes here to get a cpuinfo command to show some
-	  CPU information using the cp15 registers
-
-config CMD_ARM_MMUINFO
-	bool "mmuinfo command"
-	depends on CPU_V7
-	default n
-	help
-	  Say yes here to get a mmuinfo command to show some
-	  MMU and cache information using the cp15 registers
+menu "ARM specific settings"
 
 config CPU_V7_DCACHE_SKIP
 	bool "Skip DCache Invalidate"

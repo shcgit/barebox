@@ -20,6 +20,7 @@
 *.elf
 *.mcp
 *.orig
+*.bct
 *.dcd
 *.dcd.S
 *.bbenv
@@ -49,6 +50,11 @@ barebox-flash-image
 System.map
 Module.symvers
 barebox_default_env*
+
+#
+# git files that we don't want to ignore even it they are dot-files
+#
+!.gitignore
 
 #
 # Generated include files

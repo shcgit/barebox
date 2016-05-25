@@ -61,12 +61,12 @@ const struct {
 
 static const char *media_list(unsigned mask, unsigned mask2, int best)
 {
-	static char buf[100];
+	static char buf[256];
 	int i;
 
 	*buf = '\0';
 
-	if (mask & BMCR_SPEED1000) {
+	if (mask2) {
 		if (mask2 & ADVERTISE_1000FULL) {
 			strcat(buf, " ");
 			strcat(buf, "1000baseT-FD");
@@ -209,7 +209,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 			printf("remote fault, ");
 		printf((bmsr & BMSR_LSTATUS) ? "link ok" : "no link");
 		printf("\n  capabilities:%s", media_list(bmsr >> 6, bmcr2, 0));
-		printf("\n  advertising: %s", media_list(advert, lpa2 >> 2, 0));
+		printf("\n  advertising: %s", media_list(advert, bmcr2, 0));
 
 #define LPA_ABILITY_MASK	(LPA_10HALF | LPA_10FULL \
 				| LPA_100HALF | LPA_100FULL \
@@ -217,7 +217,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 
 		if (lkpar & LPA_ABILITY_MASK)
 			printf("\n  link partner:%s",
-				media_list(lkpar, bmcr2, 0));
+				media_list(lkpar, lpa2 >> 2, 0));
 		printf("\n");
 	}
 
@@ -285,8 +285,12 @@ static int do_miitool(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(miitool)
-BAREBOX_CMD_HELP_USAGE("miitool [[[-v] -v] -v] <phy>\n")
-BAREBOX_CMD_HELP_SHORT("view status for MII <phy>.\n")
+BAREBOX_CMD_HELP_TEXT("This utility checks or sets the status of a network interface's")
+BAREBOX_CMD_HELP_TEXT("Media Independent Interface (MII) unit. Most fast ethernet")
+BAREBOX_CMD_HELP_TEXT("adapters use an MII to autonegotiate link speed and duplex setting.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-v", "increase verbosity")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -297,6 +301,8 @@ adapters use an MII to autonegotiate link speed and duplex setting.
  */
 BAREBOX_CMD_START(miitool)
 	.cmd		= do_miitool,
-	.usage		= "view media-independent interface status",
+	BAREBOX_CMD_DESC("view media-independent interface status")
+	BAREBOX_CMD_OPTS("[-v] PHY")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_miitool_help)
 BAREBOX_CMD_END

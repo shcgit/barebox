@@ -20,6 +20,7 @@
 #include <asm/memory.h>
 #include <mach/iomap.h>
 #include <mach/lowlevel.h>
+#include <mach/tegra114-sysctr.h>
 
 static struct NS16550_plat debug_uart = {
 	.shift = 2,
@@ -30,7 +31,8 @@ static int tegra_add_debug_console(void)
 	unsigned long base = 0;
 
 	if (!of_machine_is_compatible("nvidia,tegra20") &&
-	    !of_machine_is_compatible("nvidia,tegra30"))
+	    !of_machine_is_compatible("nvidia,tegra30") &&
+	    !of_machine_is_compatible("nvidia,tegra124"))
 		return 0;
 
 	/* figure out which UART to use */
@@ -74,7 +76,8 @@ mem_initcall(tegra20_mem_init);
 
 static int tegra30_mem_init(void)
 {
-	if (!of_machine_is_compatible("nvidia,tegra30"))
+	if (!of_machine_is_compatible("nvidia,tegra30") &&
+	    !of_machine_is_compatible("nvidia,tegra124"))
 		return 0;
 
 	arm_add_mem_device("ram0", SZ_2G, tegra30_get_ramsize());
@@ -82,3 +85,27 @@ static int tegra30_mem_init(void)
 	return 0;
 }
 mem_initcall(tegra30_mem_init);
+
+static int tegra114_architected_timer_init(void)
+{
+	u32 freq, reg;
+
+	if (!of_machine_is_compatible("nvidia,tegra114") &&
+	    !of_machine_is_compatible("nvidia,tegra124"))
+		return 0;
+
+	freq = tegra_get_osc_clock();
+
+	/* ARM CNTFRQ */
+	asm("mcr p15, 0, %0, c14, c0, 0\n" : : "r" (freq));
+
+	/* Tegra specific SYSCTR */
+	writel(freq, TEGRA_SYSCTR0_BASE + TEGRA_SYSCTR0_CNTFID0);
+
+	reg = readl(TEGRA_SYSCTR0_BASE + TEGRA_SYSCTR0_CNTCR);
+	reg |= TEGRA_SYSCTR0_CNTCR_ENABLE | TEGRA_SYSCTR0_CNTCR_HDBG;
+	writel(reg, TEGRA_SYSCTR0_BASE + TEGRA_SYSCTR0_CNTCR);
+
+	return 0;
+}
+coredevice_initcall(tegra114_architected_timer_init);

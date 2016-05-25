@@ -58,6 +58,8 @@ int ifup(const char *name, unsigned flags)
 	if (edev && edev->ipaddr && !(flags & IFUP_FLAG_FORCE))
 		return 0;
 
+	eth_set_current(edev);
+
 	env_push_context();
 
 	setenv("ip", "");
@@ -134,6 +136,13 @@ int ifup_all(unsigned flags)
 	while ((d = readdir(dir))) {
 		if (*d->d_name == '.')
 			continue;
+		/*
+		 * Skip xxx-discover files since these are no
+		 * network configuration files, but scripts to bring
+		 * up network interface xxx.
+		 */
+		if (strstr(d->d_name, "-discover"))
+			continue;
 		ifup(d->d_name, flags);
 	}
 
@@ -171,14 +180,21 @@ static int do_ifup(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(ifup)
-BAREBOX_CMD_HELP_USAGE("ifup [OPTIONS] <interface>\n")
-BAREBOX_CMD_HELP_OPT  ("-a",  "bring up all interfaces\n")
-BAREBOX_CMD_HELP_OPT  ("-f",  "Force. Configure even if ip already set\n")
+BAREBOX_CMD_HELP_TEXT("Each INTF must have a script /env/network/INTF that set the variables")
+BAREBOX_CMD_HELP_TEXT("ip (to 'static' or 'dynamic'), ipaddr, netmask, gateway, serverip and/or")
+BAREBOX_CMD_HELP_TEXT("ethaddr. A script /env/network/INTF-discover can contains for discovering")
+BAREBOX_CMD_HELP_TEXT("the ethernet device, e.g. 'usb'.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-a",  "bring up all interfaces")
+BAREBOX_CMD_HELP_OPT ("-f",  "Force. Configure even if ip already set")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ifup)
 	.cmd		= do_ifup,
-	.usage		= "Bring up network interfaces",
+	BAREBOX_CMD_DESC("bring a network interface up")
+	BAREBOX_CMD_OPTS("[-af] [INTF]")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_ifup_help)
 BAREBOX_CMD_END
 

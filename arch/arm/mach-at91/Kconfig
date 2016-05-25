@@ -461,6 +461,11 @@ config MACH_SAMA5D3XEK
 	help
 	  Select this if you are using Atmel's SAMA5D3X-EK Evaluation Kit.
 
+config MACH_SAMA5D3_XPLAINED
+	bool "Atmel SAMA5D3_XPLAINED Evaluation Kit"
+	help
+	  Select this if you are using Atmel's SAMA5D3_XPLAINED Evaluation Kit.
+
 endchoice
 
 endif
@@ -523,24 +528,6 @@ config CALAO_MOB_TNY_MD2
 config CALAO_MB_QIL_A9260
 	bool "MB-QIL A9260 Motherboard Board support"
 	depends on MACH_QIL_A9260 || MACH_QIL_A9G20
-
-if COMMAND_SUPPORT
-
-config CMD_AT91MUX
-	bool "at91mux dump command"
-	default y
-
-config CMD_AT91CLK
-	bool "at91clk dump command"
-	default y
-
-config CMD_AT91_BOOT_TEST
-	bool "at91_boot_test"
-	help
-	  allow to upload a boot binary to sram and execute it
-	  useful to test bootstrap or barebox lowlevel init
-
-endif
 
 config AT91_BOOTSTRAP
 	bool "at91 bootstrap"

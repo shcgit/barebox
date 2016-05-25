@@ -13,7 +13,7 @@ hostprogs-y                      += kernel-install
 hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
 hostprogs-$(CONFIG_ARCH_MVEBU)   += kwbimage kwboot
 hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
-hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-am35xx-spi-image
+hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-am3xxx-spi-image
 hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
@@ -24,6 +24,7 @@ subdir-$(CONFIG_OMAP4_USBBOOT)	+= omap4_usbboot
 subdir-$(CONFIG_ARCH_IMX)	+= imx
 subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
+subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 
 targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
 targetprogs-$(CONFIG_KERNEL_INSTALL_TARGET) += kernel-install-target

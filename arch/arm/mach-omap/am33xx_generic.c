@@ -12,10 +12,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
  */
 
 #include <common.h>
@@ -141,6 +137,12 @@ static int am33xx_bootsource(void)
 	case 0x0b:
 		src = BOOTSOURCE_SPI;
 		break;
+	case 0x41:
+		src = BOOTSOURCE_SERIAL;
+		break;
+	case 0x44:
+		src = BOOTSOURCE_USB;
+		break;
 	default:
 		src = BOOTSOURCE_UNKNOWN;
 	}
@@ -220,22 +222,22 @@ int am33xx_devices_init(void)
 #define UART_RESET		(0x1 << 1)
 #define UART_SMART_IDLE_EN	(0x1 << 0x3)
 
-void am33xx_uart0_soft_reset(void)
+void am33xx_uart_soft_reset(void __iomem *uart_base)
 {
 	int reg;
 
-	reg = readl(AM33XX_UART0_BASE + UART_SYSCFG_OFFSET);
+	reg = readl(uart_base + UART_SYSCFG_OFFSET);
 	reg |= UART_RESET;
-	writel(reg, (AM33XX_UART0_BASE + UART_SYSCFG_OFFSET));
+	writel(reg, (uart_base + UART_SYSCFG_OFFSET));
 
-	while ((readl(AM33XX_UART0_BASE + UART_SYSSTS_OFFSET) &
+	while ((readl(uart_base + UART_SYSSTS_OFFSET) &
 		UART_CLK_RUNNING_MASK) != UART_CLK_RUNNING_MASK)
 		;
 
 	/* Disable smart idle */
-	reg = readl((AM33XX_UART0_BASE + UART_SYSCFG_OFFSET));
+	reg = readl((uart_base + UART_SYSCFG_OFFSET));
 	reg |= UART_SMART_IDLE_EN;
-	writel(reg, (AM33XX_UART0_BASE + UART_SYSCFG_OFFSET));
+	writel(reg, (uart_base + UART_SYSCFG_OFFSET));
 }
 
 

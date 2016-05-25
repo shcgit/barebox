@@ -297,7 +297,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 		return -EINVAL;
 	}
 
-	data->of_root_node = of_unflatten_dtb(NULL, fdt);
+	data->of_root_node = of_unflatten_dtb(fdt);
 	if (!data->of_root_node) {
 		pr_err("unable to unflatten devicetree\n");
 		free(fdt);
@@ -312,7 +312,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
-		printf("OS image is at 0x%08x-0x%08x\n",
+		printf("OS image is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
 				data->os_res->start,
 				data->os_res->end);
 	else
@@ -329,7 +329,7 @@ static void bootm_print_info(struct image_data *data)
 			printf(", multifile image %d", data->initrd_num);
 		printf("\n");
 		if (data->initrd_res)
-			printf("initrd is at 0x%08x-0x%08x\n",
+			printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
 				data->initrd_res->start,
 				data->initrd_res->end);
 		else
@@ -403,7 +403,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(data);
 		if (ret) {
-			printf("loading os image failed with %s\n",
+			printf("Loading OS image failed with %s\n",
 					strerror(-ret));
 			goto err_out;
 		}
@@ -428,7 +428,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
-	printf("\nLoading OS %s '%s'", file_type_to_string(os_type),
+	printf("\nLoading %s '%s'", file_type_to_string(os_type),
 			data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
@@ -442,7 +442,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 				goto err_out;
 		} else {
 			data->of_root_node = of_get_root_node();
-			if (data->of_root_node)
+			if (bootm_verbose(data) > 1 && data->of_root_node)
 				printf("using internal devicetree\n");
 		}
 	}
@@ -455,7 +455,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("no image handler found for image type %s\n",
 			file_type_to_string(os_type));
 		if (os_type == filetype_uimage)
-			printf("and os type: %d\n", data->os->header.ih_os);
+			printf("and OS type: %d\n", data->os->header.ih_os);
 		ret = -ENODEV;
 		goto err_out;
 	}

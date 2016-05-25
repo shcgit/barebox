@@ -50,6 +50,10 @@ config ARCH_TEGRA_3x_SOC
 	bool
 	select PINCTRL_TEGRA30
 
+config ARCH_TEGRA_124_SOC
+	bool
+	select PINCTRL_TEGRA30
+
 menu "select Tegra boards to be built"
 
 config MACH_TORADEX_COLIBRI_T20
@@ -63,6 +67,12 @@ config MACH_TOSHIBA_AC100
 config MACH_NVIDIA_BEAVER
 	bool "NVIDIA Beaver"
 	select ARCH_TEGRA_3x_SOC
+	select I2C
+	select I2C_TEGRA
+
+config MACH_NVIDIA_JETSON
+	bool "NVIDIA Jetson TK1"
+	select ARCH_TEGRA_124_SOC
 
 endmenu
 

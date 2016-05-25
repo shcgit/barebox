@@ -21,10 +21,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
  */
 
 #ifndef _OMAP3_SPI_H_
@@ -93,6 +89,7 @@ struct omap3_spi_master {
 			     * offset of 0x100 between start of register space
 			     * and registers
 			     */
+	int swap_miso_mosi;
 };
 
 #endif /* _OMAP3_SPI_H_ */

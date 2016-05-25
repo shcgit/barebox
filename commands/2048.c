@@ -337,6 +337,8 @@ static int do_2048(int argc, char *argv[])
 		return test();
 	}
 
+	score = 0;
+
 	printf("\033[?25l\033[2J\033[H");
 
 	memset(board,0,sizeof(board));
@@ -378,12 +380,13 @@ static int do_2048(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(2048)
-BAREBOX_CMD_HELP_USAGE("2048\n")
-BAREBOX_CMD_HELP_SHORT("The 2048 game\n")
+BAREBOX_CMD_HELP_TEXT("Use your arrow keys to move the tiles. When two tiles with")
+BAREBOX_CMD_HELP_TEXT("the same number touch, they merge into one!")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(2048)
 	.cmd		= do_2048,
-	.usage		= "Usage: 2048",
+	BAREBOX_CMD_DESC("the 2048 game")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_2048_help)
 BAREBOX_CMD_END

@@ -25,6 +25,7 @@
 #include <mach/tegra20-pmc.h>
 #include <mach/tegra30-car.h>
 #include <mach/tegra30-flow.h>
+#include <mach/tegra124-car.h>
 
 /* instruct the PMIC to enable the CPU power rail */
 static void enable_maincomplex_powerrail(void)
@@ -42,8 +43,12 @@ static void assert_maincomplex_reset(int num_cores)
 	u32 mask = 0;
 	int i;
 
-	for (i = 0; i < num_cores; i++)
-		mask |= 0x1111 << i;
+	for (i = 0; i < num_cores; i++) {
+		if (tegra_get_chiptype() >= TEGRA114)
+			mask |= 0x111001 << i;
+		else
+			mask |= 0x1111 << i;
+	}
 
 	writel(mask, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_SET);
 	writel(CRC_RST_DEV_L_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_SET);
@@ -52,7 +57,14 @@ static void assert_maincomplex_reset(int num_cores)
 /* release reset state of the first core of the main CPU complex */
 static void deassert_cpu0_reset(void)
 {
-	writel(0x1111, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_CLR);
+	u32 reg;
+
+	if (tegra_get_chiptype() >= TEGRA114)
+		reg = 0x21fff00f;
+	else
+		reg = 0x1111;
+
+	writel(reg, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_CLR);
 	writel(CRC_RST_DEV_L_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_CLR);
 }
 
@@ -92,6 +104,14 @@ static struct pll_config pllx_config_table[][4] = {
 		{600,  12, 0, 8 },
 		{600,  26, 0, 8 },
 	}, /* TEGRA 30 */
+	{
+	}, /* TEGRA 114 */
+	{
+		{ 108,  1, 1, 0 },
+		{  73,  1, 1, 0 },
+		{ 116,  1, 1, 0 },
+		{ 108,  2, 1, 0 },
+	}, /* TEGRA 124 */
 };
 
 static void init_pllx(void)
@@ -106,6 +126,14 @@ static void init_pllx(void)
 		return;
 
 	chiptype = tegra_get_chiptype();
+
+	/* disable IDDQ on T124 */
+	if (chiptype == TEGRA124) {
+		reg = readl(TEGRA_CLK_RESET_BASE + CRC_PLLX_MISC_3);
+		reg &= ~CRC_PLLX_MISC_3_IDDQ;
+		writel(reg, TEGRA_CLK_RESET_BASE + CRC_PLLX_MISC_3);
+		tegra_ll_delay_usec(2);
+	}
 
 	osc_freq = (readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL) &
 		    CRC_OSC_CTRL_OSC_FREQ_MASK) >> CRC_OSC_CTRL_OSC_FREQ_SHIFT;
@@ -168,7 +196,7 @@ static void start_cpu0_clocks(void)
 		       CRC_CLK_SOURCE_MSEL_SRC_SHIFT),
 		       TEGRA_CLK_RESET_BASE + CRC_CLK_SOURCE_MSEL);
 		writel(CRC_CLK_OUT_ENB_V_MSELECT,
-		       TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_V);
+		       TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_V_SET);
 		tegra_ll_delay_usec(3);
 		writel(CRC_RST_DEV_V_MSELECT,
 		       TEGRA_CLK_RESET_BASE + CRC_RST_DEV_V_CLR);
@@ -176,7 +204,7 @@ static void start_cpu0_clocks(void)
 
 	/* deassert clock stop for cpu 0 */
 	reg = readl(TEGRA_CLK_RESET_BASE + CRC_CLK_CPU_CMPLX);
-	reg &= ~CRC_CLK_CPU_CMPLX_CPU0_CLK_STP;
+	reg &= ~(0xf << 8);
 	writel(reg, TEGRA_CLK_RESET_BASE + CRC_CLK_CPU_CMPLX);
 
 	/* enable main CPU complex clock */
@@ -188,23 +216,35 @@ static void start_cpu0_clocks(void)
 	tegra_ll_delay_usec(300);
 }
 
-static void maincomplex_powerup(void)
+static void power_up_partition(u32 partid)
 {
 	u32 reg;
 
-	if (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) &
-	      PMC_PWRGATE_STATUS_CPU)) {
-		writel(PMC_PWRGATE_TOGGLE_START | PMC_PWRGATE_TOGGLE_PARTID_CPU,
+	if (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) & (1 << partid))) {
+		writel(PMC_PWRGATE_TOGGLE_START | partid,
 		       TEGRA_PMC_BASE + PMC_PWRGATE_TOGGLE);
 
 		while (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) &
-			 PMC_PWRGATE_STATUS_CPU));
+			(1 << partid)));
 
 		reg = readl(TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
-		reg |= PMC_REMOVE_CLAMPING_CMD_CPU;
+		reg |= (1 << partid);
 		writel(reg, TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
 
 		tegra_ll_delay_usec(1000);
+	}
+}
+
+static void maincomplex_powerup(void)
+{
+	/* main cpu rail */
+	power_up_partition(PMC_PARTID_CRAIL);
+
+	if (tegra_get_chiptype() >= TEGRA114) {
+		/* fast cluster uncore part */
+		power_up_partition(PMC_PARTID_C0NC);
+		/* fast cluster cpu0 part */
+		power_up_partition(PMC_PARTID_CE0);
 	}
 }
 
@@ -220,9 +260,13 @@ static void tegra_cluster_switch_hp(void)
 void tegra_avp_reset_vector(uint32_t boarddata)
 {
 	int num_cores;
+	unsigned int entry_address = 0;
+
+	if (tegra_cpu_is_maincomplex())
+		tegra_maincomplex_entry();
 
 	/* we want to bring up the high performance CPU complex */
-	if (tegra_get_chiptype() == TEGRA30)
+	if (tegra_get_chiptype() >= TEGRA30)
 		tegra_cluster_switch_hp();
 
 	/* get the number of cores in the main CPU complex of the current SoC */
@@ -234,8 +278,18 @@ void tegra_avp_reset_vector(uint32_t boarddata)
 	stop_maincomplex_clocks(num_cores);
 
 	/* set start address for the main CPU complex processors */
-	writel(tegra_maincomplex_entry - get_runtime_offset(),
-	       TEGRA_EXCEPTION_VECTORS_BASE + 0x100);
+	switch (tegra_get_chiptype()) {
+	case TEGRA20:
+		entry_address = 0x108000;
+		break;
+	case TEGRA30:
+	case TEGRA124:
+		entry_address = 0x80108000;
+		break;
+	default:
+		break;
+	}
+	writel(entry_address, TEGRA_EXCEPTION_VECTORS_BASE + 0x100);
 
 	/* put boarddata in scratch reg, for main CPU to fetch after startup */
 	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));

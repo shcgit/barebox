@@ -21,9 +21,6 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
-config CMD_MEMORY
-	bool
-
 config ENV_HANDLING
 	select CRC32
 	bool
@@ -64,6 +61,8 @@ config BAREBOX_UPDATE
 
 config MENUTREE
 	bool
+	select GLOB
+	select GLOB_SORT
 
 menu "General Settings"
 
@@ -297,11 +296,6 @@ config SIMPLE_READLINE
 	default y
 	depends on !CMDLINE_EDITING
 
-config LONGHELP
-	bool
-	depends on !SHELL_NONE
-	prompt "Enable long help texts"
-
 config CBSIZE
 	int
 	prompt "Buffer size for input from the Console"
@@ -346,10 +340,12 @@ config MAXARGS
 
 config GLOB
 	bool
-	prompt "hush globbing support"
-	depends on SHELL_HUSH
+	prompt "globbing support"
 	help
 	  If you want to use wildcards like * or ? say y here.
+
+	  Globbing can be used in the HUSH shell, but is also used
+	  internally in the menutree command.
 
 config GLOB_SORT
 	select QSORT
@@ -371,13 +367,6 @@ config HUSH_FANCY_PROMPT
 	help
 	  Allow to set PS1 from the command line. PS1 can have several escaped commands
 	  like \h for the 'model' string or \w for the current working directory.
-
-config HUSH_GETOPT
-	bool
-	depends on SHELL_HUSH
-	prompt "enable builtin getopt"
-	help
-	  This enables a getopt function builtin to hush.
 
 config CMDLINE_EDITING
 	depends on !SHELL_NONE
@@ -589,7 +578,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	bool
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
-	select HUSH_GETOPT
+	select CMD_GETOPT
 	select GLOB
 	select GLOB_SORT
 	select CMD_GLOBAL
@@ -619,7 +608,7 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	depends on !HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
-	select HUSH_GETOPT
+	select CMD_GETOPT
 	select CMD_CRC
 	select CMD_CRC_CMP
 	select CMD_AUTOMOUNT if HAVE_DEFAULT_ENVIRONMENT_NEW

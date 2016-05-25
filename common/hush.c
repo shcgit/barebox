@@ -533,7 +533,7 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 	i->p = s;
 }
 
-#ifdef CONFIG_HUSH_GETOPT
+#ifdef CONFIG_CMD_GETOPT
 static int builtin_getopt(struct p_context *ctx, struct child_prog *child,
 		int argc, char *argv[])
 {
@@ -734,6 +734,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	char *p;
 	glob_t globbuf = {};
 	int ret;
+	int rcode;
 # if __GNUC__
 	/* Avoid longjmp clobbering */
 	(void) &i;
@@ -753,8 +754,6 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	child = &pi->progs[0];
 
 	if (child->group) {
-		int rcode;
-
 		debug("non-subshell grouping\n");
 		rcode = run_list_real(ctx, child->group);
 
@@ -789,7 +788,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 			free(name);
 			p = insert_var_value(child->argv[i]);
-			set_local_var(p, export_me);
+			rcode = set_local_var(p, export_me);
+			if (rcode)
+				return 1;
 
 			if (p != child->argv[i])
 				free(p);
@@ -798,7 +799,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	}
 	for (i = 0; is_assignment(child->argv[i]); i++) {
 		p = insert_var_value(child->argv[i]);
-		set_local_var(p, 0);
+		rcode = set_local_var(p, 0);
+		if (rcode)
+			return 1;
 
 		if (p != child->argv[i]) {
 			child->sp--;
@@ -808,7 +811,6 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	if (child->sp) {
 		char * str = NULL;
 		struct p_context ctx1;
-		int rcode;
 
 		str = make_string((child->argv + i));
 		rcode = parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
@@ -823,7 +825,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	remove_quotes(globbuf.gl_pathc, globbuf.gl_pathv);
 
 	if (!strcmp(globbuf.gl_pathv[0], "getopt") &&
-			IS_ENABLED(CONFIG_HUSH_GETOPT)) {
+			IS_ENABLED(CONFIG_CMD_GETOPT)) {
 		ret = builtin_getopt(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
 	} else if (!strcmp(globbuf.gl_pathv[0], "exit")) {
 		ret = builtin_exit(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
@@ -1154,7 +1156,7 @@ static void initialize_context(struct p_context *ctx)
 
 static void release_context(struct p_context *ctx)
 {
-#ifdef CONFIG_HUSH_GETOPT
+#ifdef CONFIG_CMD_GETOPT
 	struct option *opt, *tmp;
 
 	list_for_each_entry_safe(opt, tmp, &ctx->options, list) {
@@ -1932,15 +1934,11 @@ static int do_sh(int argc, char *argv[])
 	return execute_script(argv[1], argc - 1, argv + 1);
 }
 
-static const __maybe_unused char cmd_sh_help[] =
-"Usage: sh filename [arguments]\n"
-"\n"
-"Execute a shell script\n";
-
 BAREBOX_CMD_START(sh)
 	.cmd		= do_sh,
-	.usage		= "run shell script",
-	BAREBOX_CMD_HELP(cmd_sh_help)
+	BAREBOX_CMD_DESC("execute a shell script")
+	BAREBOX_CMD_OPTS("FILE [ARGUMENT...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 BAREBOX_CMD_END
 
 static int do_source(int argc, char *argv[])
@@ -1968,21 +1966,17 @@ static int do_source(int argc, char *argv[])
 
 static const char *source_aliases[] = { ".", NULL};
 
-static const __maybe_unused char cmd_source_help[] =
-"Usage: .  filename [arguments]\n"
-"or     source filename [arguments]\n"
-"\n"
-"Read  and  execute  commands  from filename in the current shell\n"
-"environment and return the exit status of the last command  exe-\n"
-"cuted from filename\n";
-
-static const __maybe_unused char cmd_source_usage[] =
-"execute shell script in current shell environment";
+BAREBOX_CMD_HELP_START(source)
+BAREBOX_CMD_HELP_TEXT("Read and execute commands from FILE in the current shell environment.")
+BAREBOX_CMD_HELP_TEXT("and return the exit status of the last command executed.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(source)
 	.aliases	= source_aliases,
 	.cmd		= do_source,
-	.usage		= cmd_source_usage,
+	BAREBOX_CMD_DESC("execute shell script in current shell environment")
+	BAREBOX_CMD_OPTS("FILE [ARGUMENT...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_source_help)
 BAREBOX_CMD_END
 
@@ -1995,31 +1989,32 @@ static int do_dummy_command(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_exit_help[] =
-"Usage: exit [n]\n"
-"\n"
-"exit script with a status of n. If n is omitted, the exit status is that\n"
-"of the last command executed\n";
+BAREBOX_CMD_HELP_START(exit)
+BAREBOX_CMD_HELP_TEXT("Exit script with status ERRLVL n. If ERRLVL is omitted, the exit status is")
+BAREBOX_CMD_HELP_TEXT("of the last command executed")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(exit)
 	.cmd		= do_dummy_command,
-	.usage		= "exit script",
+	BAREBOX_CMD_DESC("exit script")
+	BAREBOX_CMD_OPTS("[ERRLVL]")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_exit_help)
 BAREBOX_CMD_END
 
-#ifdef CONFIG_HUSH_GETOPT
-static const __maybe_unused char cmd_getopt_help[] =
-"Usage: getopt <optstring> <var>\n"
-"\n"
-"hush option parser. <optstring> is a string with valid options. Add\n"
-"a colon to an options if this option has a required argument or two\n"
-"colons for an optional argument. The current option is saved in <var>,\n"
-"arguments are saved in OPTARG. After this command additional nonopts\n"
-"can be accessed starting from $1\n";
+#ifdef CONFIG_CMD_GETOPT
+BAREBOX_CMD_HELP_START(getopt)
+BAREBOX_CMD_HELP_TEXT("OPTSTRING contains the option letters. Add a colon to an options if this")
+BAREBOX_CMD_HELP_TEXT("option has a required argument or two colons for an optional argument. The")
+BAREBOX_CMD_HELP_TEXT("current option is saved in VAR, arguments are saved in $OPTARG. Any")
+BAREBOX_CMD_HELP_TEXT("non-option arguments can be accessed starting from $1.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(getopt)
 	.cmd		= do_dummy_command,
-	.usage		= "getopt <optstring> <var>",
+	BAREBOX_CMD_DESC("parse option arguments")
+	BAREBOX_CMD_OPTS("OPTSTRING VAR")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_getopt_help)
 BAREBOX_CMD_END
 #endif

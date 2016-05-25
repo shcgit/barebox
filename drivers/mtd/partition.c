@@ -49,6 +49,32 @@ static int mtd_part_erase(struct mtd_info *mtd, struct erase_info *instr)
 	return ret;
 }
 
+static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, size_t len)
+{
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+
+	if (offset + len > mtd->size)
+		return -EINVAL;
+
+	offset += mtd->master_offset;
+
+	return mtd->master->lock(mtd->master, offset, len);
+}
+
+static int mtd_part_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
+{
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+
+	if (offset + len > mtd->size)
+		return -EINVAL;
+
+	offset += mtd->master_offset;
+
+	return mtd->master->unlock(mtd->master, offset, len);
+}
+
 static int mtd_part_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
 	if (ofs >= mtd->size)
@@ -76,14 +102,12 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		uint64_t size, unsigned long flags, const char *name)
 {
 	struct mtd_info *part;
-	int start = 0, end = 0, i;
 
 	part = xzalloc(sizeof(*part));
 
 	part->type = mtd->type;
 	part->flags = mtd->flags;
 	part->parent = &mtd->class_dev;
-	part->erasesize = mtd->erasesize;
 	part->writesize = mtd->writesize;
 	part->writebufsize = mtd->writebufsize;
 	part->oobsize = mtd->oobsize;
@@ -93,29 +117,42 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	part->ecc_strength = mtd->ecc_strength;
 	part->subpage_sft = mtd->subpage_sft;
 
-	/*
-	 * find the number of eraseregions the partition includes.
-	 * Do not bother to create the mtd_erase_region_infos as
-	 * ubi is only interested in its number. UBI does not
-	 * yet support multiple erase regions.
-	 */
-	for (i = mtd->numeraseregions - 1; i >= 0; i--) {
-		struct mtd_erase_region_info *region = &mtd->eraseregions[i];
-		if (offset >= region->offset &&
-		    offset < region->offset + region->erasesize * region->numblocks)
-			start = i;
-		if (offset + size >= region->offset &&
-		    offset + size <= region->offset + region->erasesize * region->numblocks)
-			end = i;
+	if (mtd->numeraseregions > 1) {
+		/* Deal with variable erase size stuff */
+		int i, max = mtd->numeraseregions;
+		u64 end = offset + size;
+		struct mtd_erase_region_info *regions = mtd->eraseregions;
+
+		/* Find the first erase regions which is part of this
+		 * partition. */
+		for (i = 0; i < max && regions[i].offset <= offset; i++)
+			;
+		/* The loop searched for the region _behind_ the first one */
+		if (i > 0)
+			i--;
+
+		/* Pick biggest erasesize */
+		for (; i < max && regions[i].offset < end; i++) {
+			if (part->erasesize < regions[i].erasesize) {
+				part->erasesize = regions[i].erasesize;
+			}
+		}
+		BUG_ON(part->erasesize == 0);
+	} else {
+		/* Single erase size */
+		part->erasesize = mtd->erasesize;
 	}
 
-	part->numeraseregions = end - start;
-
 	part->read = mtd_part_read;
-	part->write = mtd_part_write;
-	part->erase = mtd_part_erase;
+	if (IS_ENABLED(CONFIG_MTD_WRITE)) {
+		part->write = mtd_part_write;
+		part->erase = mtd_part_erase;
+		part->lock = mtd_part_lock;
+		part->unlock = mtd_part_unlock;
+		part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
+	}
+
 	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
-	part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
 	part->size = size;
 	part->name = strdup(name);
 

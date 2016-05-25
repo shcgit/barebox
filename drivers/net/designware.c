@@ -15,10 +15,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
  */
 
 /*
@@ -356,7 +352,7 @@ static int dwc_ether_rx(struct eth_device *dev)
 	dma_inv_range((unsigned long)desc_p->dmamac_addr,
 		      (unsigned long)desc_p->dmamac_addr + length);
 
-	net_receive(desc_p->dmamac_addr, length);
+	net_receive(dev, desc_p->dmamac_addr, length);
 
 	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
 

@@ -17,10 +17,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
  */
 
 #include <command.h>
@@ -230,14 +226,17 @@ out:
 	return 0;
 }
 
-static const __maybe_unused char cmd_memtest_help[] =
-"Usage: memtest [OPTION]...\n"
-"memtest related commands\n"
-"	-i	<iterations>	iterations [default=1, endless=0].\n"
-"	-b			perform only a test on buslines.";
+
+BAREBOX_CMD_HELP_START(memtest)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-i ITERATIONS", "perform number of iterations (default 1, 0 is endless)")
+BAREBOX_CMD_HELP_OPT("-b", "perform only a test on bus lines")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(memtest)
 	.cmd		= do_memtest,
-	.usage		= "Memory Test",
+	BAREBOX_CMD_DESC("extensive memory test")
+	BAREBOX_CMD_OPTS("[-ib]")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memtest_help)
 BAREBOX_CMD_END

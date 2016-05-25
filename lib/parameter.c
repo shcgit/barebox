@@ -362,6 +362,9 @@ static void param_enum_info(struct param_d *p)
 	struct param_enum *pe = to_param_enum(p);
 	int i;
 
+	if (pe->num_names <= 1)
+		return;
+
 	printf(" (");
 
 	for (i = 0; i < pe->num_names; i++) {
@@ -448,6 +451,32 @@ struct param_int_ro {
  */
 struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format)
+{
+	struct param_int *piro;
+	int ret;
+
+	piro = xzalloc(sizeof(*piro));
+
+	ret = __dev_add_param(&piro->param, dev, name, NULL, NULL, 0);
+	if (ret) {
+		free(piro);
+		return ERR_PTR(ret);
+	}
+
+	piro->param.value = asprintf(format, value);
+
+	return &piro->param;
+}
+
+/**
+ * dev_add_param_llint_ro - add a read only long long parameter to a device
+ * @param dev	The device
+ * @param name	The name of the parameter
+ * @param value	The value of the parameter
+ * @param format the printf format used to print the value
+ */
+struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
+		long long value, const char *format)
 {
 	struct param_int *piro;
 	int ret;
