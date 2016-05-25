@@ -104,8 +104,18 @@ unsigned long clk_get_rate(struct clk *clk)
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
+	unsigned long parent_rate = 0;
+	struct clk *parent;
+
 	if (IS_ERR(clk))
 		return 0;
+
+	parent = clk_get_parent(clk);
+	if (parent)
+		parent_rate = clk_get_rate(parent);
+
+	if (clk->ops->round_rate)
+		return clk->ops->round_rate(clk, rate, &parent_rate);
 
 	return clk_get_rate(clk);
 }
@@ -249,9 +259,29 @@ int clk_is_enabled(struct clk *clk)
 	return clk_is_enabled(clk);
 }
 
+/*
+ * Generic struct clk_ops callbacks
+ */
 int clk_is_enabled_always(struct clk *clk)
 {
 	return 1;
+}
+
+long clk_parent_round_rate(struct clk *clk, unsigned long rate,
+				unsigned long *prate)
+{
+	if (!(clk->flags & CLK_SET_RATE_PARENT))
+		return *prate;
+
+	return clk_round_rate(clk_get_parent(clk), rate);
+}
+
+int clk_parent_set_rate(struct clk *clk, unsigned long rate,
+				unsigned long parent_rate)
+{
+	if (!(clk->flags & CLK_SET_RATE_PARENT))
+		return 0;
+	return clk_set_rate(clk_get_parent(clk), rate);
 }
 
 #if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
@@ -398,7 +428,7 @@ static void dump_one(struct clk *clk, int verbose, int indent)
 {
 	struct clk *c;
 
-	printf("%*s%s (rate %ld, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
+	printf("%*s%s (rate %lu, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
 			clk_is_enabled(clk) ? "en" : "dis");
 	if (verbose) {
 

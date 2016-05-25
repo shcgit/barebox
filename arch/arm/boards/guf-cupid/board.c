@@ -68,7 +68,6 @@ static struct fb_videomode guf_cupid_fb_mode = {
 	.sync		= FB_SYNC_VERT_HIGH_ACT | FB_SYNC_CLK_INVERT |
 			  FB_SYNC_OE_ACT_HIGH,
 	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
 };
 
 #define GPIO_LCD_ENABLE		(2 * 32 + 24)
@@ -342,7 +341,7 @@ static int do_cpufreq(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 	}
 
-	printf("Switched CPU frequency to %ldMHz\n", freq);
+	printf("Switched CPU frequency to %luMHz\n", freq);
 
 	return 0;
 }

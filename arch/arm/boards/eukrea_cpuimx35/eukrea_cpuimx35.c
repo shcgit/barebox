@@ -76,7 +76,6 @@ static struct fb_videomode imxfb_mode = {
 	.vsync_len	= 3,
 	.sync		= 0,
 	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
 };
 
 static void eukrea_cpuimx35_enable_display(int enable)
@@ -348,7 +347,7 @@ static int do_cpufreq(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 	}
 
-	printf("Switched CPU frequency to %ldMHz\n", freq);
+	printf("Switched CPU frequency to %luMHz\n", freq);
 
 	return 0;
 }

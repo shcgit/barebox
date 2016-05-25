@@ -79,15 +79,15 @@
 			compatible = "fsl,imx53-ahci";
 			reg = <0x10000000 0x1000>;
 			interrupts = <28>;
-			clocks = <&clks 173>, <&clks 5>, <&clks 188>;
-			clock-names = "sata", "ahb", "per";
+			clocks = <&clks 173>, <&clks 188>, <&clks 5>;
+			clock-names = "sata_gate", "sata_ref", "ahb";
 			status = "disabled";
 		};
 
 		ipu: ipu@18000000 {
 			#crtc-cells = <1>;
 			compatible = "fsl,imx53-ipu";
-			reg = <0x18000000 0x080000000>;
+			reg = <0x18000000 0x08000000>;
 			interrupts = <11 10>;
 			clocks = <&clks 59>, <&clks 110>, <&clks 61>;
 			clock-names = "bus", "di0", "di1";
