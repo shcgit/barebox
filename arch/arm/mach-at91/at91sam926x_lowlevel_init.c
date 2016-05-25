@@ -20,11 +20,11 @@
 #include <mach/at91sam9_sdramc.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/at91_lowlevel_init.h>
+#include <mach/gpio.h>
 #include <mach/io.h>
 #include <init.h>
 #include <sizes.h>
 
-#define __gpio_init inline
 #include "gpio.h"
 
 static void inline access_sdram(void)
