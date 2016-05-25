@@ -88,6 +88,7 @@ config CMD_DMESG
 	tristate
 	prompt "dmesg"
 	select LOGBUF
+	depends on !CONSOLE_NONE
 	help
 	  Print or control the log message buffer.
 
@@ -454,7 +455,7 @@ config CMD_GO
 	  in which case the file is memmapped and executed
 
 config CMD_LOADB
-	depends on !CONSOLE_NONE
+	depends on CONSOLE_FULL
 	select CRC16
 	tristate
 	prompt "loadb"
@@ -470,7 +471,7 @@ config CMD_LOADB
 		  -c	create file if not present
 
 config CMD_LOADS
-	depends on !CONSOLE_NONE
+	depends on CONSOLE_FULL
 	tristate
 	prompt "loads"
 	help
@@ -482,7 +483,7 @@ config CMD_LOADS
 
 config CMD_LOADY
 	select XYMODEM
-	depends on !CONSOLE_NONE
+	depends on CONSOLE_FULL
 	tristate
 	prompt "loady"
 	help
@@ -673,6 +674,20 @@ endmenu
 
 menu "Environment"
 
+config CMD_NV
+	select GLOBALVAR
+	tristate
+	prompt "nv"
+	help
+	  create, set or remove non volatile variables.
+
+	  Usage: nv [-r] VAR[=VALUE]
+
+	  Add a new config non volatile named VAR, optionally set to VALUE.
+
+	  Options:
+		-r	remove a non volatile variable
+
 config CMD_EXPORT
 	depends on ENVIRONMENT_VARIABLES
 	tristate
@@ -683,6 +698,13 @@ config CMD_EXPORT
 	  Usage: export VAR[=VALUE]
 
 	  Export an environment variable to subsequently executed scripts.
+
+config CMD_DEFAULTENV
+	tristate
+	select ENV_HANDLING
+	prompt "defaultenv"
+	help
+	  restore environment from default environment
 
 config CMD_GLOBAL
 	select GLOBALVAR
@@ -1262,6 +1284,7 @@ config CMD_EDIT
 config CMD_LOGIN
 	tristate
 	select PASSWORD
+	depends on !CONSOLE_NONE
 	prompt "login"
 	help
 	  Ask for a password
@@ -1370,7 +1393,7 @@ config CMD_MENUTREE
 
 config CMD_PASSWD
 	tristate
-	select CMD_LOGIN
+	depends on CMD_LOGIN
 	prompt "passwd"
 	help
 	  Set password
