@@ -4,6 +4,7 @@ config CRC32
 	bool
 
 config CRC16
+	default y
 	bool
 
 config CRC7
@@ -85,6 +86,9 @@ endif
 config CRYPTO_PBKDF2
 	select DIGEST
 	select DIGEST_SHA1_GENERIC
+	bool
+
+config CRYPTO_RSA
 	bool
 
 config CRYPTO_KEYSTORE
