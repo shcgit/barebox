@@ -243,8 +243,8 @@ EXPORT_SYMBOL(i2c_write_reg);
  *
  * Returns the new device, or NULL.
  */
-struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
-				  struct i2c_board_info *chip)
+static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
+					 struct i2c_board_info *chip)
 {
 	struct i2c_client *client;
 	int status;
@@ -269,9 +269,8 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 
 	return client;
 }
-EXPORT_SYMBOL(i2c_new_device);
 
-void of_i2c_register_devices(struct i2c_adapter *adap)
+static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;
 
@@ -467,7 +466,7 @@ static void i2c_remove(struct device_d *dev)
 
 struct bus_type i2c_bus = {
 	.name = "i2c",
-	.match = device_match,
+	.match = device_match_of_modalias,
 	.probe = i2c_probe,
 	.remove = i2c_remove,
 };

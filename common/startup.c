@@ -44,54 +44,12 @@
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
 
-#ifdef CONFIG_DEFAULT_ENVIRONMENT
-#include "barebox_default_env.h"
-
-static int register_default_env(void)
-{
-	int ret;
-	void *defaultenv;
-
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED)) {
-		void *tmp = malloc(default_environment_size);
-
-		if (!tmp)
-			return -ENOMEM;
-
-		memcpy(tmp, default_environment, default_environment_size);
-
-		defaultenv = xzalloc(default_environment_uncompress_size);
-
-		ret = uncompress(tmp, default_environment_size,
-				NULL, NULL,
-				defaultenv, NULL, uncompress_err_stdout);
-
-		free(tmp);
-
-		if (ret) {
-			free(defaultenv);
-			return ret;
-		}
-	} else {
-		defaultenv = (void *)default_environment;
-	}
-
-
-	add_mem_device("defaultenv", (unsigned long)defaultenv,
-		       default_environment_uncompress_size,
-		       IORESOURCE_MEM_WRITEABLE);
-	return 0;
-}
-
-device_initcall(register_default_env);
-#endif
-
 #if defined CONFIG_FS_RAMFS && defined CONFIG_FS_DEVFS
 static int mount_root(void)
 {
-	mount("none", "ramfs", "/");
+	mount("none", "ramfs", "/", NULL);
 	mkdir("/dev", 0);
-	mount("none", "devfs", "/dev");
+	mount("none", "devfs", "/dev", NULL);
 	return 0;
 }
 fs_initcall(mount_root);
@@ -129,7 +87,7 @@ void __noreturn start_barebox(void)
 			pr_err("no valid environment found on %s. "
 				"Using default environment\n",
 				default_environment_path);
-			envfs_load("/dev/defaultenv", "/env", 0);
+			defaultenv_load("/env", 0);
 		}
 	}
 
@@ -137,11 +95,11 @@ void __noreturn start_barebox(void)
 		pr_info("running /env/bin/init...\n");
 
 		if (!stat("/env/bin/init", &s)) {
-			run_command("source /env/bin/init", 0);
+			run_command("source /env/bin/init");
 		} else {
 			pr_err("/env/bin/init not found\n");
 			if (IS_ENABLED(CONFIG_CMD_LOGIN))
-				while(run_command("login -t 0", 0));
+				while(run_command("login -t 0"));
 		}
 	}
 

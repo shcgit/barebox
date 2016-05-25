@@ -60,10 +60,13 @@ static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *df
 		case PARSE_FLAGS:
 			switch (*partstr) {
 			case 's':
-				dfu->flags |= DFU_FLAG_SAVE;
+				dfu->flags |= DFU_FLAG_SAFE;
 				break;
 			case 'r':
 				dfu->flags |= DFU_FLAG_READBACK;
+				break;
+			case 'c':
+				dfu->flags |= DFU_FLAG_CREATE;
 				break;
 			default:
 				return -EINVAL;
@@ -101,7 +104,7 @@ static int do_dfu(int argc, char *argv[])
 	char *manufacturer = "barebox";
 	const char *productname = barebox_get_model();
 	u16 idVendor = 0, idProduct = 0;
-
+	int ret;
 
 	while((opt = getopt(argc, argv, "m:p:V:P:")) > 0) {
 		switch(opt) {
@@ -125,15 +128,21 @@ static int do_dfu(int argc, char *argv[])
 
 	argstr = argv[optind];
 
-	if (!idProduct || !idVendor) {
-		printf("productid or vendorid not given\n");
-		return 1;
+	if (!idProduct && !idVendor) {
+		idVendor = 0x1d50; /* Openmoko, Inc */
+		idProduct = 0x60a2; /* barebox bootloader USB DFU Mode */
+	}
+
+	if ((idProduct && !idVendor) || (!idProduct && idVendor)) {
+		printf("Only one of vendor id or product id given\n");
+		return -EINVAL;
 	}
 
 	for (n = 0; *argstr; n++) {
 		dfu_alts = xrealloc(dfu_alts, sizeof(*dfu_alts) * (n + 1));
 		if (dfu_do_parse_one(argstr, &endptr, &dfu_alts[n])) {
 			printf("parse error\n");
+			ret = -EINVAL;
 			goto out;
 		}
 		argstr = endptr;
@@ -147,7 +156,7 @@ static int do_dfu(int argc, char *argv[])
 	pdata.idVendor = idVendor;
 	pdata.idProduct = idProduct;
 
-	usb_dfu_register(&pdata);
+	ret = usb_dfu_register(&pdata);
 
 out:
 	while (n) {
@@ -155,8 +164,10 @@ out:
 		free(dfu_alts[n].name);
 		free(dfu_alts[n].dev);
 	};
+
 	free(dfu_alts);
-	return 1;
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(dfu)
@@ -167,9 +178,10 @@ BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string\n")
 BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
 BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
 BAREBOX_CMD_HELP_OPT  ("<description>",
-	"device1(name1)[sr],device2(name2)[sr]\n"
+	"device1(name1)[sr],device2(name2)[src]\n"
 	"'s' means 'safe mode' (download the complete image before flashing) and\n"
-	"'r' that readback of the firmware is allowed.\n")
+	"'r' that readback of the firmware is allowed.\n"
+	"'c' if given, the file will be created (for use with regular files)\n")
 BAREBOX_CMD_HELP_END
 
 /**

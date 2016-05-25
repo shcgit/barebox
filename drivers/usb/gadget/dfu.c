@@ -244,10 +244,14 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 
 	if (w_length == 0) {
 		dfu->dfu_state = DFU_STATE_dfuIDLE;
-		if (dfu_devs[dfualt].flags & DFU_FLAG_SAVE) {
+		if (dfu_devs[dfualt].flags & DFU_FLAG_SAFE) {
 			int fd;
+			unsigned flags = O_WRONLY;
 
-			fd = open(dfu_devs[dfualt].dev, O_WRONLY);
+			if (dfu_devs[dfualt].flags & DFU_FLAG_CREATE)
+				flags |= O_CREAT | O_TRUNC;
+
+			fd = open(dfu_devs[dfualt].dev, flags);
 			if (fd < 0) {
 				perror("open");
 				ret = -EINVAL;
@@ -376,10 +380,16 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 				goto out;
 			}
 			debug("dfu: starting download to %s\n", dfu_devs[dfualt].dev);
-			if (dfu_devs[dfualt].flags & DFU_FLAG_SAVE)
+			if (dfu_devs[dfualt].flags & DFU_FLAG_SAFE) {
 				dfufd = open(DFU_TEMPFILE, O_WRONLY | O_CREAT);
-			else
-				dfufd = open(dfu_devs[dfualt].dev, O_WRONLY);
+			} else {
+				unsigned flags = O_WRONLY;
+
+				if (dfu_devs[dfualt].flags & DFU_FLAG_CREATE)
+					flags |= O_CREAT | O_TRUNC;
+
+				dfufd = open(dfu_devs[dfualt].dev, flags);
+			}
 
 			if (dfufd < 0) {
 				dfu->dfu_state = DFU_STATE_dfuERROR;
@@ -597,8 +607,10 @@ static int dfu_bind_config(struct usb_configuration *c)
 	func->disable = dfu_disable;
 
 	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
-	if (!dfu->dnreq)
+	if (!dfu->dnreq) {
 		printf("usb_ep_alloc_request failed\n");
+		goto out;
+	}
 	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
 	dfu->dnreq->complete = dn_complete;
 	dfu->dnreq->zero = 0;
@@ -682,6 +694,8 @@ static struct usb_composite_driver dfu_driver = {
 
 int usb_dfu_register(struct usb_dfu_pdata *pdata)
 {
+	int ret;
+
 	dfu_devs = pdata->alts;
 	dfu_num_alt = pdata->num_alts;
 	dfu_dev_descriptor.idVendor = pdata->idVendor;
@@ -689,10 +703,15 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 	strings_dev[STRING_MANUFACTURER_IDX].s = pdata->manufacturer;
 	strings_dev[STRING_PRODUCT_IDX].s = pdata->productname;
 
-	usb_composite_register(&dfu_driver);
+	ret = usb_composite_register(&dfu_driver);
+	if (ret)
+		return ret;
 
 	while (1) {
-		usb_gadget_poll();
+		ret = usb_gadget_poll();
+		if (ret < 0)
+			return ret;
+
 		if (ctrlc() || dfudetach)
 			goto out;
 	}

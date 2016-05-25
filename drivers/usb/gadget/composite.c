@@ -204,7 +204,7 @@ int __init usb_interface_id(struct usb_configuration *config,
 static int config_buf(struct usb_configuration *config,
 		enum usb_device_speed speed, void *buf, u8 type)
 {
-	struct usb_config_descriptor	*c = buf;
+	struct usb_config_descriptor	*c;
 	void				*next = buf + USB_DT_CONFIG_SIZE;
 	int				len = USB_BUFSIZ - USB_DT_CONFIG_SIZE;
 	struct usb_function		*f;
@@ -994,6 +994,8 @@ static struct usb_gadget_driver composite_driver = {
  */
 int usb_composite_register(struct usb_composite_driver *driver)
 {
+	int ret;
+
 	if (!driver || !driver->dev || !driver->bind || composite)
 		return -EINVAL;
 
@@ -1002,7 +1004,12 @@ int usb_composite_register(struct usb_composite_driver *driver)
 	composite_driver.function =  (char *) driver->name;
 	composite = driver;
 
-	return usb_gadget_register_driver(&composite_driver);
+	ret = usb_gadget_register_driver(&composite_driver);
+
+	if (ret)
+		composite = NULL;
+
+	return ret;
 }
 
 /**

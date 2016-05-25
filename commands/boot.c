@@ -47,7 +47,7 @@ static int boot_script(char *path)
 	globalvar_set_match("linux.bootargs.dyn.", "");
 	globalvar_set_match("bootm.", "");
 
-	ret = run_command(path, 0);
+	ret = run_command(path);
 	if (ret) {
 		printf("Running %s failed\n", path);
 		goto out;
@@ -308,7 +308,7 @@ static int boot(const char *name)
 {
 	struct blspec *blspec;
 	struct blspec_entry *entry;
-	int ret = -ENOENT;
+	int ret;
 
 	blspec = blspec_alloc();
 	ret = bootentry_parse_one(blspec, name);

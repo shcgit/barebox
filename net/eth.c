@@ -144,7 +144,7 @@ struct eth_device * eth_get_current(void)
 	return eth_current;
 }
 
-struct eth_device *eth_get_byname(char *ethname)
+struct eth_device *eth_get_byname(const char *ethname)
 {
 	struct eth_device *edev;
 
@@ -380,9 +380,7 @@ void eth_unregister(struct eth_device *edev)
 	if (edev == eth_current)
 		eth_current = NULL;
 
-	dev_remove_parameters(&edev->dev);
-
-	if (IS_ENABLED(CONFIG_OFDEVICE) && edev->nodepath)
+	if (IS_ENABLED(CONFIG_OFDEVICE))
 		free(edev->nodepath);
 
 	unregister_device(&edev->dev);
