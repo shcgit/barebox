@@ -21,7 +21,11 @@
 	};
 };
 
-&lan9221 {
+&esdhc1 {
+	status = "okay";
+};
+
+&esdhc2 {
 	status = "okay";
 };
 

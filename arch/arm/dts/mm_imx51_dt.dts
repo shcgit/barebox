@@ -339,15 +339,8 @@
 };
 
 &esdhc1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_esdhc1>;
-	bus-width = <1>;
 	non-removable;
 	status = "okay";
-};
-
-&esdhc2 {
-	status = "disabled";
 };
 
 &gpio3 {
@@ -484,10 +477,6 @@
 		MATRIX_KEY(3,4,0x0134)
 		MATRIX_KEY(3,5,0x0135)
 	>;
-	status = "okay";
-};
-
-&lan9221 {
 	status = "okay";
 };
 
@@ -679,14 +668,6 @@
 				MX51_PAD_CSI2_VSYNC__GPIO4_13		0xe5 /* IRQ */
 				MX51_PAD_CSI2_HSYNC__GPIO4_14		0xe5 /* IRQ */
 				MX51_PAD_CSPI1_SS1__GPIO4_25		0xe5 /* IRQ */
-			>;
-		};
-
-		pinctrl_esdhc1: esdhc1grp {
-			fsl,pins = <
-				MX51_PAD_SD1_CLK__SD1_CLK		0x400021d5
-				MX51_PAD_SD1_CMD__SD1_CMD		0x400020d5
-				MX51_PAD_SD1_DATA0__SD1_DATA0		0x400020d5
 			>;
 		};
 
