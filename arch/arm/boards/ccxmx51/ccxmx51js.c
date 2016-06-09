@@ -40,7 +40,7 @@ static struct esdhc_platform_data sdhc1_pdata = {
 static int ccxmx51js_init(void)
 {
 	if (!of_machine_is_compatible("digi,connectcore-ccxmx51-jsk"))
-		return -ENOSYS;
+		return 0;
 
 	mxc_iomux_v3_setup_multiple_pads(ccxmx51js_pads, ARRAY_SIZE(ccxmx51js_pads));
 	imx51_add_mmc0(&sdhc1_pdata);

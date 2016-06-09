@@ -174,8 +174,9 @@
 };
 
 &i2c2 {
-	pinctrl-names = "default";
+	pinctrl-names = "default", "gpio";
 	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
 	clock-frequency = <400000>;
 	status = "okay";
 
@@ -227,6 +228,7 @@
 		smsc,irq-push-pull;
 		vdd33a-supply = <&gpo2_reg>;
 		vddvario-supply = <&gpo2_reg>;
+		status = "disabled";
 	};
 };
 
@@ -279,6 +281,13 @@
 			fsl,pins = <
 				MX51_PAD_GPIO1_2__I2C2_SCL		0x400001ed
 				MX51_PAD_GPIO1_3__I2C2_SDA		0x400001ed
+			>;
+		};
+
+		pinctrl_i2c2_gpio: i2c2gpiogrp {
+			fsl,pins = <
+				MX51_PAD_GPIO1_2__GPIO1_2		0x400001ed
+				MX51_PAD_GPIO1_3__GPIO1_3		0x400001ed
 			>;
 		};
 

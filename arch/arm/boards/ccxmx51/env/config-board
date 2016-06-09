@@ -1,10 +1,15 @@
 #!/bin/sh
 
-# Beeper
+# Beeper ON
 gpio_direction_output 87 1
+# USB Reset Low
+gpio_direction_output 72 0
 msleep 250
+# Beeper OFF
 gpio_direction_output 87 0
+# USB Reset High
+gpio_direction_output 72 1
 
 # Backlight
-gpio_direction_output 64 1
+#gpio_direction_output 64 1
 #i2c_write -a 0x30 -b 0 -r 0x00 0x0b

@@ -184,8 +184,13 @@ static int ccxmx51_power_init(void)
 	/* GP03 - FEC Reset */
 	/* GP04 - Wireless Power */
 	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X) && ccxmx51_id->eth1) {
+		struct device_node *np;
+
 		val |= (1 << 8);
 		mdelay(100);
+		np = of_find_node_by_name(of_get_root_node(), "lan9221");
+		if (np)
+			of_device_enable(np);
 	}
 	if (IS_ENABLED(CONFIG_DRIVER_NET_FEC_IMX) && ccxmx51_id->eth0)
 		val |= (1 << 10);
