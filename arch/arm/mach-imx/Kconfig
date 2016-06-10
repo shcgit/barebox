@@ -473,21 +473,14 @@ config MACH_TX51
 config MACH_CCMX51
 	bool "ConnectCore i.MX51"
 	select ARCH_IMX51
-	select IMX_IIM
-	select SPI
 	select DRIVER_SPI_IMX
+	select ENVIRONMENT_VARIABLES
+	select IMX_IIM
 	select MFD_MC13XXX
+	select SPI
 	help
 	  Say Y here if you are using Digi ConnectCore (W)i-i.MX51
-	  equipped with a Freescale i.MX51 Processor
-
-config MACH_CCMX51_BASEBOARD
-	bool "Digi development board for CCMX51 module"
-	depends on MACH_CCMX51
-	default y
-	help
-	  This adds board specific devices that can be found on Digi
-	  evaluation board for CCMX51 module.
+	  equipped with a Freescale i.MX51 Processor.
 
 # ----------------------------------------------------------
 
