@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <envfs.h>
 #include <init.h>
 #include <net.h>
 #include <notifier.h>
@@ -285,6 +286,8 @@ static int ccxmx51_init(void)
 
 	barebox_set_model("Digi ConnectCore i.MX51");
 	barebox_set_hostname("ccmx51");
+
+	defaultenv_append_directory(defaultenv_ccxmx51);
 
 	return 0;
 }
