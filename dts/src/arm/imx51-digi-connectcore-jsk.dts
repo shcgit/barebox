@@ -21,15 +21,6 @@
 	};
 };
 
-&gpio3 {
-	usb1rst {
-		gpio-hog;
-		gpios = <8 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "USB1 RESET";
-	};
-};
-
 &esdhc1 {
 	status = "okay";
 };
@@ -133,8 +124,6 @@
 				MX51_PAD_USBH1_DIR__USBH1_DIR		0x1e5
 				MX51_PAD_USBH1_NXT__USBH1_NXT		0x1e5
 				MX51_PAD_USBH1_STP__USBH1_STP		0x1e5
-				/* USBH1 Reset */
-				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x85
 			>;
 		};
 	};
