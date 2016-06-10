@@ -2,13 +2,15 @@
 
 # Beeper ON
 gpio_direction_output 87 1
-# USB Reset Low
+
+# USB1 Reset Low
 gpio_direction_output 72 0
 msleep 250
+# USB1 Reset High
+gpio_direction_output 72 1
+
 # Beeper OFF
 gpio_direction_output 87 0
-# USB Reset High
-gpio_direction_output 72 1
 
 # Backlight
 #gpio_direction_output 64 1

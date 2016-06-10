@@ -473,14 +473,13 @@ config MACH_TX51
 config MACH_CCMX51
 	bool "ConnectCore i.MX51"
 	select ARCH_IMX51
-	select DRIVER_SPI_IMX
-	select ENVIRONMENT_VARIABLES
 	select IMX_IIM
-	select MFD_MC13XXX
 	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 	help
 	  Say Y here if you are using Digi ConnectCore (W)i-i.MX51
-	  equipped with a Freescale i.MX51 Processor.
+	  equipped with a Freescale i.MX51 Processor
 
 # ----------------------------------------------------------
 

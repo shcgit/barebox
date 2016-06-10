@@ -16,7 +16,6 @@
  */
 
 #include <common.h>
-#include <environment.h>
 #include <init.h>
 #include <net.h>
 #include <notifier.h>
@@ -286,9 +285,6 @@ static int ccxmx51_init(void)
 
 	barebox_set_model("Digi ConnectCore i.MX51");
 	barebox_set_hostname("ccmx51");
-
-	if (of_machine_is_compatible("digi,connectcore-ccxmx51-jsk"))
-		setenv("usbh1patch", "yes");
 
 	return 0;
 }
