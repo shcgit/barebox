@@ -29,6 +29,10 @@
 	status = "okay";
 };
 
+&lan9221 {
+	status = "okay";
+};
+
 &owire {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_owire>;

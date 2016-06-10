@@ -149,7 +149,7 @@
 			linux,code = <KEY_ESC>;
 			linux,input-type = <EV_SW>;
 			debounce-interval = <0>;
-			gpios = <&gpio3 18 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
 		};
 
 		button@2 {
@@ -157,7 +157,7 @@
 			linux,code = <KEY_1>;
 			linux,input-type = <EV_SW>;
 			debounce-interval = <0>;
-			gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio3 18 GPIO_ACTIVE_LOW>;
 		};
 
 		button@3 {
@@ -209,10 +209,11 @@
 			simple-audio-card,format = "i2s";
 			simple-audio-card,bitclock-master = <&audio0_master>;
 			simple-audio-card,frame-master = <&audio0_master>;
-
-			/*simple-audio-card,routing =
-				"Headphone Jack", "LOUT1",
-				"Headphone Jack", "ROUT1";*/
+			simple-audio-card,widgets =
+				"Line", "Line Out";
+			simple-audio-card,routing =
+				"Line Out", "LOUT1",
+				"Line Out", "ROUT1";
 
 			simple-audio-card,cpu {
 				sound-dai = <&ssi1>;
@@ -477,6 +478,10 @@
 		MATRIX_KEY(3,4,0x0134)
 		MATRIX_KEY(3,5,0x0135)
 	>;
+	status = "okay";
+};
+
+&lan9221 {
 	status = "okay";
 };
 
