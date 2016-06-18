@@ -1585,11 +1585,13 @@ static int mci_card_probe(struct mci *mci)
 		return -ENODEV;
 	}
 
-	ret = regulator_enable(host->supply);
-	if (ret) {
-		dev_err(&mci->dev, "failed to enable regulator: %s\n",
+	if (!IS_ERR(host->supply)) {
+		ret = regulator_enable(host->supply);
+		if (ret) {
+			dev_err(&mci->dev, "failed to enable regulator: %s\n",
 				strerror(-ret));
-		return ret;
+			return ret;
+		}
 	}
 
 	/* start with a host interface reset */
@@ -1680,7 +1682,8 @@ on_error:
 	if (rc != 0) {
 		host->clock = 0;	/* disable the MCI clock */
 		mci_set_ios(mci);
-		regulator_disable(host->supply);
+		if (!IS_ERR(host->supply))
+			regulator_disable(host->supply);
 	}
 
 	return rc;
