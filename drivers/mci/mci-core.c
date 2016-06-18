@@ -1767,10 +1767,8 @@ int mci_register(struct mci_host *host)
 	mci->dev.detect = mci_detect;
 
 	host->supply = regulator_get(host->hw_dev, "vmmc");
-	if (IS_ERR(host->supply)) {
-		ret = PTR_ERR(host->supply);
-		goto err_free;
-	}
+	if (IS_ERR(host->supply))
+		dev_err(&mci->dev, "Failed to get 'vmmc' regulator.\n");
 
 	ret = register_device(&mci->dev);
 	if (ret)
