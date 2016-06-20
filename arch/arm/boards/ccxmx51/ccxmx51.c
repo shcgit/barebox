@@ -28,6 +28,7 @@
 #include <mach/imx51-regs.h>
 #include <mach/revision.h>
 #include <mfd/mc13xxx.h>
+#include <mfd/mc13892.h>
 
 static const struct ccxmx51_ident {
 	char		*id_string;
@@ -116,48 +117,59 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 		/* Set switchers in PWM mode for Atlas 2.0 and lower */
 		/* Setup the switcher mode for SW1 & SW2*/
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
-		val &= ~0x003c0f;
-		val |=  0x001405;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE1_SHIFT);
+		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE1_SHIFT;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE2_SHIFT);
+		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE2_SHIFT;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
 
 		/* Setup the switcher mode for SW3 & SW4 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
-		val &= ~0x000f0f;
-		val |=  0x000505;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE3_SHIFT);
+		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE3_SHIFT;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE4_SHIFT);
+		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE4_SHIFT;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
 	} else {
 		/* Set switchers in Auto in NORMAL mode & STANDBY mode for Atlas 2.0a */
 		/* Setup the switcher mode for SW1 & SW2*/
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
-		val &= ~0x003c0f;
-		val |=  0x002008;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE1_SHIFT);
+		val |=  MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE1_SHIFT;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE2_SHIFT);
+		val |=  MC13892_SWMODE_AUTO_OFF << MC13892_SWMODE2_SHIFT;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
 
 		/* Setup the switcher mode for SW3 & SW4 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
-		val &= ~0x000f0f;
-		val |=  0x000808;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE3_SHIFT);
+		val |=  MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE3_SHIFT;
+		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE4_SHIFT);
+		val |=  MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE4_SHIFT;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
 	}
 
-	/* Set VVIDEO to 2.775V, VAUDIO to 3V, VSD to 3.15V */
-	mc13xxx_reg_read(mc13xxx, MC13892_REG_SETTING_1, &val);
-	val &= ~0x0001fc;
-	val |=  0x0001f4;
+	/* Set VVIDEO=2.775V, VAUDIO=3V, VSD=3.15V, VGEN1=1.2V, VGEN2=3.15V */
+	val = MC13892_SETTING_1_VGEN1_1_2 | MC13892_SETTING_1_VGEN2_3_15;
+	val |= MC13892_SETTING_1_VVIDEO_2_775 | MC13892_SETTING_1_VAUDIO_3_0;
+	val |= MC13892_SETTING_1_VSD_3_15;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_1, val);
 
 	/* Configure VGEN3 and VCAM regulators to use external PNP */
-	val = 0x000208;
+	val = MC13892_MODE_1_VGEN3CONFIG | MC13892_MODE_1_VCAMCONFIG;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 	udelay(200);
 
 	/* Set VGEN3 to 1.8V */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_SETTING_0, &val);
-	val &= ~(1 << 14);
+	val &= ~MC13892_SETTING_0_VGEN3_MASK;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_0, val);
 
 	/* Enable VGEN3, VCAM, VAUDIO, VVIDEO, VSD regulators */
-	val = 0x049249;
+	val = MC13892_MODE_1_VGEN3EN | MC13892_MODE_1_VGEN3CONFIG;
+	val |= MC13892_MODE_1_VCAMEN | MC13892_MODE_1_VCAMCONFIG;
+	val |= MC13892_MODE_1_VVIDEOEN | MC13892_MODE_1_VAUDIOEN;
+	val |= MC13892_MODE_1_VSDEN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 
 	/* Enable USB1 charger */
@@ -180,13 +192,13 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	/* GP03 - FEC Reset */
 	/* GP04 - Wireless Power */
 	if (ccxmx51_id->eth1) {
-		val |= (1 << 8);
+		val |= MC13892_POWER_MISC_GPO2EN;
 		mdelay(100);
 	}
 	if (ccxmx51_id->eth0)
-		val |= (1 << 10);
+		val |= MC13892_POWER_MISC_GPO3EN;
 	if (ccxmx51_id->wless)
-		val |= (1 << 12);
+		val |= MC13892_POWER_MISC_GPO4EN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, val);
 
 	udelay(100);

@@ -205,18 +205,18 @@
 		audio@0 {
 			reg = <0>;
 			compatible = "simple-audio-card";
-			simple-audio-card,name = "SSI0-WM8753";
+			simple-audio-card,name = "SSI1WM8753";
 			simple-audio-card,format = "i2s";
 			simple-audio-card,bitclock-master = <&audio0_master>;
 			simple-audio-card,frame-master = <&audio0_master>;
 			simple-audio-card,widgets =
-				"Line", "Line Out";
+				"Headphone", "Line Out";
 			simple-audio-card,routing =
 				"Line Out", "LOUT1",
 				"Line Out", "ROUT1";
 
 			simple-audio-card,cpu {
-				sound-dai = <&ssi1>;
+				sound-dai = <&ssi2>;
 			};
 
 			audio0_master: simple-audio-card,codec {
@@ -232,9 +232,8 @@
 	pinctrl-0 = <&pinctrl_audmux>;
 	status = "okay";
 
-	/* SSI.0 slave I2S 4-wire, sync, AUD3, playback only */
-	audmux_ssi0 {
-		fsl,audmux-port = <MX51_AUDMUX_PORT1_SSI0>;
+	audmux-ssi1 {
+		fsl,audmux-port = <MX51_AUDMUX_PORT2_SSI1>;
 		fsl,port-config = <
 			(IMX_AUDMUX_V2_PTCR_TFSDIR |
 			IMX_AUDMUX_V2_PTCR_TFSEL(MX51_AUDMUX_PORT3) |
@@ -245,16 +244,15 @@
 		>;
 	};
 
-	audmux_port3 {
+	audmux-aud3 {
 		fsl,audmux-port = <MX51_AUDMUX_PORT3>;
 		fsl,port-config = <
 			IMX_AUDMUX_V2_PTCR_SYN
-			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT1_SSI0)
+			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT2_SSI1)
 		>;
 	};
 
-	/* SSI.1 slave I2S 4-wire, sync, AUD5, record only */
-	audmux_ssi1 {
+/*	audmux-ssi1 {
 		fsl,audmux-port = <MX51_AUDMUX_PORT2_SSI1>;
 		fsl,port-config = <
 			(IMX_AUDMUX_V2_PTCR_TFSDIR |
@@ -266,13 +264,13 @@
 		>;
 	};
 
-	audmux_port5 {
+	audmux-aud5 {
 		fsl,audmux-port = <MX51_AUDMUX_PORT5>;
 		fsl,port-config = <
 			IMX_AUDMUX_V2_PTCR_SYN
 			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT2_SSI1)
 		>;
-	};
+	};*/
 };
 
 &ecspi1 {
@@ -526,13 +524,14 @@
 	};
 };
 
-&ssi1 {
-	fsl,mode = "i2s-slave";
-	status = "okay";
-};
+//&ssi1 {
+//	fsl,mode = "i2s-slave";
+//	status = "okay";
+//};
 
 &ssi2 {
 	fsl,mode = "i2s-slave";
+	fsl,fiq-stream-filter;
 	status = "okay";
 };
 
@@ -585,6 +584,12 @@
 		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
 		clock-names = "main_clk";
 	};
+};
+
+&wdog1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_wdog>;
+	fsl,ext-reset-output;
 };
 
 &weim {
@@ -816,6 +821,12 @@
 				MX51_PAD_USBH1_DATA5__USBH1_DATA5	0x1e5
 				MX51_PAD_USBH1_DATA6__USBH1_DATA6	0x1e5
 				MX51_PAD_USBH1_DATA7__USBH1_DATA7	0x1e5
+			>;
+		};
+
+		pinctrl_wdog: wdoggrp {
+			fsl,pins = <
+				MX51_PAD_GPIO1_4__WDOG1_WDOG_B		0x85
 			>;
 		};
 

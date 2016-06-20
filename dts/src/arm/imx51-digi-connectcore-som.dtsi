@@ -139,6 +139,8 @@
 
 			gpo4_reg: gpo4 { };
 
+			pwgt1spi_reg: pwgt1spi { };
+
 			pwgt2spi_reg: pwgt2spi {
 				regulator-always-on;
 			};
