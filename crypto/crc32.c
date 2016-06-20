@@ -63,7 +63,7 @@ static void make_crc_table(void)
   for (n = 0; n < sizeof(p)/sizeof(char); n++)
     poly |= 1L << (31 - p[n]);
 
-  crc_table = malloc(sizeof(ulong) * 256);
+  crc_table = xmalloc(sizeof(ulong) * 256);
 
   for (n = 0; n < 256; n++)
   {
