@@ -34,30 +34,31 @@ static const struct ccxmx51_ident {
 	char		*id_string;
 	unsigned int	mem_sz;
 	unsigned char	industrial;
-	unsigned char	eth0;
-	unsigned char	eth1;
-	unsigned char	wless;
+	unsigned char	eth0:1;
+	unsigned char	eth1:1;
+	unsigned char	wless:1;
+	unsigned char	accel:1;
 } *ccxmx51_id, ccxmx51_ids[] = {
-/* 0x00 */	{ "Unknown",						0,       0, 0, 0, 0 },
-/* 0x01 */	{ "Not supported",					0,       0, 0, 0, 0 },
-/* 0x02 */	{ "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 0, 1, 1, 1 },
-/* 0x03 */	{ "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 0, 1, 1, 0 },
-/* 0x04 */	{ "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 1, 1, 1, 1 },
-/* 0x05 */	{ "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 1, 1, 1, 0 },
-/* 0x06 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1 },
-/* 0x07 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0 },
-/* 0x08 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 0, 1, 0, 1 },
-/* 0x09 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_256M, 0, 1, 0, 0 },
-/* 0x0a */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 1, 1, 0, 1 },
-/* 0x0b */	{ "i.MX515@600MHz, PHY, Accel",				SZ_256M, 1, 1, 0, 0 },
-/* 0x0c */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 0, 1, 0, 1 },
-/* 0x0d */	{ "i.MX512@800MHz",					SZ_128M, 0, 0, 0, 0 },
-/* 0x0e */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1 },
-/* 0x0f */	{ "i.MX515@600MHz, PHY, Accel",				SZ_128M, 1, 1, 0, 0 },
-/* 0x10 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 1, 1, 0, 1 },
-/* 0x11 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_128M, 0, 1, 0, 0 },
-/* 0x12 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 1, 1, 0, 1 },
-/* 0x13 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0 },
+/* 0x00 */	{ "Unknown",						0,       0, 0, 0, 0, 0 },
+/* 0x01 */	{ "Not supported",					0,       0, 0, 0, 0, 0 },
+/* 0x02 */	{ "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 0, 1, 1, 1, 1 },
+/* 0x03 */	{ "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 0, 1, 1, 0, 0 },
+/* 0x04 */	{ "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 1, 1, 1, 1, 1 },
+/* 0x05 */	{ "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 1, 1, 1, 0, 1 },
+/* 0x06 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
+/* 0x07 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0, 0 },
+/* 0x08 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 0, 1, 0, 1, 1 },
+/* 0x09 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_256M, 0, 1, 0, 0, 0 },
+/* 0x0a */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 1, 1, 0, 1, 1 },
+/* 0x0b */	{ "i.MX515@600MHz, PHY, Accel",				SZ_256M, 1, 1, 0, 0, 0 },
+/* 0x0c */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 0, 1, 0, 1, 1 },
+/* 0x0d */	{ "i.MX512@800MHz",					SZ_128M, 0, 0, 0, 0, 0 },
+/* 0x0e */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
+/* 0x0f */	{ "i.MX515@600MHz, PHY, Accel",				SZ_128M, 1, 1, 0, 0, 0 },
+/* 0x10 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 1, 1, 0, 1, 1 },
+/* 0x11 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_128M, 0, 1, 0, 0, 0 },
+/* 0x12 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 1, 1, 0, 1, 1 },
+/* 0x13 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0, 0 },
 };
 
 static u32 boardserial;
@@ -215,16 +216,25 @@ static int ccxmx51_is_compatible(void)
 	return of_machine_is_compatible("digi,connectcore-ccxmx51-som");
 }
 
+static void ccxmx51_disable_device(struct device_node *root, const char *label)
+{
+	struct device_node *np = of_find_node_by_name(root, label);
+	if (np)
+		of_device_disable(np);
+}
+
 static int ccxmx51_board_fixup(struct device_node *root, void *unused)
 {
 	char *serial;
 
-	if (!ccxmx51_id->eth1) {
-		struct device_node *np;
-		np = of_find_node_by_name(root, "lan9221@5,0");
-		if (np)
-			of_device_disable(np);
-	}
+	if (!ccxmx51_id->eth0)
+		ccxmx51_disable_device(root, "ethernet@83fec000");
+
+	if (!ccxmx51_id->eth1)
+		ccxmx51_disable_device(root, "lan9221@5,0");
+
+	if (!ccxmx51_id->accel)
+		ccxmx51_disable_device(root, "mma7455l@1d");
 
 	serial = basprintf("%08x%08x", 0, boardserial);
 	of_set_property(root, "serial-number", serial, strlen(serial) + 1, 1);
