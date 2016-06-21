@@ -25,6 +25,7 @@
 #include <partition.h>
 #include <linux/sizes.h>
 #include <gpio.h>
+#include <mci.h>
 
 #include <generated/mach-types.h>
 
