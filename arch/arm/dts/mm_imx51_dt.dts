@@ -216,7 +216,7 @@
 				"Line Out", "ROUT1";
 
 			simple-audio-card,cpu {
-				sound-dai = <&ssi2>;
+				sound-dai = <&ssi1>;
 			};
 
 			audio0_master: simple-audio-card,codec {
@@ -232,8 +232,8 @@
 	pinctrl-0 = <&pinctrl_audmux>;
 	status = "okay";
 
-	audmux-ssi1 {
-		fsl,audmux-port = <MX51_AUDMUX_PORT2_SSI1>;
+	audmux-ssi0 {
+		fsl,audmux-port = <MX51_AUDMUX_PORT1_SSI0>;
 		fsl,port-config = <
 			(IMX_AUDMUX_V2_PTCR_TFSDIR |
 			IMX_AUDMUX_V2_PTCR_TFSEL(MX51_AUDMUX_PORT3) |
@@ -248,7 +248,7 @@
 		fsl,audmux-port = <MX51_AUDMUX_PORT3>;
 		fsl,port-config = <
 			IMX_AUDMUX_V2_PTCR_SYN
-			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT2_SSI1)
+			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT1_SSI0)
 		>;
 	};
 
@@ -524,16 +524,16 @@
 	};
 };
 
-//&ssi1 {
-//	fsl,mode = "i2s-slave";
-//	status = "okay";
-//};
-
-&ssi2 {
+&ssi1 {
 	fsl,mode = "i2s-slave";
-	fsl,fiq-stream-filter;
 	status = "okay";
 };
+
+//&ssi2 {
+//	fsl,mode = "i2s-slave";
+	//fsl,fiq-stream-filter;
+//	status = "okay";
+//};
 
 &tve {
 	status = "okay";
