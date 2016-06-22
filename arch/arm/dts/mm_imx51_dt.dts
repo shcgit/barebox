@@ -512,13 +512,13 @@
 
 		sysled {
 			reg = <3>;
-			label = "STATUS";
+			label = "red:live";
 			linux,default-trigger = "heartbeat";
 		};
 
 		/*nandled {
 			reg = <4>;
-			label = "NAND";
+			label = "red:nand";
 			linux,default-trigger = "nand-disk";
 		};*/
 	};
@@ -531,7 +531,6 @@
 
 //&ssi2 {
 //	fsl,mode = "i2s-slave";
-	//fsl,fiq-stream-filter;
 //	status = "okay";
 //};
 

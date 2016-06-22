@@ -85,32 +85,32 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
 		/* Set core voltage (SW1) to 1.1V */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_0, &val);
-		val &= ~0x00001f;
-		val |=  0x000014;
+		val &= ~MC13892_SWx_SWx_VOLT_MASK;
+		val |=  MC13892_SWx_SWx_1_100V;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_0, val);
 
 		/* Setup VCC (SW2) to 1.25 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
-		val &= ~0x00001f;
-		val |=  0x00001a;
+		val &= ~MC13892_SWx_SWx_VOLT_MASK;
+		val |=  MC13892_SWx_SWx_1_250V;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
 
 		/* Setup 1V2_DIG1 (SW3) to 1.25 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
-		val &= ~0x00001f;
-		val |=  0x00001a;
+		val &= ~MC13892_SWx_SWx_VOLT_MASK;
+		val |=  MC13892_SWx_SWx_1_250V;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
 	} else {
 		/* Setup VCC (SW2) to 1.225 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
-		val &= ~0x00001f;
-		val |=  0x000019;
+		val &= ~MC13892_SWx_SWx_VOLT_MASK;
+		val |=  MC13892_SWx_SWx_1_225V;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
 
 		/* Setup 1V2_DIG1 (SW3) to 1.2 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
-		val &= ~0x00001f;
-		val |=  0x000018;
+		val &= ~MC13892_SWx_SWx_VOLT_MASK;
+		val |=  MC13892_SWx_SWx_1_200V;
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
 	}
 
