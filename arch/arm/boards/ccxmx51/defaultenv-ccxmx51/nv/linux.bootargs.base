@@ -1,1 +1,1 @@
-earlyprintk ubi.mtd=nand-bbox
+earlyprintk ubi.mtd=root ubi.block=0,root ubi.mtd=nand-bbox

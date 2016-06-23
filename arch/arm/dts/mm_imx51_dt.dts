@@ -205,7 +205,7 @@
 		audio@0 {
 			reg = <0>;
 			compatible = "simple-audio-card";
-			simple-audio-card,name = "SSI1WM8753";
+			simple-audio-card,name = "SSI0WM8753";
 			simple-audio-card,format = "i2s";
 			simple-audio-card,bitclock-master = <&audio0_master>;
 			simple-audio-card,frame-master = <&audio0_master>;
@@ -223,6 +223,29 @@
 				sound-dai = <&wm8753>;
 				system-clock-frequency = <12000000>;
 			};
+		};
+
+		audio@1 {
+			reg = <1>;
+			compatible = "simple-audio-card";
+			/*simple-audio-card,name = "SSI1TW2837";
+			simple-audio-card,format = "i2s";
+			simple-audio-card,bitclock-master = <&audio1_master>;
+			simple-audio-card,frame-master = <&audio1_master>;
+			simple-audio-card,widgets =
+				"Headphone", "Line Out";
+			simple-audio-card,routing =
+				"Line Out", "LOUT1",
+				"Line Out", "ROUT1";
+
+			simple-audio-card,cpu {
+				sound-dai = <&ssi2>;
+			};
+
+			audio1_master: simple-audio-card,codec {
+				sound-dai = <&wm8753>;
+				system-clock-frequency = <12000000>;
+			};*/
 		};
 	};
 };
@@ -252,7 +275,7 @@
 		>;
 	};
 
-/*	audmux-ssi1 {
+	audmux-ssi1 {
 		fsl,audmux-port = <MX51_AUDMUX_PORT2_SSI1>;
 		fsl,port-config = <
 			(IMX_AUDMUX_V2_PTCR_TFSDIR |
@@ -270,7 +293,7 @@
 			IMX_AUDMUX_V2_PTCR_SYN
 			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT2_SSI1)
 		>;
-	};*/
+	};
 };
 
 &ecspi1 {
@@ -383,15 +406,6 @@
 		gpios = <13 GPIO_ACTIVE_HIGH>;
 		output-low;
 		line-name = "VIDEO RESET";
-	};
-};
-
-&gpio4 {
-	sndworld {
-		gpio-hog;
-		gpios = <19 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "SOUND WORLD";
 	};
 };
 
@@ -529,10 +543,10 @@
 	status = "okay";
 };
 
-//&ssi2 {
-//	fsl,mode = "i2s-slave";
-//	status = "okay";
-//};
+&ssi2 {
+	fsl,mode = "i2s-slave";
+	status = "okay";
+};
 
 &tve {
 	status = "okay";

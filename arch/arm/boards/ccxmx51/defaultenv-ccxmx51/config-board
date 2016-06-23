@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# SOUND WORLD
+gpio_direction_output 115 0
+
 # Beeper ON
 gpio_direction_output 87 1
 

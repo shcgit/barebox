@@ -1,11 +1,9 @@
 #!/bin/sh
 
 mmc0.probe=1
-mkdir /d
-mount /dev/mmc0.0 fat /d
-unprotect /dev/nand0.root
-erase /dev/nand0.root
-cp /d/sysroot-v5.img /dev/nand0.root
-protect /dev/nand0.root
-umount /d
-rmdir /d
+mount /dev/mmc0.0 fat /mnt
+ubiformat /dev/nand0.root -y
+ubiattach /dev/nand0.root
+ubimkvol /dev/nand0.root.ubi root 0
+cp /mnt/sysroot-v5.img /dev/nand0.root.ubi.root
+umount /mnt

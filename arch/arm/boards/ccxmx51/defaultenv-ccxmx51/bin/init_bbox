@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ubiformat /dev/nand0.nand-bbox -y
+ubiattach /dev/nand0.nand-bbox
+ubimkvol /dev/nand0.nand-bbox.ubi bbox 0
