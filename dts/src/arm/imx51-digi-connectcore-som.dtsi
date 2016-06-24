@@ -237,7 +237,6 @@
 		smsc,irq-push-pull;
 		vdd33a-supply = <&gpo2_reg>;
 		vddvario-supply = <&gpo2_reg>;
-		status = "disabled";
 	};
 };
 

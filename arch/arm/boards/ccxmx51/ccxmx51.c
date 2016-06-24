@@ -316,4 +316,4 @@ static int ccxmx51_init(void)
 
 	return 0;
 }
-device_initcall(ccxmx51_init);
+fs_initcall(ccxmx51_init);

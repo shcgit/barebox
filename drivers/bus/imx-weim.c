@@ -130,8 +130,8 @@ static int weim_parse_dt(struct imx_weim *weim)
 
 static int weim_probe(struct device_d *dev)
 {
-	struct resource *iores;
 	struct imx_weim_devtype *devtype;
+	struct resource *iores;
 	struct imx_weim *weim;
 	int ret;
 

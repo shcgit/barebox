@@ -493,10 +493,6 @@
 	status = "okay";
 };
 
-&lan9221 {
-	status = "okay";
-};
-
 &nfc {
 	partition@0 {
 		label = "boot";

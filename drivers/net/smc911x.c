@@ -34,16 +34,15 @@
 #include "smc911x.h"
 
 struct smc911x_priv {
-	struct eth_device edev;
-	struct mii_bus miibus;
-	void __iomem *base;
+	struct eth_device	edev;
+	struct mii_bus		miibus;
+	void __iomem		*base;
 
-	int shift;
-	int generation;
-	unsigned int flags;
-	unsigned int idrev;
-	unsigned int using_extphy;
-	unsigned int phy_mask;
+	u32			shift;
+	u32			flags;
+	u32			phy_mask;
+	u32			idrev;
+	unsigned int		using_extphy;
 
 	u32 (*reg_read)(struct smc911x_priv *priv, u32 reg);
 	void (*reg_write)(struct smc911x_priv *priv, u32 reg, u32 val);
@@ -497,16 +496,12 @@ static int smc911x_probe(struct device_d *dev)
 	struct resource *iores;
 	struct eth_device *edev;
 	struct smc911x_priv *priv;
-	uint32_t val;
-	int is_32bit, ret;
+	u32 val, generation;
+	int ret;
 	struct smc911x_plat *pdata = dev->platform_data;
 
 	priv = xzalloc(sizeof(*priv));
-	is_32bit = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
-	if (!is_32bit)
-		is_32bit = 1;
-	else
-		is_32bit = is_32bit == IORESOURCE_MEM_32BIT;
+
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -516,9 +511,23 @@ static int smc911x_probe(struct device_d *dev)
 		priv->shift = pdata->shift;
 		priv->flags = pdata->flags;
 		priv->phy_mask = pdata->phy_mask;
+	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
+		ret = of_property_read_u32(dev->device_node, "reg-io-width", &val);
+		if (ret)
+			return ret;
+		if (val == 4)
+			priv->flags |= SMC911X_USE_32BIT;
+
+		of_property_read_u32(dev->device_node, "reg-shift", &priv->shift);
+
+		if (of_property_read_bool(dev->device_node, "smsc,force-internal-phy"))
+			priv->flags |= SMC911X_FORCE_INTERNAL_PHY;
+
+		if (of_property_read_bool(dev->device_node, "smsc,force-external-phy"))
+			priv->flags |= SMC911X_FORCE_EXTERNAL_PHY;
 	}
 
-	if (is_32bit) {
+	if (priv->flags & SMC911X_USE_32BIT) {
 		if (priv->shift) {
 			priv->reg_read = __smc911x_reg_readl_shift;
 			priv->reg_write = __smc911x_reg_writel_shift;
@@ -562,7 +571,8 @@ static int smc911x_probe(struct device_d *dev)
 	if (val != 0x87654321) {
 		dev_err(dev, "no smc911x found on 0x%p (byte_test=0x%08x)\n",
 			priv->base, val);
-		if (((val >> 16) & 0xFFFF) == (val & 0xFFFF)) {
+		if ((((val >> 16) & 0xFFFF) == (val & 0xFFFF)) &&
+		    (priv->flags & SMC911X_USE_32BIT)) {
 			/*
 			 * This may mean the chip is set
 			 * for 32 bit while the bus is reading 16 bit
@@ -580,7 +590,7 @@ static int smc911x_probe(struct device_d *dev)
 	case 0x01150000:
 	case 0x218A0000:
 		/* LAN911[5678] family */
-		priv->generation = val & 0x0000FFFF;
+		generation = val & 0x0000FFFF;
 		break;
 
 	case 0x118A0000:
@@ -588,7 +598,7 @@ static int smc911x_probe(struct device_d *dev)
 	case 0x116A0000:
 	case 0x115A0000:
 		/* LAN921[5678] family */
-		priv->generation = 3;
+		generation = 3;
 		break;
 
 	case 0x92100000:
@@ -596,7 +606,7 @@ static int smc911x_probe(struct device_d *dev)
 	case 0x92200000:
 	case 0x92210000:
 		/* LAN9210/LAN9211/LAN9220/LAN9221 */
-		priv->generation = 4;
+		generation = 4;
 		break;
 
 	default:
@@ -606,7 +616,7 @@ static int smc911x_probe(struct device_d *dev)
 	}
 
 	dev_info(dev, "LAN911x identified, idrev: 0x%08X, generation: %d\n",
-		   val, priv->generation);
+		   val, generation);
 
 	edev = &priv->edev;
 	edev->priv = priv;
