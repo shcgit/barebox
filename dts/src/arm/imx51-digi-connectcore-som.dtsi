@@ -171,6 +171,7 @@
 	no-1-8-v;
 	non-removable;
 	vmmc-supply = <&gpo4_reg>;
+	status = "okay";
 };
 
 &fec {
