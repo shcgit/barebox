@@ -50,7 +50,6 @@ struct imx_wd {
 #define IMX21_WDOG_WSTR	0x04 /* Watchdog Status Register  */
 #define IMX21_WDOG_WMCR	0x08 /* Misc Register */
 #define IMX21_WDOG_WCR_WDE	(1 << 2)
-#define IMX21_WDOG_WCR_WRE	(1 << 3)
 #define IMX21_WDOG_WCR_SRS	(1 << 4)
 #define IMX21_WDOG_WCR_WDA	(1 << 5)
 
