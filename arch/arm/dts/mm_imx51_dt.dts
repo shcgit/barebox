@@ -233,9 +233,9 @@
 		audio@1 {
 			reg = <1>;
 			compatible = "simple-audio-card";
-			/*simple-audio-card,name = "SSI1TW2837";
+			simple-audio-card,name = "SSI1TW2837";
 			simple-audio-card,format = "i2s";
-			simple-audio-card,bitclock-master = <&audio1_master>;
+			/*simple-audio-card,bitclock-master = <&audio1_master>;
 			simple-audio-card,frame-master = <&audio1_master>;
 			simple-audio-card,widgets =
 				"Headphone", "Line Out";
@@ -603,12 +603,6 @@
 	};
 };
 
-//&wdog1 {
-//	pinctrl-names = "default";
-//	pinctrl-0 = <&pinctrl_wdog>;
-//	fsl,ext-reset-output;
-//};
-
 &weim {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_weim &pinctrl_weimcs>;
@@ -831,12 +825,6 @@
 				MX51_PAD_USBH1_DATA5__USBH1_DATA5	0x1e5
 				MX51_PAD_USBH1_DATA6__USBH1_DATA6	0x1e5
 				MX51_PAD_USBH1_DATA7__USBH1_DATA7	0x1e5
-			>;
-		};
-
-		pinctrl_wdog: wdoggrp {
-			fsl,pins = <
-				MX51_PAD_GPIO1_4__WDOG1_WDOG_B		0x85
 			>;
 		};
 

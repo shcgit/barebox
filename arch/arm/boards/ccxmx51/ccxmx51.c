@@ -2,17 +2,12 @@
  * (C) Copyright 2009-2010 Digi International, Inc.
  * Copyright (C) 2007 Sascha Hauer, Pengutronix
  * (c) 2011 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
+ * Modified for barebox by Alexander Shiyan <shc_work@mail.ru>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #include <common.h>
@@ -33,88 +28,55 @@
 static const struct ccxmx51_ident {
 	char		*id_string;
 	unsigned int	mem_sz;
-	unsigned char	industrial;
+	unsigned char	industrial:1;
 	unsigned char	eth0:1;
 	unsigned char	eth1:1;
 	unsigned char	wless:1;
 	unsigned char	accel:1;
 } *ccxmx51_id, ccxmx51_ids[] = {
-/* 0x00 */	{ "Unknown",						0,       0, 0, 0, 0, 0 },
-/* 0x01 */	{ "Not supported",					0,       0, 0, 0, 0, 0 },
-/* 0x02 */	{ "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 0, 1, 1, 1, 1 },
-/* 0x03 */	{ "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 0, 1, 1, 0, 1 },
-/* 0x04 */	{ "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 1, 1, 1, 1, 1 },
-/* 0x05 */	{ "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 1, 1, 1, 0, 1 },
-/* 0x06 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
-/* 0x07 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0, 1 },
-/* 0x08 */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 0, 1, 0, 1, 1 },
-/* 0x09 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_256M, 0, 1, 0, 0, 1 },
-/* 0x0a */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 1, 1, 0, 1, 1 },
-/* 0x0b */	{ "i.MX515@600MHz, PHY, Accel",				SZ_256M, 1, 1, 0, 0, 1 },
-/* 0x0c */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 0, 1, 0, 1, 1 },
-/* 0x0d */	{ "i.MX512@800MHz",					SZ_128M, 0, 0, 0, 0, 0 },
-/* 0x0e */	{ "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
-/* 0x0f */	{ "i.MX515@600MHz, PHY, Accel",				SZ_128M, 1, 1, 0, 0, 1 },
-/* 0x10 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 1, 1, 0, 1, 1 },
-/* 0x11 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_128M, 0, 1, 0, 0, 1 },
-/* 0x12 */	{ "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 1, 1, 0, 1, 1 },
-/* 0x13 */	{ "i.MX515@800MHz, PHY, Accel",				SZ_512M, 0, 1, 0, 0, 1 },
+	[0x00] = { "Unknown",						0,       0, 0, 0, 0, 0 },
+	[0x01] = { "Not supported",					0,       0, 0, 0, 0, 0 },
+	[0x02] = { "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 0, 1, 1, 1, 1 },
+	[0x03] = { "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 0, 1, 1, 0, 1 },
+	[0x04] = { "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 1, 1, 1, 1, 1 },
+	[0x05] = { "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 1, 1, 1, 0, 1 },
+	[0x06] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
+	[0x07] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 0, 1, 0, 0, 1 },
+	[0x08] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 0, 1, 0, 1, 1 },
+	[0x09] = { "i.MX515@800MHz, PHY, Accel",			SZ_256M, 0, 1, 0, 0, 1 },
+	[0x0a] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 1, 1, 0, 1, 1 },
+	[0x0b] = { "i.MX515@600MHz, PHY, Accel",			SZ_256M, 1, 1, 0, 0, 1 },
+	[0x0c] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 0, 1, 0, 1, 1 },
+	[0x0d] = { "i.MX512@800MHz",					SZ_128M, 0, 0, 0, 0, 0 },
+	[0x0e] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
+	[0x0f] = { "i.MX515@600MHz, PHY, Accel",			SZ_128M, 1, 1, 0, 0, 1 },
+	[0x10] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 1, 1, 0, 1, 1 },
+	[0x11] = { "i.MX515@800MHz, PHY, Accel",			SZ_128M, 0, 1, 0, 0, 1 },
+	[0x12] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 1, 1, 0, 1, 1 },
+	[0x13] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 0, 1, 0, 0, 1 },
 };
 
 static u32 boardserial;
-
-#include <mach/imx51-regs.h>
-#include <io.h>
-#include <mach/imx5.h>
-#include <mach/clock-imx51_53.h>
-void ttt(void __iomem *base)
-{
-	printf("MX5_PLL_DP_CONFIG 0x%08x\n", readl(base + MX5_PLL_DP_CONFIG));
-	printf("MX5_PLL_DP_CTL 0x%08x\n", readl(base + MX5_PLL_DP_CTL));
-	printf("MX5_PLL_DP_OP 0x%08x\n", readl(base + MX5_PLL_DP_OP));
-	printf("MX5_PLL_DP_MFD 0x%08x\n", readl(base + MX5_PLL_DP_MFD));
-	printf("MX5_PLL_DP_MFN 0x%08x\n", readl(base + MX5_PLL_DP_MFN));
-}
 
 static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 {
 	u32 val;
 
-int i;
-for (i=0;i<54;i++) {
-if (i%4==0) printf("\n0x%08x: ",i);
-mc13xxx_reg_read(mc13xxx, i, &val);
-printf("0x%06x ",val);
-}
-printf("\n");
-
-	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_MISC, &val);
-	/* Reset devices by clearing GP01-GPO4 */
-	val &= ~((1 << 21) | (3 << 12) | (3 << 10) | (3 << 8) | (3 << 6));
-	/* Switching off the PWGT1SPIEN */
-	val |= (1 << 15);
-	/* Switching on the PWGT2SPIEN */
-	val &= ~(1 << 16);
-	/* Enable short circuit protection */
-	val |= (1 << 0);
+	/* Clear GP01-GPO4, enable short circuit protection,  PWGT1SPIEN off */
+	val = MC13892_POWER_MISC_REGSCPEN | MC13892_POWER_MISC_PWGT1SPIEN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, val);
-
-	/* Enable WDI reset and automatic reset after system reset */
-	mc13xxx_reg_read(mc13xxx, 15, &val);
-	val |= (1 << 0);// | (1 << 12);
-	mc13xxx_reg_write(mc13xxx, 15, val);
 
 	/* Allow charger to charge (4.2V and 560mA) */
 	val = 0x238033;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_CHARGE, val);
 
-	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
-		/* Set core voltage (SW1) to 1.1V */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_0, &val);
-		val &= ~MC13892_SWx_SWx_VOLT_MASK;
-		val |=  MC13892_SWx_SWx_1_100V;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_0, val);
+	/* Set core voltage (SW1) to 1.1V */
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_0, &val);
+	val &= ~MC13892_SWx_SWx_VOLT_MASK;
+	val |=  MC13892_SWx_SWx_1_100V;
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_0, val);
 
+	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
 		/* Setup VCC (SW2) to 1.25 */
 		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
 		val &= ~MC13892_SWx_SWx_VOLT_MASK;
@@ -176,9 +138,8 @@ printf("\n");
 		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
 	}
 
-	/* Set VVIDEO=2.775V, VAUDIO=3V, VSD=3.15V, VGEN1=1.2V, VGEN2=3.15V */
-	val = MC13892_SETTING_1_VGEN1_1_2 | MC13892_SETTING_1_VGEN2_3_15;
-	val |= MC13892_SETTING_1_VVIDEO_2_775 | MC13892_SETTING_1_VAUDIO_3_0;
+	/* Set VVIDEO=2.775V, VAUDIO=3V, VSD=3.15V */
+	val = MC13892_SETTING_1_VVIDEO_2_775 | MC13892_SETTING_1_VAUDIO_3_0;
 	val |= MC13892_SETTING_1_VSD_3_15;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_1, val);
 
@@ -187,9 +148,14 @@ printf("\n");
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 	udelay(200);
 
-	/* Set VGEN3 to 1.8V */
+	/* Set VGEN1=1.2V, VGEN2=3.15V, VGEN3=1.8V, VDIG=1.25V, VCAM=2.75V */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_SETTING_0, &val);
-	val &= ~MC13892_SETTING_0_VGEN3_MASK;
+	val &= ~(MC13892_SETTING_0_VGEN1_MASK | MC13892_SETTING_0_VGEN2_MASK);
+	val |= MC13892_SETTING_0_VGEN1_1_2 | MC13892_SETTING_0_VGEN2_3_15;
+	val &= ~(MC13892_SETTING_0_VGEN3_MASK | MC13892_SETTING_0_VDIG_MASK);
+	val |= MC13892_SETTING_0_VGEN3_1_8 | MC13892_SETTING_0_VDIG_1_25;
+	val &= ~MC13892_SETTING_0_VCAM_MASK;
+	val |= MC13892_SETTING_0_VCAM_2_75;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_0, val);
 
 	/* Enable VGEN3, VCAM, VAUDIO, VVIDEO, VSD regulators */
@@ -198,10 +164,6 @@ printf("\n");
 	val |= MC13892_MODE_1_VVIDEOEN | MC13892_MODE_1_VAUDIOEN;
 	val |= MC13892_MODE_1_VSDEN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
-
-	/* Enable USB1 charger */
-	val = 0x000409;
-	mc13xxx_reg_write(mc13xxx, MC13892_REG_USB1, val);
 
 	/* Set VCOIN to 3.0V and Enable It */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_CTL0, &val);
@@ -212,7 +174,7 @@ printf("\n");
 	val |= (1 << 4);
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_CTL0, val);
 
-	/* De-assert reset of external devices on GP01, GPO2, GPO3 and GPO4 */
+	/* De-assert reset of external devices on GP01-GPO4 */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_MISC, &val);
 	/* GPO1 - External */
 	/* GP02 - LAN9221 Power */
@@ -230,12 +192,9 @@ printf("\n");
 
 	udelay(100);
 
-	printf("PMIC initialized.\n");
+	printf("MC13892 PMIC initialized.\n");
 
 	console_flush();
-//ttt((void *)MX51_PLL1_BASE_ADDR);
-//ttt((void *)MX51_PLL2_BASE_ADDR);
-//ttt((void *)MX51_PLL3_BASE_ADDR);
 	imx51_init_lowlevel(ccxmx51_id->industrial ? 600 : 800);
 	clock_notifier_call_chain();
 }
