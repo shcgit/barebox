@@ -116,22 +116,6 @@
 		};*/
 	};
 
-/*	panel@di0 {
-		port {
-			panel1_in: endpoint {
-				remote-endpoint = <&disp0_out>;
-			};
-		};
-	};*/
-
-/*	panel@di1 {
-		port {
-			panel2_in: endpoint {
-				remote-endpoint = <&disp1_out>;
-			};
-		};
-	};*/
-
 	gpiokeys: gpiokeys {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpiokeys>;
@@ -181,6 +165,27 @@
 			gpios = <&gpio3 21 GPIO_ACTIVE_LOW>;
 		};
 	};
+
+	otgid {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpio = <&weimgpio 7 GPIO_ACTIVE_HIGH>;
+	};
+
+/*	panel@di0 {
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&disp0_out>;
+			};
+		};
+	};*/
+
+/*	panel@di1 {
+		port {
+			panel2_in: endpoint {
+				remote-endpoint = <&disp1_out>;
+			};
+		};
+	};*/
 
 	soc {
 		aips@80000000 {
@@ -410,6 +415,9 @@
 };
 
 &i2c2 {
+	/* WM8753 SCLK Low pulse-width MIN 1.3us */
+	clock-frequency = <350000>;
+
 	wm8753: wm8753@1b {
 		#sound-dai-cells = <0>;
 		compatible = "wlf,wm8753";
@@ -595,17 +603,17 @@
 	};
 };
 
-&wdog1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_wdog>;
-	fsl,ext-reset-output;
-};
+//&wdog1 {
+//	pinctrl-names = "default";
+//	pinctrl-0 = <&pinctrl_wdog>;
+//	fsl,ext-reset-output;
+//};
 
 &weim {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_weim &pinctrl_weimcs>;
 
-	bgpio@cc000000 {
+	weimgpio: bgpio@cc000000 {
 		compatible = "ti,74244";
 		reg = <4 0x00000000 0x1>;
 		fsl,weim-cs-timing = <
@@ -615,13 +623,6 @@
 		>;
 		gpio-controller;
 		#gpio-cells = <2>;
-	
-		otgid {
-			gpio-hog;
-			gpios = <7 GPIO_ACTIVE_LOW>;
-			input;
-			line-name = "OTG ID";
-		};
 	};
 };
 

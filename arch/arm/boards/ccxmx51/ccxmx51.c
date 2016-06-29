@@ -63,9 +63,30 @@ static const struct ccxmx51_ident {
 
 static u32 boardserial;
 
+#include <mach/imx51-regs.h>
+#include <io.h>
+#include <mach/imx5.h>
+#include <mach/clock-imx51_53.h>
+void ttt(void __iomem *base)
+{
+	printf("MX5_PLL_DP_CONFIG 0x%08x\n", readl(base + MX5_PLL_DP_CONFIG));
+	printf("MX5_PLL_DP_CTL 0x%08x\n", readl(base + MX5_PLL_DP_CTL));
+	printf("MX5_PLL_DP_OP 0x%08x\n", readl(base + MX5_PLL_DP_OP));
+	printf("MX5_PLL_DP_MFD 0x%08x\n", readl(base + MX5_PLL_DP_MFD));
+	printf("MX5_PLL_DP_MFN 0x%08x\n", readl(base + MX5_PLL_DP_MFN));
+}
+
 static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 {
 	u32 val;
+
+int i;
+for (i=0;i<54;i++) {
+if (i%4==0) printf("\n0x%08x: ",i);
+mc13xxx_reg_read(mc13xxx, i, &val);
+printf("0x%06x ",val);
+}
+printf("\n");
 
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_MISC, &val);
 	/* Reset devices by clearing GP01-GPO4 */
@@ -77,6 +98,11 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	/* Enable short circuit protection */
 	val |= (1 << 0);
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, val);
+
+	/* Enable WDI reset and automatic reset after system reset */
+	mc13xxx_reg_read(mc13xxx, 15, &val);
+	val |= (1 << 0);// | (1 << 12);
+	mc13xxx_reg_write(mc13xxx, 15, val);
 
 	/* Allow charger to charge (4.2V and 560mA) */
 	val = 0x238033;
@@ -207,6 +233,9 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	printf("PMIC initialized.\n");
 
 	console_flush();
+//ttt((void *)MX51_PLL1_BASE_ADDR);
+//ttt((void *)MX51_PLL2_BASE_ADDR);
+//ttt((void *)MX51_PLL3_BASE_ADDR);
 	imx51_init_lowlevel(ccxmx51_id->industrial ? 600 : 800);
 	clock_notifier_call_chain();
 }
