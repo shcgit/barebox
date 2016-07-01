@@ -17,13 +17,15 @@
 #include <notifier.h>
 #include <asm/armlinux.h>
 #include <linux/sizes.h>
+#include <mfd/mc13xxx.h>
+#include <mfd/mc13892.h>
+
+#include <mach/bbu.h>
 #include <mach/esdctl.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>
 #include <mach/imx51-regs.h>
 #include <mach/revision.h>
-#include <mfd/mc13xxx.h>
-#include <mfd/mc13892.h>
 
 static const struct ccxmx_ident {
 	char		*id_string;
@@ -226,6 +228,7 @@ postcore_initcall(ccxmx51_sdram_fixup);
 
 static int ccxmx51_init(void)
 {
+	char manloc = 'N';
 	u8 hwid[6];
 
 	if (!ccxmx51_is_compatible())
@@ -235,42 +238,43 @@ static int ccxmx51_init(void)
 	    (hwid[0] < 0x02) || (hwid[0] >= ARRAY_SIZE(ccxmx51_ids))) {
 		printf("Unknown board variant (0x%02x). System halted.\n", hwid[0]);
 		hang();
-	} else {
-		char manloc = 'N';
-
-		ccxmx_id = &ccxmx51_ids[hwid[0]];
-
-		printf("Module Variant: %s (0x%02x)\n", ccxmx_id->id_string, hwid[0]);
-		printf("Module HW Rev : %02x\n", hwid[1] + 1);
-
-		switch (hwid[2] & 0xc0) {
-		case 0x00:
-			manloc = 'B';
-			break;
-		case 0x40:
-			manloc = 'W';
-			break;
-		case 0x80:
-			manloc = 'S';
-			break;
-		default:
-			break;
-		}
-
-		eth_register_ethaddr(0, hwid);
-
-		boardserial = ((hwid[2] & 0x3f) << 24) | (hwid[3] << 16) | (hwid[4] << 8) | hwid[5];
-		printf("Module Serial : %c%d\n", manloc, boardserial);
-
-		if ((ccxmx_id->mem_sz - SZ_128M) > 0)
-			arm_add_mem_device("ram1", MX51_CSD0_BASE_ADDR + SZ_128M,
-					   ccxmx_id->mem_sz - SZ_128M);
-
-		mc13xxx_register_init_callback(ccxmx51_power_init);
 	}
+
+	ccxmx_id = &ccxmx51_ids[hwid[0]];
+
+	switch (hwid[2] & 0xc0) {
+	case 0x00:
+		manloc = 'B';
+		break;
+	case 0x40:
+		manloc = 'W';
+		break;
+	case 0x80:
+		manloc = 'S';
+		break;
+	default:
+		break;
+	}
+
+	eth_register_ethaddr(0, hwid);
+
+	boardserial = ((hwid[2] & 0x3f) << 24) | (hwid[3] << 16) | (hwid[4] << 8) | hwid[5];
+
+	printf("Module Variant: %s (0x%02x)\n", ccxmx_id->id_string, hwid[0]);
+	printf("Module HW Rev : %02x\n", hwid[1] + 1);
+	printf("Module Serial : %c%d\n", manloc, boardserial);
+
+	if ((ccxmx_id->mem_sz - SZ_128M) > 0)
+		arm_add_mem_device("ram1", MX51_CSD0_BASE_ADDR + SZ_128M,
+				   ccxmx_id->mem_sz - SZ_128M);
+
+	mc13xxx_register_init_callback(ccxmx51_power_init);
 
 	barebox_set_model("Digi ConnectCore i.MX51");
 	barebox_set_hostname("ccxmx51");
+
+	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
+						BBU_HANDLER_FLAG_DEFAULT);
 
 	defaultenv_append_directory(defaultenv_ccxmx51);
 
