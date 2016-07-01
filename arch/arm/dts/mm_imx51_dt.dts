@@ -166,10 +166,10 @@
 		};
 	};
 
-	otgid {
+	/*otgid {
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&weimgpio 7 GPIO_ACTIVE_HIGH>;
-	};
+	};*/
 
 /*	panel@di0 {
 		port {
@@ -520,6 +520,7 @@
 };
 
 &pmic {
+	fsl,mc13xxx-uses-rtc;
 	fsl,mc13xxx-uses-touch;
 
 	leds {
@@ -585,14 +586,14 @@
 	status = "okay";
 };
 
-&usbh1 {
+/*&usbh1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbh1>;
 	fsl,usbphy = <&usbphy1>;
 	phy_type = "ulpi";
 	disable-over-current;
 	status = "okay";
-};
+};*/
 
 &usbphy {
 	usbphy1: usbphy@1 {
@@ -607,7 +608,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_weim &pinctrl_weimcs>;
 
-	weimgpio: bgpio@cc000000 {
+	bgpio@cc000000 {
 		compatible = "ti,74244";
 		reg = <4 0x00000000 0x1>;
 		fsl,weim-cs-timing = <

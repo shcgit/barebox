@@ -25,35 +25,35 @@
 #include <mfd/mc13xxx.h>
 #include <mfd/mc13892.h>
 
-static const struct ccxmx51_ident {
+static const struct ccxmx_ident {
 	char		*id_string;
 	unsigned int	mem_sz;
-	unsigned char	industrial:1;
+	unsigned int	cpu_mhz;
 	unsigned char	eth0:1;
 	unsigned char	eth1:1;
 	unsigned char	wless:1;
 	unsigned char	accel:1;
-} *ccxmx51_id, ccxmx51_ids[] = {
-	[0x00] = { "Unknown",						0,       0, 0, 0, 0, 0 },
-	[0x01] = { "Not supported",					0,       0, 0, 0, 0, 0 },
-	[0x02] = { "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 0, 1, 1, 1, 1 },
-	[0x03] = { "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 0, 1, 1, 0, 1 },
-	[0x04] = { "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 1, 1, 1, 1, 1 },
-	[0x05] = { "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 1, 1, 1, 0, 1 },
-	[0x06] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
-	[0x07] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 0, 1, 0, 0, 1 },
-	[0x08] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 0, 1, 0, 1, 1 },
-	[0x09] = { "i.MX515@800MHz, PHY, Accel",			SZ_256M, 0, 1, 0, 0, 1 },
-	[0x0a] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 1, 1, 0, 1, 1 },
-	[0x0b] = { "i.MX515@600MHz, PHY, Accel",			SZ_256M, 1, 1, 0, 0, 1 },
-	[0x0c] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 0, 1, 0, 1, 1 },
-	[0x0d] = { "i.MX512@800MHz",					SZ_128M, 0, 0, 0, 0, 0 },
-	[0x0e] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 0, 1, 0, 1, 1 },
-	[0x0f] = { "i.MX515@600MHz, PHY, Accel",			SZ_128M, 1, 1, 0, 0, 1 },
-	[0x10] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 1, 1, 0, 1, 1 },
-	[0x11] = { "i.MX515@800MHz, PHY, Accel",			SZ_128M, 0, 1, 0, 0, 1 },
-	[0x12] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 1, 1, 0, 1, 1 },
-	[0x13] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 0, 1, 0, 0, 1 },
+} *ccxmx_id, ccxmx51_ids[] = {
+	[0x00] = { NULL /* Unknown */,					0,       0,   0, 0, 0, 0 },
+	[0x01] = { NULL /* Not supported */,				0,       0,   0, 0, 0, 0 },
+	[0x02] = { "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 800, 1, 1, 1, 1 },
+	[0x03] = { "i.MX515@800MHz, PHY, Ext. Eth, Accel",		SZ_512M, 800, 1, 1, 0, 1 },
+	[0x04] = { "i.MX515@600MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 600, 1, 1, 1, 1 },
+	[0x05] = { "i.MX515@600MHz, PHY, Ext. Eth, Accel",		SZ_512M, 600, 1, 1, 0, 1 },
+	[0x06] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 800, 1, 0, 1, 1 },
+	[0x07] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 800, 1, 0, 0, 1 },
+	[0x08] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_256M, 800, 1, 0, 1, 1 },
+	[0x09] = { "i.MX515@800MHz, PHY, Accel",			SZ_256M, 800, 1, 0, 0, 1 },
+	[0x0a] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_256M, 600, 1, 0, 1, 1 },
+	[0x0b] = { "i.MX515@600MHz, PHY, Accel",			SZ_256M, 600, 1, 0, 0, 1 },
+	[0x0c] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_128M, 800, 1, 0, 1, 1 },
+	[0x0d] = { "i.MX512@800MHz",					SZ_128M, 800, 0, 0, 0, 0 },
+	[0x0e] = { "i.MX515@800MHz, Wireless, PHY, Accel",		SZ_512M, 800, 1, 0, 1, 1 },
+	[0x0f] = { "i.MX515@600MHz, PHY, Accel",			SZ_128M, 600, 1, 0, 0, 1 },
+	[0x10] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_128M, 600, 1, 0, 1, 1 },
+	[0x11] = { "i.MX515@800MHz, PHY, Accel",			SZ_128M, 800, 1, 0, 0, 1 },
+	[0x12] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 600, 1, 0, 1, 1 },
+	[0x13] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 800, 1, 0, 0, 1 },
 };
 
 static u32 boardserial;
@@ -64,79 +64,54 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 
 	/* Clear GP01-GPO4, enable short circuit protection,  PWGT1SPIEN off */
 	val = MC13892_POWER_MISC_REGSCPEN | MC13892_POWER_MISC_PWGT1SPIEN;
+	val |= MC13892_POWER_MISC_GPO4ADIN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, val);
 
-	/* Allow charger to charge (4.2V and 560mA) */
-	val = 0x238033;
-	mc13xxx_reg_write(mc13xxx, MC13892_REG_CHARGE, val);
+	/* Set ICHRG in externally powered mode, 4.2V, Disable thermistor */
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_CHARGE, 0xa3827b);
 
-	/* Set core voltage (SW1) to 1.1V */
+	/* Set core voltage (SW1) to 1.1V NORMAL, 1.05V STANDBY */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_0, &val);
-	val &= ~MC13892_SWx_SWx_VOLT_MASK;
-	val |=  MC13892_SWx_SWx_1_100V;
+	val &= ~(MC13892_SWx_SWx_VOLT_MASK << MC13892_SWMODE1_SHIFT);
+	val |= MC13892_SWx_SWx_1_100V << MC13892_SWMODE1_SHIFT;
+	val &= ~(MC13892_SWx_SWx_VOLT_MASK << MC13892_SWMODE2_SHIFT);
+	val |= MC13892_SWx_SWx_1_050V << MC13892_SWMODE2_SHIFT;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_0, val);
 
-	if (imx_silicon_revision() < IMX_CHIP_REV_3_0) {
-		/* Setup VCC (SW2) to 1.25 */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
-		val &= ~MC13892_SWx_SWx_VOLT_MASK;
-		val |=  MC13892_SWx_SWx_1_250V;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
+	/* Setup VCC (SW2) to 1.225 NORMAL, 1.175V STANDBY */
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
+	val &= ~(MC13892_SWx_SWx_VOLT_MASK << MC13892_SWMODE1_SHIFT);
+	val |= MC13892_SWx_SWx_1_225V << MC13892_SWMODE1_SHIFT;
+	val &= ~(MC13892_SWx_SWx_VOLT_MASK << MC13892_SWMODE2_SHIFT);
+	val |= MC13892_SWx_SWx_1_175V << MC13892_SWMODE2_SHIFT;
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
 
-		/* Setup 1V2_DIG1 (SW3) to 1.25 */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
-		val &= ~MC13892_SWx_SWx_VOLT_MASK;
-		val |=  MC13892_SWx_SWx_1_250V;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
-	} else {
-		/* Setup VCC (SW2) to 1.225 */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_1, &val);
-		val &= ~MC13892_SWx_SWx_VOLT_MASK;
-		val |=  MC13892_SWx_SWx_1_225V;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_1, val);
+	/* Setup 1V2_DIG1 (SW3) to 1.2 NORMAL, 1.15V STANDBY */
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
+	val &= ~(MC13892_SWx_SWx_VOLT_MASK << MC13892_SWMODE1_SHIFT);
+	val |= MC13892_SWx_SWx_1_200V << MC13892_SWMODE1_SHIFT;
+	val &= ~(MC13892_SWx_SWx_VOLT_MASK << MC13892_SWMODE2_SHIFT);
+	val |= MC13892_SWx_SWx_1_150V << MC13892_SWMODE2_SHIFT;
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
 
-		/* Setup 1V2_DIG1 (SW3) to 1.2 */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_2, &val);
-		val &= ~MC13892_SWx_SWx_VOLT_MASK;
-		val |=  MC13892_SWx_SWx_1_200V;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_2, val);
-	}
+	/* Set SW1-SW4 switcher in Auto in NORMAL & STANDBY mode */
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
+	val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE1_SHIFT);
+	val |= MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE1_SHIFT;
+	val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE2_SHIFT);
+	val |= MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE2_SHIFT;
+	/* Disable current limit */
+	val |= 1 << 22;
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
 
-	if (mc13xxx_revision(mc13xxx) <= MC13892_REVISION_2_0) {
-		/* Set switchers in PWM mode for Atlas 2.0 and lower */
-		/* Setup the switcher mode for SW1 & SW2*/
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE1_SHIFT);
-		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE1_SHIFT;
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE2_SHIFT);
-		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE2_SHIFT;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
-
-		/* Setup the switcher mode for SW3 & SW4 */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE3_SHIFT);
-		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE3_SHIFT;
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE4_SHIFT);
-		val |=  MC13892_SWMODE_PWM_PWM << MC13892_SWMODE4_SHIFT;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
-	} else {
-		/* Set switchers in Auto in NORMAL mode & STANDBY mode for Atlas 2.0a */
-		/* Setup the switcher mode for SW1 & SW2*/
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_4, &val);
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE1_SHIFT);
-		val |=  MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE1_SHIFT;
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE2_SHIFT);
-		val |=  MC13892_SWMODE_AUTO_OFF << MC13892_SWMODE2_SHIFT;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_4, val);
-
-		/* Setup the switcher mode for SW3 & SW4 */
-		mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE3_SHIFT);
-		val |=  MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE3_SHIFT;
-		val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE4_SHIFT);
-		val |=  MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE4_SHIFT;
-		mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
-	}
+	mc13xxx_reg_read(mc13xxx, MC13892_REG_SW_5, &val);
+	val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE3_SHIFT);
+	val |= MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE3_SHIFT;
+	val &= ~(MC13892_SWMODE_MASK << MC13892_SWMODE4_SHIFT);
+	val |= MC13892_SWMODE_AUTO_AUTO << MC13892_SWMODE4_SHIFT;
+	/* Enable SWBST */
+	val |= 1 << 20;
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_SW_5, val);
 
 	/* Set VVIDEO=2.775V, VAUDIO=3V, VSD=3.15V */
 	val = MC13892_SETTING_1_VVIDEO_2_775 | MC13892_SETTING_1_VAUDIO_3_0;
@@ -148,15 +123,16 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 	udelay(200);
 
-	/* Set VGEN1=1.2V, VGEN2=3.15V, VGEN3=1.8V, VDIG=1.25V, VCAM=2.75V */
+	/* Set VGEN2=3.15V, VGEN3=1.8V, VDIG=1.25V, VCAM=2.75V */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_SETTING_0, &val);
-	val &= ~(MC13892_SETTING_0_VGEN1_MASK | MC13892_SETTING_0_VGEN2_MASK);
-	val |= MC13892_SETTING_0_VGEN1_1_2 | MC13892_SETTING_0_VGEN2_3_15;
-	val &= ~(MC13892_SETTING_0_VGEN3_MASK | MC13892_SETTING_0_VDIG_MASK);
-	val |= MC13892_SETTING_0_VGEN3_1_8 | MC13892_SETTING_0_VDIG_1_25;
-	val &= ~MC13892_SETTING_0_VCAM_MASK;
-	val |= MC13892_SETTING_0_VCAM_2_75;
+	val &= ~(MC13892_SETTING_0_VGEN2_MASK | MC13892_SETTING_0_VGEN3_MASK);
+	val |= MC13892_SETTING_0_VGEN2_3_15 | MC13892_SETTING_0_VGEN3_1_8;
+	val &= ~(MC13892_SETTING_0_VDIG_MASK | MC13892_SETTING_0_VCAM_MASK);
+	val |= MC13892_SETTING_0_VDIG_1_25 | MC13892_SETTING_0_VCAM_2_75;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_SETTING_0, val);
+
+	/* Enable OTG function */
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_USB1, 0x409);
 
 	/* Enable VGEN3, VCAM, VAUDIO, VVIDEO, VSD regulators */
 	val = MC13892_MODE_1_VGEN3EN | MC13892_MODE_1_VGEN3CONFIG;
@@ -165,13 +141,10 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	val |= MC13892_MODE_1_VSDEN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 
-	/* Set VCOIN to 3.0V and Enable It */
+	/* Set VCOIN=3.0V, Keeps VSRTC and CLK32KMCU */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_CTL0, &val);
 	val &= ~(7 << 20);
-	val |= (4 << 20) | (1 << 23);
-	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_CTL0, val);
-	/* Keeps VSRTC and CLK32KMCU */
-	val |= (1 << 4);
+	val |= (1 << 4) | (4 << 20) | (1 << 23);
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_CTL0, val);
 
 	/* De-assert reset of external devices on GP01-GPO4 */
@@ -180,23 +153,23 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	/* GP02 - LAN9221 Power */
 	/* GP03 - FEC Reset */
 	/* GP04 - Wireless Power */
-	if (ccxmx51_id->eth1) {
+	if (ccxmx_id->eth1) {
 		val |= MC13892_POWER_MISC_GPO2EN;
 		mdelay(100);
 	}
-	if (ccxmx51_id->eth0)
+	if (ccxmx_id->eth0)
 		val |= MC13892_POWER_MISC_GPO3EN;
-	if (ccxmx51_id->wless)
+	if (ccxmx_id->wless)
 		val |= MC13892_POWER_MISC_GPO4EN;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_POWER_MISC, val);
 
 	udelay(100);
 
-	printf("MC13892 PMIC initialized.\n");
-
 	console_flush();
-	imx51_init_lowlevel(ccxmx51_id->industrial ? 600 : 800);
+	imx51_init_lowlevel(ccxmx_id->cpu_mhz);
 	clock_notifier_call_chain();
+
+	printf("MC13892 PMIC initialized.\n");
 }
 
 static int ccxmx51_is_compatible(void)
@@ -215,20 +188,21 @@ static int ccxmx51_board_fixup(struct device_node *root, void *unused)
 {
 	char *serial;
 
-	if (!ccxmx51_id->accel)
+	if (!ccxmx_id->accel)
 		ccxmx51_disable_device(root, "mma7455l@1d");
 
-	if (!ccxmx51_id->eth0)
+	if (!ccxmx_id->eth0)
 		ccxmx51_disable_device(root, "ethernet@83fec000");
 
-	if (!ccxmx51_id->eth1)
+	if (!ccxmx_id->eth1)
 		ccxmx51_disable_device(root, "lan9221@5,0");
 
-	if (!ccxmx51_id->wless)
+	if (!ccxmx_id->wless)
 		ccxmx51_disable_device(root, "esdhc@70008000");
 
 	serial = basprintf("%08x%08x", 0, boardserial);
 	of_set_property(root, "serial-number", serial, strlen(serial) + 1, 1);
+	free(serial);
 
 	return 0;
 }
@@ -252,19 +226,21 @@ postcore_initcall(ccxmx51_sdram_fixup);
 
 static int ccxmx51_init(void)
 {
-	char manloc;
 	u8 hwid[6];
 
 	if (!ccxmx51_is_compatible())
 		return 0;
 
-	if ((imx_iim_read(1, 9, hwid, sizeof(hwid)) != sizeof(hwid)) || (hwid[0] < 0x02) || (hwid[0] >= ARRAY_SIZE(ccxmx51_ids)))
-		memset(hwid, 0x00, sizeof(hwid));
+	if ((imx_iim_read(1, 9, hwid, sizeof(hwid)) != sizeof(hwid)) ||
+	    (hwid[0] < 0x02) || (hwid[0] >= ARRAY_SIZE(ccxmx51_ids))) {
+		printf("Unknown board variant (0x%02x). System halted.\n", hwid[0]);
+		hang();
+	} else {
+		char manloc = 'N';
 
-	ccxmx51_id = &ccxmx51_ids[hwid[0]];
-	printf("Module Variant: %s (0x%02x)\n", ccxmx51_id->id_string, hwid[0]);
+		ccxmx_id = &ccxmx51_ids[hwid[0]];
 
-	if (hwid[0]) {
+		printf("Module Variant: %s (0x%02x)\n", ccxmx_id->id_string, hwid[0]);
 		printf("Module HW Rev : %02x\n", hwid[1] + 1);
 
 		switch (hwid[2] & 0xc0) {
@@ -278,7 +254,6 @@ static int ccxmx51_init(void)
 			manloc = 'S';
 			break;
 		default:
-			manloc = 'N';
 			break;
 		}
 
@@ -287,18 +262,15 @@ static int ccxmx51_init(void)
 		boardserial = ((hwid[2] & 0x3f) << 24) | (hwid[3] << 16) | (hwid[4] << 8) | hwid[5];
 		printf("Module Serial : %c%d\n", manloc, boardserial);
 
-		if ((ccxmx51_id->mem_sz - SZ_128M) > 0)
+		if ((ccxmx_id->mem_sz - SZ_128M) > 0)
 			arm_add_mem_device("ram1", MX51_CSD0_BASE_ADDR + SZ_128M,
-					   ccxmx51_id->mem_sz - SZ_128M);
+					   ccxmx_id->mem_sz - SZ_128M);
 
 		mc13xxx_register_init_callback(ccxmx51_power_init);
-	} else {
-		printf("Machine is unsupported. System halted.\n");
-		hang();
 	}
 
 	barebox_set_model("Digi ConnectCore i.MX51");
-	barebox_set_hostname("ccmx51");
+	barebox_set_hostname("ccxmx51");
 
 	defaultenv_append_directory(defaultenv_ccxmx51);
 
