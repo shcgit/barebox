@@ -77,12 +77,6 @@
 	};
 };
 
-&wdog1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_wdog>;
-	fsl,ext-reset-output;
-};
-
 &iomuxc {
 	imx51-digi-connectcore-jsk {
 		pinctrl_owire: owiregrp {
@@ -126,12 +120,6 @@
 				MX51_PAD_USBH1_DIR__USBH1_DIR		0x1e5
 				MX51_PAD_USBH1_NXT__USBH1_NXT		0x1e5
 				MX51_PAD_USBH1_STP__USBH1_STP		0x1e5
-			>;
-		};
-
-		pinctrl_wdog: wdoggrp {
-			fsl,pins = <
-				MX51_PAD_GPIO1_4__WDOG1_WDOG_B		0x85
 			>;
 		};
 	};
