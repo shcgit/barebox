@@ -241,13 +241,13 @@
 				"Headphone", "Line Out";
 			simple-audio-card,routing =
 				"Line Out", "LOUT1",
-				"Line Out", "ROUT1";
+				"Line Out", "ROUT1";*/
 
 			simple-audio-card,cpu {
 				sound-dai = <&ssi2>;
 			};
 
-			audio1_master: simple-audio-card,codec {
+			/*audio1_master: simple-audio-card,codec {
 				sound-dai = <&tw2837>;
 				system-clock-frequency = <12000000>;
 			};*/
