@@ -34,7 +34,8 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		compatible = "fsl,imx-parallel-display";
-		crtcs = <&ipu 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipu_disp0>;
 		interface-pix-fmt = "rgb565";
 
 		display-timings {
@@ -64,24 +65,17 @@
 				remote-endpoint = <&ipu_di0_disp0>;
 			};
 		};
-
-/*		port@1 {
-			reg = <1>;
-
-			disp0_out: endpoint {
-				remote-endpoint = <&panel1_in>;
-			};
-		};*/
 	};
 
 	display@di1 {
 		#address-cells = <1>;
 		#size-cells = <0>;
 		compatible = "fsl,imx-parallel-display";
-		crtcs = <&ipu 1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipu_disp1>;
 		interface-pix-fmt = "rgb565";
 
-/*		display-timings {
+		display-timings {
 			native-mode = <&timing_di1_0>;
 
 			timing_di1_0: PD104SL5 {
@@ -97,7 +91,7 @@
 				pixelclk-active = <1>;
 				de-active = <1>;
 			};
-		};*/
+		};
 
 		port@0 {
 			reg = <0>;
@@ -106,14 +100,6 @@
 				remote-endpoint = <&ipu_di1_disp1>;
 			};
 		};
-
-/*		port@1 {
-			reg = <1>;
-
-			disp1_out: endpoint {
-				remote-endpoint = <&panel2_in>;
-			};
-		};*/
 	};
 
 	gpiokeys: gpiokeys {
@@ -169,22 +155,6 @@
 	/*otgid {
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&weimgpio 7 GPIO_ACTIVE_HIGH>;
-	};*/
-
-/*	panel@di0 {
-		port {
-			panel1_in: endpoint {
-				remote-endpoint = <&disp0_out>;
-			};
-		};
-	};*/
-
-/*	panel@di1 {
-		port {
-			panel2_in: endpoint {
-				remote-endpoint = <&disp1_out>;
-			};
-		};
 	};*/
 
 	soc {
@@ -435,25 +405,6 @@
 	barebox,provide-mac-address = <&fec 1 9>;
 };
 
-&ipu {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ipu>;
-
-	ipu_csi0_csi: port@0 {
-		reg = <0>;
-
-		ipu_csi0: endpoint {
-		};
-	};
-
-	ipu_csi1_csi: port@1 {
-		reg = <1>;
-
-		ipu_csi1: endpoint {
-		};
-	};
-};
-
 &ipu_di0_disp0 {
 	remote-endpoint = <&disp0_in>;
 };
@@ -462,12 +413,12 @@
 	remote-endpoint = <&disp1_in>;
 };
 
-/*&ipu_di1 {
+&ipu_di1 {
 	ipu_di1_tve: endpoint@1 {
 		reg = <1>;
 		remote-endpoint = <&tve_in>;
 	};
-};*/
+};
 
 &kpp {
 	pinctrl-names = "default";
@@ -553,7 +504,7 @@
 	status = "okay";
 };
 
-/*&tve {
+&tve {
 	status = "okay";
 
 	port {
@@ -561,7 +512,7 @@
 			remote-endpoint = <&ipu_di1_tve>;
 		};
 	};
-};*/
+};
 
 &uart1 {
 	pinctrl-names = "default";
@@ -697,7 +648,7 @@
 			>;
 		};
 
-		pinctrl_ipu: ipugrp {
+		pinctrl_ipu_disp0: ipudisp0grp {
 			fsl,pins = <
 				/* DISP1 */
 				MX51_PAD_DISP1_DAT0__DISP1_DAT0		0x5
@@ -716,16 +667,13 @@
 				MX51_PAD_DISP1_DAT13__DISP1_DAT13	0x5
 				MX51_PAD_DISP1_DAT14__DISP1_DAT14	0x5
 				MX51_PAD_DISP1_DAT15__DISP1_DAT15	0x5
-				MX51_PAD_DISP1_DAT16__DISP1_DAT16	0x5
-				MX51_PAD_DISP1_DAT17__DISP1_DAT17	0x5
-				MX51_PAD_DISP1_DAT18__DISP1_DAT18	0x5
-				MX51_PAD_DISP1_DAT19__DISP1_DAT19	0x5
-				MX51_PAD_DISP1_DAT20__DISP1_DAT20	0x5
-				MX51_PAD_DISP1_DAT21__DISP1_DAT21	0x5
-				MX51_PAD_DISP1_DAT22__DISP1_DAT22	0x5
-				MX51_PAD_DISP1_DAT23__DISP1_DAT23	0x5
 				MX51_PAD_DI1_PIN2__DI1_PIN2		0x5 /* Hsync */
 				MX51_PAD_DI1_PIN3__DI1_PIN3		0x5 /* Vsync */
+			>;
+		};
+
+		pinctrl_ipu_disp1: ipudisp1grp {
+			fsl,pins = <
 				/* DISP2 */
 				MX51_PAD_DISP2_DAT0__DISP2_DAT0		0x5
 				MX51_PAD_DISP2_DAT1__DISP2_DAT1		0x5
@@ -747,6 +695,10 @@
 				MX51_PAD_DI2_PIN3__DI2_PIN3		0x5 /* Vsync */
 				MX51_PAD_DI2_DISP_CLK__DI2_DISP_CLK	0x5 /* CLK */
 				MX51_PAD_DI_GP4__DI2_PIN15		0x5 /* DE */
+			>;
+		};
+
+#if 0
 				/* CSI1 */
 				MX51_PAD_CSI1_D12__CSI1_D12		0x80000000
 				MX51_PAD_CSI1_D13__CSI1_D13		0x80000000
@@ -769,6 +721,7 @@
 				MX51_PAD_CSI2_PIXCLK__CSI2_PIXCLK	0x80000000
 			>;
 		};
+#endif
 
 		pinctrl_kpp: kppgrp {
 			fsl,pins = <
