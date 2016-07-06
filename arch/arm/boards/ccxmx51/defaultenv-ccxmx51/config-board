@@ -15,6 +15,13 @@ gpio_direction_output 72 1
 # Beeper OFF
 gpio_direction_output 87 0
 
+if [ -e /dev/fb0 ]; then
+	fb0.enable=1
+fi
+if [ -e /dev/fb1 ]; then
+	fb1.enable=1
+fi
+
 # Backlight
 #gpio_direction_output 64 1
 #i2c_write -a 0x30 -b 0 -r 0x00 0x0b

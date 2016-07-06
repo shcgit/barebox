@@ -497,7 +497,7 @@
 	leds {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		led-control = <0x000000 0x000000 0x600600 0x000800>;
+		led-control = <0x000000 0x000000 0x600600 0x000600>;
 
 		led-live {
 			reg = <3>;
