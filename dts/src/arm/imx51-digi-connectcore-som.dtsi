@@ -121,15 +121,11 @@
 				regulator-always-on;
 			};
 
-			gpo1_reg: gpo1 { };
-
 			gpo2_reg: gpo2 { };
 
 			gpo3_reg: gpo3 { };
 
 			gpo4_reg: gpo4 { };
-
-			pwgt1spi_reg: pwgt1spi { };
 
 			pwgt2spi_reg: pwgt2spi {
 				regulator-always-on;

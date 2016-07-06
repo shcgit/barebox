@@ -84,7 +84,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ipu_disp1>;
 		interface-pix-fmt = "rgb565";
-		status = "disabled";
 
 		display-timings {
 			native-mode = <&timing_di1_0>;
