@@ -49,6 +49,9 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 		return 0;
 
 	case VPL_GET_VIDEOMODES:
+		if (!imx_pd->timings)
+			return -ENODATA;
+
 		timings = data;
 
 		timings->num_modes   = imx_pd->timings->num_modes;
