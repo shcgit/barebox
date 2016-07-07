@@ -130,7 +130,9 @@ static int barebox_memory_areas_init(void)
 	unsigned long size = arm_mem_barebox_image(0, arm_stack_top,
 						   arm_barebox_size) -
 			     arm_head_bottom;
-	request_sdram_region("board data", start, size);
+
+	if (size)
+		request_sdram_region("board data", start, size);
 
 	return 0;
 }
