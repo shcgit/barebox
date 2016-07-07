@@ -626,13 +626,11 @@
 
 			tve: tve@83ff0000 {
 				compatible = "fsl,imx51-tve";
+				reg = <0x83ff0000 0x4000>;
+				interrupts = <92>;
 				clocks = <&clks IMX5_CLK_TVE_GATE>,
 					 <&clks IMX5_CLK_IPU_DI0_SEL>;
 				clock-names = "tve", "di_sel";
-				reg = <0x83ff0000 0x4000>;
-				interrupts = <92>;
-				fsl,tve-mode = "tvout";
-				status = "disabled";
 			};
 
 			sahara: crypto@83ff8000 {
