@@ -259,8 +259,8 @@ static ssize_t raw_write_page(struct mtd_info *mtd, void *buf, loff_t offset)
 static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
 {
 	int i;
-	int bitflips = 0;
-	u8 parity, np, syndrome, bit_to_flip;
+	int bitflips = 0, bit_to_flip;
+	u8 parity, np, syndrome;
 	u8 *fcb, *ecc;
 	int ret;
 	void *rawpage;
@@ -658,7 +658,6 @@ static int dbbt_check(struct mtd_info *mtd, int page)
 			needs_cleanup = 1;
 		} else if (ret < 0) {
 			pr_err("Cannot read page %d: %s\n", page, strerror(-ret));
-			free(dbbt_entries);
 			goto out;
 		}
 	} else {
