@@ -379,6 +379,8 @@ static int at24_probe(struct device_d *dev)
 	struct at24_data *at24;
 	int err;
 	unsigned i, num_addresses;
+	char *devname;
+	const char *alias;
 
 	if (dev->platform_data) {
 		chip = *(struct at24_platform_data *)dev->platform_data;
@@ -429,7 +431,25 @@ static int at24_probe(struct device_d *dev)
 
 	at24->chip = chip;
 	at24->num_addresses = num_addresses;
-	at24->cdev.name = basprintf("eeprom%d", dev->id);
+
+	alias = of_alias_get(dev->device_node);
+	if (alias) {
+		devname = xstrdup(alias);
+	} else {
+		err = cdev_find_free_index("eeprom");
+		if (err < 0) {
+			dev_err(&client->dev, "no index found to name device\n");
+			goto err_device_name;
+		}
+		devname = basprintf("eeprom%d", err);
+		if (!devname) {
+			err = -ENOMEM;
+			dev_err(&client->dev, "failed to allocate space for device name\n");
+			goto err_device_name;
+		}
+	}
+
+	at24->cdev.name = devname;
 	at24->cdev.priv = at24;
 	at24->cdev.dev = dev;
 	at24->cdev.ops = &at24->fops;
@@ -480,15 +500,23 @@ static int at24_probe(struct device_d *dev)
 		}
 	}
 
-	devfs_create(&at24->cdev);
+	err = devfs_create(&at24->cdev);
+	if (err)
+		goto err_devfs_create;
 
 	of_parse_partitions(&at24->cdev, dev->device_node);
 
 	return 0;
 
+err_devfs_create:
 err_clients:
-	gpio_free(at24->wp_gpio);
+	for (i = 1; i < num_addresses; i++)
+		kfree(at24->client[i]);
+
+	if (gpio_is_valid(at24->wp_gpio))
+		gpio_free(at24->wp_gpio);
 	kfree(at24->writebuf);
+err_device_name:
 	kfree(at24);
 err_out:
 	dev_dbg(&client->dev, "probe error %d\n", err);
