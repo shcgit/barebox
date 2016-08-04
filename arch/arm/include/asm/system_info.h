@@ -14,6 +14,7 @@
 #define CPU_ARCH_ARMv6		8
 #define CPU_ARCH_ARMv7		9
 #define CPU_ARCH_ARMv7M		10
+#define CPU_ARCH_ARMv8		11
 
 #define CPU_IS_ARM720		0x41007200
 #define CPU_IS_ARM720_MASK	0xff00fff0
@@ -41,6 +42,12 @@
 
 #define CPU_IS_CORTEX_A15	0x410fc0f0
 #define CPU_IS_CORTEX_A15_MASK	0xff0ffff0
+
+#define CPU_IS_CORTEX_A53	0x410fd034
+#define CPU_IS_CORTEX_A53_MASK	0xff0ffff0
+
+#define CPU_IS_CORTEX_A57	0x411fd070
+#define CPU_IS_CORTEX_A57_MASK	0xff0ffff0
 
 #define CPU_IS_PXA250		0x69052100
 #define CPU_IS_PXA250_MASK	0xfffff7f0
@@ -121,6 +128,19 @@
 #endif
 #endif
 
+#ifdef CONFIG_CPU_64v8
+#ifdef ARM_ARCH
+#define ARM_MULTIARCH
+#else
+#define ARM_ARCH CPU_ARCH_ARMv8
+#endif
+#define cpu_is_cortex_a53() cpu_is_arm(CORTEX_A53)
+#define cpu_is_cortex_a57() cpu_is_arm(CORTEX_A57)
+#else
+#define cpu_is_cortex_a53() (0)
+#define cpu_is_cortex_a57() (0)
+#endif
+
 #ifndef __ASSEMBLY__
 
 #ifdef ARM_MULTIARCH
@@ -142,6 +162,23 @@ static inline int arm_early_get_cpu_architecture(void)
 		if (cpu_arch)
 			cpu_arch += CPU_ARCH_ARMv3;
 	} else if ((read_cpuid_id() & 0x000f0000) == 0x000f0000) {
+#ifdef CONFIG_CPU_64v8
+		unsigned int isar2;
+
+		__asm__ __volatile__(
+			"mrs	%0, id_isar2_el1\n"
+			: "=r" (isar2)
+			:
+			: "memory");
+
+
+		/* Check Load/Store acquire to check if ARMv8 or not */
+
+		if (isar2 & 0x2)
+			cpu_arch = CPU_ARCH_ARMv8;
+		else
+			cpu_arch = CPU_ARCH_UNKNOWN;
+#else
 		unsigned int mmfr0;
 
 		/* Revised CPUID format. Read the Memory Model Feature
@@ -158,6 +195,7 @@ static inline int arm_early_get_cpu_architecture(void)
 			cpu_arch = CPU_ARCH_UNKNOWN;
 	} else
 		cpu_arch = CPU_ARCH_UNKNOWN;
+#endif
 
 	return cpu_arch;
 }

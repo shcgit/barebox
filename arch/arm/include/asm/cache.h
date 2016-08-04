@@ -1,10 +1,19 @@
 #ifndef __ASM_CACHE_H
 #define __ASM_CACHE_H
 
+#ifdef CONFIG_CPU_64v8
+extern void v8_invalidate_icache_all(void);
+extern void v8_dcache_all(void);
+#endif
+
 static inline void flush_icache(void)
 {
+#if __LINUX_ARM_ARCH__ <= 7
 #ifndef CONFIG_CPU_V7M
 	asm volatile("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
+#endif
+#else
+	v8_invalidate_icache_all();
 #endif
 }
 

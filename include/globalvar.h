@@ -94,6 +94,8 @@ int nvvar_add(const char *name, const char *value);
 int nvvar_remove(const char *name);
 void globalvar_print(void);
 
+void dev_param_init_from_nv(struct device_d *dev, const char *name);
+
 #else
 static inline int globalvar_add_simple(const char *name, const char *value)
 {
@@ -137,6 +139,10 @@ static inline int globalvar_add(const char *name,
 	return 0;
 }
 
+static inline void globalvar_remove(const char *name) {}
+
+static inline void globalvar_print(void) {}
+
 static inline char *globalvar_get_match(const char *match, const char *separator)
 {
 	return NULL;
@@ -147,6 +153,22 @@ static inline void globalvar_set_match(const char *match, const char *val) {}
 static inline int nvvar_load(void)
 {
 	return 0;
+}
+
+static inline void nvvar_print(void) {}
+
+static inline int nvvar_add(const char *name, const char *value)
+{
+	return 0;
+}
+
+static inline int nvvar_remove(const char *name)
+{
+	return 0;
+}
+
+static inline void dev_param_init_from_nv(struct device_d *dev, const char *name)
+{
 }
 
 #endif

@@ -949,14 +949,18 @@ out:
 
 static char *mci_version_string(struct mci *mci)
 {
-	static char version[sizeof("x.xx")];
-	unsigned major, minor;
+	static char version[sizeof("xx.xxx")];
+	unsigned major, minor, micro;
+	int n;
 
 	major = (mci->version >> 8) & 0xf;
-	minor = mci->version & 0xff;
+	minor = (mci->version >> 4) & 0xf;
+	micro = mci->version & 0xf;
 
-	/* Shift off last digit of minor if it's 0 */
-	sprintf(version, "%u.%x", major, minor & 0xf ? minor : minor >> 4);
+	n = sprintf(version, "%u.%u", major, minor);
+	/* Omit zero micro versions */
+	if (micro)
+		sprintf(version + n, "%u", micro);
 
 	return version;
 }
@@ -1585,11 +1589,13 @@ static int mci_card_probe(struct mci *mci)
 		return -ENODEV;
 	}
 
-	ret = regulator_enable(host->supply);
-	if (ret) {
-		dev_err(&mci->dev, "failed to enable regulator: %s\n",
+	if (!IS_ERR(host->supply)) {
+		ret = regulator_enable(host->supply);
+		if (ret) {
+			dev_err(&mci->dev, "failed to enable regulator: %s\n",
 				strerror(-ret));
-		return ret;
+			return ret;
+		}
 	}
 
 	/* start with a host interface reset */
@@ -1680,7 +1686,8 @@ on_error:
 	if (rc != 0) {
 		host->clock = 0;	/* disable the MCI clock */
 		mci_set_ios(mci);
-		regulator_disable(host->supply);
+		if (!IS_ERR(host->supply))
+			regulator_disable(host->supply);
 	}
 
 	return rc;
@@ -1767,10 +1774,8 @@ int mci_register(struct mci_host *host)
 	mci->dev.detect = mci_detect;
 
 	host->supply = regulator_get(host->hw_dev, "vmmc");
-	if (IS_ERR(host->supply)) {
-		ret = PTR_ERR(host->supply);
-		goto err_free;
-	}
+	if (IS_ERR(host->supply))
+		dev_err(&mci->dev, "Failed to get 'vmmc' regulator.\n");
 
 	ret = register_device(&mci->dev);
 	if (ret)
