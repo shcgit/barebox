@@ -80,11 +80,12 @@
 
 	sound {
 		compatible = "simple-audio-card";
+		simple-audio-card,name = "DAICS4351";
 		simple-audio-card,format = "left_j";
-		simple-audio-card,bitclock-master;
-		simple-audio-card,frame-master;
+		simple-audio-card,bitclock-master = <&audio_master>;
+		simple-audio-card,frame-master = <&audio_master>;
 
-		simple-audio-card,cpu {
+		audio_master: simple-audio-card,cpu {
 			sound-dai = <&dai>;
 			clocks = <&clks CLPS711X_CLK_DUMMY>;
 		};
