@@ -305,7 +305,7 @@
 		   <&gpio1 1 GPIO_ACTIVE_LOW>, <&gpio4 26 GPIO_ACTIVE_LOW>;
 	status = "okay";
 
-	max14830: max14830@0 {
+/*	max14830: max14830@0 {
 		compatible = "maxim,max14830";
 		reg = <0>;
 		spi-max-frequency = <16000000>;
@@ -342,7 +342,7 @@
 		clocks = <&clk20m>;
 		interrupt-parent = <&gpio4>;
 		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
-	};
+	};*/
 };
 
 &esdhc1 {
