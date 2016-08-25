@@ -5,5 +5,5 @@ mount /dev/mmc0.0 fat /mnt
 ubiformat /dev/nand0.root -y
 ubiattach /dev/nand0.root
 ubimkvol /dev/nand0.root.ubi root 0
-cp /mnt/sysroot.img /dev/nand0.root.ubi.root
+cp /mnt/sysroot-v5.img /dev/nand0.root.ubi.root
 umount /mnt

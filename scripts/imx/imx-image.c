@@ -29,7 +29,6 @@
 #include <endian.h>
 #include <linux/kernel.h>
 #include <sys/file.h>
-#include <mach/imx_cpu_types.h>
 
 #include "imx.h"
 
@@ -789,7 +788,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (data.cpu_type == IMX_CPU_IMX35) {
+	if (data.cpu_type == 35) {
 		ret = xwrite(outfd, buf, HEADER_LEN);
 		if (ret < 0) {
 			perror("write");

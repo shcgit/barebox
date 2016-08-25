@@ -445,7 +445,10 @@ static int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int getchip,
 {
 	struct nand_chip *chip = mtd->priv;
 
-	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt) {
+	if (IS_ENABLED(CONFIG_NAND_BBT)) {
+		if (!chip->bbt)
+			return chip->block_bad(mtd, ofs, getchip);
+
 		/* Return info from the table */
 		return nand_isbad_bbt(mtd, ofs, allowbbt);
 	}
@@ -2888,13 +2891,6 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 
 	if (!chip->select_chip)
 		chip->select_chip = nand_select_chip;
-
-	/* set for ONFI nand */
-	if (!chip->onfi_set_features)
-		chip->onfi_set_features = nand_onfi_set_features;
-	if (!chip->onfi_get_features)
-		chip->onfi_get_features = nand_onfi_get_features;
-
 	if (!chip->read_byte)
 		chip->read_byte = busw ? nand_read_byte16 : nand_read_byte;
 	if (!chip->read_word)
@@ -3549,6 +3545,12 @@ int nand_scan_tail(struct mtd_info *mtd)
 
 	if (!chip->write_page)
 		chip->write_page = nand_write_page;
+
+	/* set for ONFI nand */
+	if (!chip->onfi_set_features)
+		chip->onfi_set_features = nand_onfi_set_features;
+	if (!chip->onfi_get_features)
+		chip->onfi_get_features = nand_onfi_get_features;
 
 	/*
 	 * Check ECC mode, default to software if 3byte/512byte hardware ECC is

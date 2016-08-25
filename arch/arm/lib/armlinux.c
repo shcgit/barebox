@@ -107,9 +107,8 @@ static struct tag *armlinux_get_bootparams(void)
 	BUG();
 }
 
+#ifdef CONFIG_ARM_BOARD_APPEND_ATAG
 static struct tag *(*atag_appender)(struct tag *);
-
-#if defined CONFIG_ARM_BOARD_APPEND_ATAG
 void armlinux_set_atag_appender(struct tag *(*func)(struct tag *))
 {
 	atag_appender = func;
@@ -235,9 +234,6 @@ static void setup_tags(unsigned long initrd_address,
 	const char *commandline = linux_bootargs_get();
 
 	setup_start_tag();
-	if (IS_ENABLED(CONFIG_ARM_BOARD_PREPEND_ATAG) && atag_appender)
-		params = atag_appender(params);
-
 	setup_memory_tags();
 	setup_commandline_tag(commandline, swap);
 
@@ -246,10 +242,10 @@ static void setup_tags(unsigned long initrd_address,
 
 	setup_revision_tag();
 	setup_serial_tag();
-	if (IS_ENABLED(CONFIG_ARM_BOARD_APPEND_ATAG) && atag_appender &&
-			!IS_ENABLED(CONFIG_ARM_BOARD_PREPEND_ATAG))
+#ifdef CONFIG_ARM_BOARD_APPEND_ATAG
+	if (atag_appender != NULL)
 		params = atag_appender(params);
-
+#endif
 	setup_end_tag();
 
 	printf("commandline: %s\n"

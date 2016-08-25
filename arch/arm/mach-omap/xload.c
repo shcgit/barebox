@@ -24,8 +24,6 @@ struct omap_barebox_part *barebox_part;
 static struct omap_barebox_part default_part = {
 	.nand_offset = SZ_128K,
 	.nand_size = SZ_1M,
-	.nand_bkup_offset = 0,
-	.nand_bkup_size = 0,
 	.nor_offset = SZ_128K,
 	.nor_size = SZ_1M,
 };
@@ -38,7 +36,7 @@ static void *read_image_head(const char *name)
 
 	cdev = cdev_open(name, O_RDONLY);
 	if (!cdev) {
-		printf("failed to open %s\n", name);
+		printf("failed to open partition\n");
 		return NULL;
 	}
 
@@ -46,7 +44,7 @@ static void *read_image_head(const char *name)
 	cdev_close(cdev);
 
 	if (ret != ARM_HEAD_SIZE) {
-		printf("failed to read from %s\n", name);
+		printf("failed to read from partition\n");
 		return NULL;
 	}
 
@@ -65,14 +63,18 @@ static unsigned int get_image_size(void *head)
 	return ret;
 }
 
-static void *read_mtd_barebox(const char *partition)
+static void *omap_xload_boot_nand(int offset, int part_size)
 {
 	int ret;
 	int size;
 	void *to, *header;
 	struct cdev *cdev;
 
-	header = read_image_head(partition);
+	devfs_add_partition("nand0", offset, part_size,
+					DEVFS_PARTITION_FIXED, "x");
+	dev_add_bb_dev("x", "bbx");
+
+	header = read_image_head("bbx");
 	if (header == NULL)
 		return NULL;
 
@@ -84,38 +86,16 @@ static void *read_mtd_barebox(const char *partition)
 
 	to = xmalloc(size);
 
-	cdev = cdev_open(partition, O_RDONLY);
+	cdev = cdev_open("bbx", O_RDONLY);
 	if (!cdev) {
-		printf("failed to open partition\n");
+		printf("failed to open nand\n");
 		return NULL;
 	}
 
 	ret = cdev_read(cdev, to, size, 0, 0);
 	if (ret != size) {
-		printf("failed to read from partition\n");
+		printf("failed to read from nand\n");
 		return NULL;
-	}
-
-	return to;
-}
-
-static void *omap_xload_boot_nand(struct omap_barebox_part *part)
-{
-	void *to;
-
-	devfs_add_partition("nand0", part->nand_offset, part->nand_size,
-					DEVFS_PARTITION_FIXED, "x");
-	dev_add_bb_dev("x", "bbx");
-
-	to = read_mtd_barebox("bbx");
-	if (to == NULL && part->nand_bkup_size != 0) {
-		printf("trying to load image from backup partition.\n");
-		devfs_add_partition("nand0", part->nand_bkup_offset,
-				part->nand_bkup_size,
-				DEVFS_PARTITION_FIXED, "x_bkup");
-		dev_add_bb_dev("x_bkup", "bbx_bkup");
-
-		to = read_mtd_barebox("bbx_bkup");
 	}
 
 	return to;
@@ -158,12 +138,41 @@ static void *omap_xload_boot_mmc(void)
 	return buf;
 }
 
-static void *omap_xload_boot_spi(struct omap_barebox_part *part)
+static void *omap_xload_boot_spi(int offset, int part_size)
 {
-	devfs_add_partition("m25p0", part->nor_offset, part->nor_size,
+	int ret;
+	int size;
+	void *to, *header;
+	struct cdev *cdev;
+
+	devfs_add_partition("m25p0", offset, part_size,
 					DEVFS_PARTITION_FIXED, "x");
 
-	return read_mtd_barebox("x");
+	header = read_image_head("x");
+	if (header == NULL)
+		return NULL;
+
+	size = get_image_size(header);
+	if (!size) {
+		printf("failed to get image size\n");
+		return NULL;
+	}
+
+	to = xmalloc(size);
+
+	cdev = cdev_open("x", O_RDONLY);
+	if (!cdev) {
+		printf("failed to open spi flash\n");
+		return NULL;
+	}
+
+	ret = cdev_read(cdev, to, size, 0, 0);
+	if (ret != size) {
+		printf("failed to read from spi flash\n");
+		return NULL;
+	}
+
+	return to;
 }
 
 static void *omap4_xload_boot_usb(void){
@@ -314,11 +323,13 @@ static __noreturn int omap_xload(void)
 		break;
 	case BOOTSOURCE_NAND:
 		printf("booting from NAND\n");
-		func = omap_xload_boot_nand(barebox_part);
+		func = omap_xload_boot_nand(barebox_part->nand_offset,
+					barebox_part->nand_size);
 		break;
 	case BOOTSOURCE_SPI:
 		printf("booting from SPI\n");
-		func = omap_xload_boot_spi(barebox_part);
+		func = omap_xload_boot_spi(barebox_part->nor_offset,
+					barebox_part->nor_size);
 		break;
 	case BOOTSOURCE_SERIAL:
 		if (IS_ENABLED(CONFIG_OMAP_SERIALBOOT)) {
@@ -336,7 +347,8 @@ static __noreturn int omap_xload(void)
 		}
 	default:
 		printf("unknown boot source. Fall back to nand\n");
-		func = omap_xload_boot_nand(barebox_part);
+		func = omap_xload_boot_nand(barebox_part->nand_offset,
+					barebox_part->nand_size);
 		break;
 	}
 

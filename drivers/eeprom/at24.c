@@ -441,7 +441,12 @@ static int at24_probe(struct device_d *dev)
 			dev_err(&client->dev, "no index found to name device\n");
 			goto err_device_name;
 		}
-		devname = xasprintf("eeprom%d", err);
+		devname = basprintf("eeprom%d", err);
+		if (!devname) {
+			err = -ENOMEM;
+			dev_err(&client->dev, "failed to allocate space for device name\n");
+			goto err_device_name;
+		}
 	}
 
 	at24->cdev.name = devname;

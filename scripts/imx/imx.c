@@ -23,7 +23,6 @@
 #include <stdint.h>
 #include <errno.h>
 #include <linux/kernel.h>
-#include <mach/imx_cpu_types.h>
 
 #include "imx.h"
 
@@ -217,11 +216,11 @@ struct soc_type {
 };
 
 static struct soc_type socs[] = {
-	{ .name = "imx25", .header_version = 1, .cpu_type = IMX_CPU_IMX25 },
-	{ .name = "imx35", .header_version = 1, .cpu_type = IMX_CPU_IMX35 },
-	{ .name = "imx51", .header_version = 1, .cpu_type = IMX_CPU_IMX51 },
-	{ .name = "imx53", .header_version = 2, .cpu_type = IMX_CPU_IMX53 },
-	{ .name = "imx6", .header_version = 2, .cpu_type = IMX_CPU_IMX6 },
+	{ .name = "imx25", .header_version = 1, .cpu_type = 25},
+	{ .name = "imx35", .header_version = 1, .cpu_type = 35 },
+	{ .name = "imx51", .header_version = 1, .cpu_type = 51 },
+	{ .name = "imx53", .header_version = 2, .cpu_type = 53 },
+	{ .name = "imx6", .header_version = 2, .cpu_type = 6 },
 };
 
 static int do_soc(struct config_data *data, int argc, char *argv[])
@@ -239,7 +238,7 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 			data->header_version = socs[i].header_version;
 			data->cpu_type = socs[i].cpu_type;
 
-			if (data->cpu_type == IMX_CPU_IMX35)
+			if (data->cpu_type == 35)
 				data->load_size += HEADER_LEN;
 
 			return 0;
@@ -328,7 +327,7 @@ static int do_super_root_key(struct config_data *data, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	if (data->header_version != 1) {
+	if (data->cpu_type != 35 && data->cpu_type != 25) {
 		fprintf(stderr, "Warning: The super_root_key command is meaningless "
 			"on non HABv3 based SoCs\n");
 		return 0;

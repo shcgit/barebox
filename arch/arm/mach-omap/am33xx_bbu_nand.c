@@ -62,15 +62,21 @@ static int write_image(const char *devfile, const void *image, size_t size)
 }
 
 /*
- * Upate given nand partitions with an image
+ * This handler updates all given xload slots in nand with an image.
  */
-static int nand_slot_update_handler(struct bbu_handler *handler,
-						struct bbu_data *data)
+static int nand_xloadslots_update_handler(struct bbu_handler *handler,
+					struct bbu_data *data)
 {
-	int ret, i;
-	struct nand_bbu_handler *nh;
+	int ret = 0;
 	const void *image = data->image;
 	size_t size = data->len;
+	struct nand_bbu_handler *nh;
+	int i = 0;
+
+	if (file_detect_type(image, size) != filetype_ch_image) {
+		pr_err("%s is not a valid ch-image\n", data->imagefile);
+		return -EINVAL;
+	}
 
 	nh = container_of(handler, struct nand_bbu_handler, bbu_handler);
 
@@ -92,23 +98,6 @@ static int nand_slot_update_handler(struct bbu_handler *handler,
 	}
 
 	return 0;
-}
-
-/*
- * This handler updates all given xload slots in nand with an image.
- */
-static int nand_xloadslots_update_handler(struct bbu_handler *handler,
-					struct bbu_data *data)
-{
-	const void *image = data->image;
-	size_t size = data->len;
-
-	if (file_detect_type(image, size) != filetype_ch_image) {
-		pr_err("%s is not a valid ch-image\n", data->imagefile);
-		return -EINVAL;
-	}
-
-	return nand_slot_update_handler(handler, data);
 }
 
 int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
@@ -135,27 +124,32 @@ int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 static int nand_update_handler(struct bbu_handler *handler,
 		struct bbu_data *data)
 {
+	int ret = 0;
 	const void *image = data->image;
 	size_t size = data->len;
+	struct nand_bbu_handler *nh;
 
 	if (file_detect_type(image, size) != filetype_arm_barebox) {
 		pr_err("%s is not a valid barebox image\n", data->imagefile);
 		return -EINVAL;
 	}
 
-	return nand_slot_update_handler(handler, data);
+	nh = container_of(handler, struct nand_bbu_handler, bbu_handler);
+
+	ret = bbu_confirm(data);
+	if (ret != 0)
+		return ret;
+
+	return write_image(data->devicefile, image, size);
 }
 
-int am33xx_bbu_nand_slots_register_handler(const char *name, char **devicefile,
-							int num_devicefiles)
+int am33xx_bbu_nand_register_handler(const char *name, char *devicefile)
 {
 	struct nand_bbu_handler *handler;
 	int ret;
 
 	handler = xzalloc(sizeof(*handler));
-	handler->devicefile = devicefile;
-	handler->num_devicefiles = num_devicefiles;
-	handler->bbu_handler.devicefile = devicefile[0];
+	handler->bbu_handler.devicefile = devicefile;
 	handler->bbu_handler.handler = nand_update_handler;
 	handler->bbu_handler.name = name;
 

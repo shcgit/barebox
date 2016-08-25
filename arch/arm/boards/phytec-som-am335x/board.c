@@ -47,8 +47,6 @@ coredevice_initcall(physom_coredevice_init);
 static struct omap_barebox_part physom_barebox_part = {
 	.nand_offset = SZ_512K,
 	.nand_size = SZ_512K,
-	.nand_bkup_offset = SZ_1M,
-	.nand_bkup_size = SZ_512K,
 	.nor_offset = SZ_128K,
 	.nor_size = SZ_512K,
 };
@@ -58,11 +56,6 @@ static char *xloadslots[] = {
 	"/dev/nand0.xload_backup1.bb",
 	"/dev/nand0.xload_backup2.bb",
 	"/dev/nand0.xload_backup3.bb"
-};
-
-static char *nandslots[] = {
-	"/dev/nand0.barebox.bb",
-	"/dev/nand0.barebox_backup.bb",
 };
 
 static int physom_devices_init(void)
@@ -110,8 +103,7 @@ static int physom_devices_init(void)
 	am33xx_bbu_spi_nor_register_handler("spi", "/dev/m25p0.barebox");
 	am33xx_bbu_nand_xloadslots_register_handler("MLO.nand",
 		xloadslots, ARRAY_SIZE(xloadslots));
-	am33xx_bbu_nand_slots_register_handler("nand", nandslots,
-				ARRAY_SIZE(nandslots));
+	am33xx_bbu_nand_register_handler("nand", "/dev/nand0.barebox.bb");
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

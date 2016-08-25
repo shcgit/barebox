@@ -95,7 +95,8 @@ The External Boot Mode is supported by the older i.MX SoCs:
 * i.MX21
 * i.MX27
 * i.MX31
-* i.MX35
+
+(It may be supported on newer SoCs as well, but it is not widely used there.)
 
 The External Boot Mode supports booting only from NOR and NAND flash. On NOR
 flash, the binary is started directly on its physical address in memory. Booting

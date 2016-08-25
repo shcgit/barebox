@@ -6,9 +6,6 @@ config IMAGE_RENDERER
 
 if IMAGE_RENDERER
 
-config 2D_PRIMITIVES
-       bool
-
 config BMP
 	bool "bmp"
 

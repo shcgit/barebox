@@ -111,7 +111,6 @@ extern struct property *of_find_property(const struct device_node *np,
 					const char *name, int *lenp);
 extern const void *of_get_property(const struct device_node *np,
 				const char *name, int *lenp);
-extern struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
 
 extern int of_set_property(struct device_node *node, const char *p,
 			const void *val, int len, int create);
@@ -344,12 +343,6 @@ static inline struct property *of_find_property(const struct device_node *np,
 
 static inline const void *of_get_property(const struct device_node *np,
 				const char *name, int *lenp)
-{
-	return NULL;
-}
-
-static inline struct device_node *of_get_cpu_node(int cpu,
-					unsigned int *thread)
 {
 	return NULL;
 }
@@ -646,9 +639,6 @@ static inline struct device_node *of_find_node_by_path_or_alias(
 #define for_each_node_by_name(dn, name) \
 	for (dn = of_find_node_by_name(NULL, name); dn; \
 	     dn = of_find_node_by_name(dn, name))
-#define for_each_node_by_type(dn, type) \
-	for (dn = of_find_node_by_type(NULL, type); dn; \
-	     dn = of_find_node_by_type(dn, type))
 #define for_each_node_by_name_from(dn, root, name) \
 	for (dn = of_find_node_by_name(root, name); dn; \
 	     dn = of_find_node_by_name(dn, name))
