@@ -76,12 +76,6 @@ static int syscon_probe(struct device_d *dev)
 		return PTR_ERR(res);
 	}
 
-	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (IS_ERR(res)) {
-		free(syscon);
-		return PTR_ERR(res);
-	}
-
 	syscon->base = (void __iomem *)res->start;
 	dev->priv = syscon;
 
@@ -111,7 +105,7 @@ static int __init syscon_init(void)
 {
 	return platform_driver_register(&syscon_driver);
 }
-device_initcall(syscon_init);
+core_initcall(syscon_init);
 
 MODULE_AUTHOR("Dong Aisheng <dong.aisheng@linaro.org>");
 MODULE_DESCRIPTION("System Control driver");
