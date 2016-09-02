@@ -1,1 +1,1 @@
-earlyprintk ubi.mtd=root ubi.block=0,root ubi.mtd=bbox
+earlyprintk ubi.mtd=system

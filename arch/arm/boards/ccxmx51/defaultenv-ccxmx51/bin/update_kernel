@@ -2,8 +2,5 @@
 
 mmc0.probe=1
 mount /dev/mmc0.0 fat /mnt
-unprotect /dev/nand0.kernel
-erase /dev/nand0.kernel
-cp /mnt/zImage /dev/nand0.kernel
-protect /dev/nand0.kernel
+ubiupdatevol /dev/nand0.system.ubi.kernel /mnt/zImage
 umount /mnt

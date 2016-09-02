@@ -5,7 +5,9 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-mtdparts="512k(boot)ro,256k(env),3328k(kernel),28672k(root),-(bbox)"
+mtdparts="512k(boot)ro,256k(env),-(system)"
 kernelname="mxc_nand"
 
 mtdparts-add -b -d nand0 -k ${kernelname} -p ${mtdparts}
+
+ubiattach /dev/nand0.system
