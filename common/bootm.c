@@ -12,7 +12,7 @@
  */
 
 #include <common.h>
-#include <boot.h>
+#include <bootm.h>
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
@@ -20,6 +20,7 @@
 #include <image-fit.h>
 #include <globalvar.h>
 #include <init.h>
+#include <environment.h>
 #include <linux/stat.h>
 #include <magicvar.h>
 
@@ -335,6 +336,9 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 
 	if (data->os_fit && data->os_fit->oftree) {
 		data->of_root_node = of_unflatten_dtb(data->os_fit->oftree);
+
+		if (IS_ERR(data->of_root_node))
+			data->of_root_node = NULL;
 	} else if (data->oftree_file) {
 		size_t size;
 
@@ -366,7 +370,8 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 
 		free(oftree);
 
-		if (!data->of_root_node) {
+		if (IS_ERR(data->of_root_node)) {
+			data->of_root_node = NULL;
 			pr_err("unable to unflatten devicetree\n");
 			return -EINVAL;
 		}
