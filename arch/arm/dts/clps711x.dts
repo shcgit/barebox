@@ -14,7 +14,7 @@
 
 / {
 	model = "Cirrus Logic CLPS711X";
-	compatible = "cirrus,clps711x";
+	compatible = "cirrus,ep7209";
 
 	memory {
 		reg = <0xc0000000 0x04000000>;
@@ -104,34 +104,34 @@
 
 		clks: clks@80000000 {
 			#clock-cells = <1>;
-			compatible = "cirrus,ep7312-clk", "cirrus,clps711x-clk";
+			compatible = "cirrus,ep7312-clk", "cirrus,ep7209-clk";
 			reg = <0x80000000 0xc000>;
 			startup-frequency = <73728000>;
 		};
 
 		intc: intc@80000000 {
-			compatible = "cirrus,ep7312-intc", "cirrus,clps711x-intc";
+			compatible = "cirrus,ep7312-intc", "cirrus,ep7209-intc";
 			reg = <0x80000000 0x4000>;
 			interrupt-controller;
 			#interrupt-cells = <1>;
 		};
 
 		porta: gpio@80000000 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,clps711x-gpio";
+			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
 			reg = <0x80000000 0x1 0x80000040 0x1>;
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
 
 		portb: gpio@80000001 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,clps711x-gpio";
+			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
 			reg = <0x80000001 0x1 0x80000041 0x1>;
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
 
 		portc: gpio@80000002 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,clps711x-gpio";
+			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
 			reg = <0x80000002 0x1 0x80000042 0x1>;
 			gpio-controller;
 			#gpio-cells = <2>;
@@ -139,28 +139,28 @@
 		};
 
 		portd: gpio@80000003 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,clps711x-gpio";
+			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
 			reg = <0x80000003 0x1 0x80000043 0x1>;
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
 
 		porte: gpio@80000083 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,clps711x-gpio";
+			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
 			reg = <0x80000083 0x1 0x800000c3 0x1>;
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
 
 		syscon1: syscon@80000100 {
-			compatible = "cirrus,ep7312-syscon1", "cirrus,clps711x-syscon1", "syscon";
+			compatible = "cirrus,ep7312-syscon1", "cirrus,ep7209-syscon1", "syscon";
 			reg = <0x80000100 0x80>;
 		};
 
 		bus: bus@80000180 {
 			#address-cells = <2>;
 			#size-cells = <1>;
-			compatible = "cirrus,ep7312-bus", "cirrus,clps711x-bus", "simple-bus";
+			compatible = "cirrus,ep7312-bus", "cirrus,ep7209-bus", "simple-bus";
 			clocks = <&clks CLPS711X_CLK_BUS>;
 			reg = <0x80000180 0x80>;
 			ranges = <
@@ -176,35 +176,35 @@
 		};
 
 		fb: fb@800002c0 {
-			compatible = "cirrus,ep7312-fb", "cirrus,clps711x-fb";
+			compatible = "cirrus,ep7312-fb", "cirrus,ep7209-fb";
 			reg = <0x800002c0 0xd44>, <0x60000000 0xc000>;
 			clocks = <&clks CLPS711X_CLK_BUS>;
 			status = "disabled";
 		};
 
 		timer1: timer@80000300 {
-			compatible = "cirrus,ep7312-timer", "cirrus,clps711x-timer";
+			compatible = "cirrus,ep7312-timer", "cirrus,ep7209-timer";
 			reg = <0x80000300 0x4>;
 			clocks = <&clks CLPS711X_CLK_TIMER1>;
 			interrupts = <8>;
 		};
 
 		timer2: timer@80000340 {
-			compatible = "cirrus,ep7312-timer", "cirrus,clps711x-timer";
+			compatible = "cirrus,ep7312-timer", "cirrus,ep7209-timer";
 			reg = <0x80000340 0x4>;
 			clocks = <&clks CLPS711X_CLK_TIMER2>;
 			interrupts = <9>;
 		};
 
 		pwm: pwm@80000400 {
-			compatible = "cirrus,ep7312-pwm", "cirrus,clps711x-pwm";
+			compatible = "cirrus,ep7312-pwm", "cirrus,ep7209-pwm";
 			reg = <0x80000400 0x4>;
 			clocks = <&clks CLPS711X_CLK_PWM>;
 			#pwm-cells = <1>;
 		};
 
 		uart1: uart@80000480 {
-			compatible = "cirrus,ep7312-uart", "cirrus,clps711x-uart";
+			compatible = "cirrus,ep7312-uart", "cirrus,ep7209-uart";
 			reg = <0x80000480 0x80>;
 			interrupts = <12 13>;
 			clocks = <&clks CLPS711X_CLK_UART>;
@@ -214,7 +214,7 @@
 		spi: spi@80000500 {
 			#address-cells = <1>;
 			#size-cells = <0>;
-			compatible = "cirrus,ep7312-spi", "cirrus,clps711x-spi";
+			compatible = "cirrus,ep7312-spi", "cirrus,ep7209-spi";
 			reg = <0x80000500 0x4>;
 			interrupts = <15>;
 			clocks = <&clks CLPS711X_CLK_SPI>;
@@ -222,12 +222,12 @@
 		};
 
 		syscon2: syscon@80001100 {
-			compatible = "cirrus,ep7312-syscon2", "cirrus,clps711x-syscon2", "syscon";
+			compatible = "cirrus,ep7312-syscon2", "cirrus,ep7209-syscon2", "syscon";
 			reg = <0x80001100 0x80>;
 		};
 
 		uart2: uart@80001480 {
-			compatible = "cirrus,ep7312-uart", "cirrus,clps711x-uart";
+			compatible = "cirrus,ep7312-uart", "cirrus,ep7209-uart";
 			reg = <0x80001480 0x80>;
 			interrupts = <28 29>;
 			clocks = <&clks CLPS711X_CLK_UART>;
@@ -236,7 +236,7 @@
 
 		dai: dai@80002000 {
 			#sound-dai-cells = <0>;
-			compatible = "cirrus,ep7312-dai", "cirrus,clps711x-dai";
+			compatible = "cirrus,ep7312-dai", "cirrus,ep7209-dai";
 			reg = <0x80002000 0x604>;
 			clocks = <&clks CLPS711X_CLK_PLL>;
 			clock-names = "pll";
@@ -244,7 +244,7 @@
 		};
 
 		syscon3: syscon@80002200 {
-			compatible = "cirrus,ep7312-syscon3", "cirrus,clps711x-syscon3", "syscon";
+			compatible = "cirrus,ep7312-syscon3", "cirrus,ep7209-syscon3", "syscon";
 			reg = <0x80002200 0x40>;
 		};
 	};
@@ -308,7 +308,7 @@
 		};
 
 		keypad: input@2 {
-			compatible = "cirrus,ep7312-keypad", "cirrus,clps711x-keypad";
+			compatible = "cirrus,ep7312-keypad", "cirrus,ep7209-keypad";
 			reg = <2>;
 			autorepeat;
 			poll-interval = <67>;
@@ -343,7 +343,7 @@
 	};
 
 	mctrl: mctrl {
-		compatible = "cirrus,ep7312-mctrl-gpio", "cirrus,clps711x-mctrl-gpio";
+		compatible = "cirrus,ep7312-mctrl-gpio", "cirrus,ep7209-mctrl-gpio";
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
