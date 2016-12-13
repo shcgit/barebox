@@ -160,12 +160,19 @@
 			linux,input-type = <EV_SW>;
 			gpios = <&gpio3 21 GPIO_ACTIVE_LOW>;
 		};
+
+		button@6 {
+			label = "RESERVED3";
+			linux,code = <KEY_NUMERIC_2>;
+			linux,input-type = <EV_SW>;
+			gpios = <&gpio3 9 GPIO_ACTIVE_LOW>;
+		};
 	};
 
-	/*otgid {
+	otgid: extcon {
 		compatible = "linux,extcon-usb-gpio";
-		id-gpio = <&weimgpio 7 GPIO_ACTIVE_HIGH>;
-	};*/
+		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
+	};
 
 	soc {
 		aips@80000000 {
@@ -284,16 +291,61 @@
 &ecspi1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi1 &pinctrl_ecspi1cs>;
-	fsl,spi-num-chipselects = <2>;
-	cs-gpios = <&gpio4 24 GPIO_ACTIVE_HIGH>, <&gpio3 3 GPIO_ACTIVE_LOW>;
+	fsl,spi-num-chipselects = <3>;
+	cs-gpios = <&gpio4 24 GPIO_ACTIVE_HIGH>, <&gpio3 3 GPIO_ACTIVE_LOW>,
+		   <&gpio3 13 GPIO_ACTIVE_LOW>;
 
-	gpio@1 {
+	relgpios: gpio@1 {
 		compatible = "fairchild,74hc595";
 		reg = <1>;
 		spi-max-frequency = <4000000>;
 		registers-number = <1>;
 		gpio-controller;
 		#gpio-cells = <2>;
+	};
+
+	outgpios: gpio@2 {
+		compatible = "nxp,74lvc594";
+		reg = <2>;
+		spi-max-frequency = <4000000>;
+		registers-number = <1>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		videorst {
+			gpio-hog;
+			gpios = <0 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "VIDEO RESET";
+		};
+
+		videoen {
+			gpio-hog;
+			gpios = <1 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "VIDEO ENABLE";
+		};
+
+		soundworld {
+			gpio-hog;
+			gpios = <2 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "SOUND WORLD";
+		};
+
+		disp1blen {
+			gpio-hog;
+			gpios = <3 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "DISP1 BACKLIGHT ENABLE";
+		};
+
+		disp2blen {
+			gpio-hog;
+			gpios = <4 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "DISP2 BACKLIGHT ENABLE";
+		};
 	};
 };
 
@@ -351,20 +403,6 @@
 };
 
 &gpio3 {
-	disp1blen {
-		gpio-hog;
-		gpios = <0 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "DISP1 BACKLIGHT ENABLE";
-	};
-
-	disp2blen {
-		gpio-hog;
-		gpios = <1 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "DISP2 BACKLIGHT ENABLE";
-	};
-
 	ioen {
 		gpio-hog;
 		gpios = <2 GPIO_ACTIVE_HIGH>;
@@ -377,20 +415,6 @@
 		gpios = <8 GPIO_ACTIVE_HIGH>;
 		output-high;
 		line-name = "USB1 RESET";
-	};
-
-	videoen {
-		gpio-hog;
-		gpios = <12 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "VIDEO ENABLE";
-	};
-
-	videorst {
-		gpio-hog;
-		gpios = <13 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "VIDEO RESET";
 	};
 };
 
@@ -408,6 +432,12 @@
 		compatible = "at,24c16";
 		reg = <0x50>;
 		pagesize = <256>;
+	};
+
+	rtc@68 {
+		compatible = "maxim,ds3231";
+		reg = <0x68>;
+		#clock-cells = <1>;
 	};
 };
 
@@ -491,7 +521,6 @@
 };
 
 &pmic {
-	fsl,mc13xxx-uses-rtc;
 	fsl,mc13xxx-uses-touch;
 
 	leds {
@@ -558,7 +587,8 @@
 };
 
 &usbotg {
-	dr_mode = "host";
+	dr_mode = "otg";
+	extcon = <&otgid>;
 	status = "okay";
 };
 
@@ -604,26 +634,18 @@
 	hog {
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
-				/* Disp1 Backlight Enable */
-				MX51_PAD_DI1_PIN11__GPIO3_0		0x85
-				/* Disp2 Backlight Enable */
-				MX51_PAD_DI1_PIN12__GPIO3_1		0x85
 				/* IO Enable */
 				MX51_PAD_DI1_PIN13__GPIO3_2		0x85
 				/* USBH1 Reset */
 				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x85
-				/* Video Enable */
-				MX51_PAD_CSI1_D8__GPIO3_12		0x85
-				/* Video Reset */
-				MX51_PAD_CSI1_D9__GPIO3_13		0x85
 				/* Video module (Unused) */
 				MX51_PAD_CSI1_HSYNC__GPIO3_15		0xe5
 				/* Video IRQ */
 				MX51_PAD_CSI1_VSYNC__GPIO3_14		0xe5
 				/* GPIO Beeper */
 	  			MX51_PAD_NANDF_CS7__GPIO3_23		0x85
-				/* Sound World Switch */
-				MX51_PAD_AUD3_BB_RXD__GPIO4_19		0x85
+				/* OTG ID */
+				MX51_PAD_AUD3_BB_RXD__GPIO4_19		0xe5
 	  		>;
 		};
 	};
@@ -671,6 +693,7 @@
 		pinctrl_ecspi1cs: ecspi1csgrp {
 			fsl,pins = <
 				MX51_PAD_DI1_D0_CS__GPIO3_3		0x85 /* CS1 */
+				MX51_PAD_CSI1_D9__GPIO3_13		0x85 /* CS2 */
 			>;
 		};
 
@@ -692,6 +715,7 @@
 
 		pinctrl_gpiokeys: gpiokeysgrp {
 			fsl,pins = <
+				MX51_PAD_NANDF_RB1__GPIO3_9		0xe5
 				MX51_PAD_NANDF_CS1__GPIO3_17		0xe5
 				MX51_PAD_NANDF_CS2__GPIO3_18		0xe5
 				MX51_PAD_NANDF_CS3__GPIO3_19		0xe5
