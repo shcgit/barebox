@@ -1,11 +1,11 @@
-#include <common.h>
-#include <linux/sizes.h>
-#include <mach/generic.h>
-#include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <common.h>
+#include <mach/esdctl.h>
+#include <mach/generic.h>
 
 extern char __dtb_imx6dl_hummingboard_start[];
 extern char __dtb_imx6q_hummingboard_start[];
+extern char __dtb_imx6q_h100_start[];
 
 ENTRY_FUNCTION(start_hummingboard_microsom_i1, r0, r1, r2)
 {
@@ -14,7 +14,7 @@ ENTRY_FUNCTION(start_hummingboard_microsom_i1, r0, r1, r2)
 	imx6_cpu_lowlevel_init();
 
 	fdt = __dtb_imx6dl_hummingboard_start - get_runtime_offset();
-	barebox_arm_entry(0x10000000, SZ_512M, fdt);
+	imx6q_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_hummingboard_microsom_i2, r0, r1, r2)
@@ -24,7 +24,7 @@ ENTRY_FUNCTION(start_hummingboard_microsom_i2, r0, r1, r2)
 	imx6_cpu_lowlevel_init();
 
 	fdt = __dtb_imx6dl_hummingboard_start - get_runtime_offset();
-	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+	imx6q_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_hummingboard_microsom_i2ex, r0, r1, r2)
@@ -34,7 +34,7 @@ ENTRY_FUNCTION(start_hummingboard_microsom_i2ex, r0, r1, r2)
 	imx6_cpu_lowlevel_init();
 
 	fdt = __dtb_imx6q_hummingboard_start - get_runtime_offset();
-	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+	imx6q_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_hummingboard_microsom_i4, r0, r1, r2)
@@ -44,5 +44,15 @@ ENTRY_FUNCTION(start_hummingboard_microsom_i4, r0, r1, r2)
 	imx6_cpu_lowlevel_init();
 
 	fdt = __dtb_imx6q_hummingboard_start - get_runtime_offset();
-	barebox_arm_entry(0x10000000, SZ_2G, fdt);
+	imx6q_barebox_entry(fdt);
+}
+
+ENTRY_FUNCTION(start_h100_microsom_i2ex, r0, r1, r2)
+{
+	void *fdt;
+
+	imx6_cpu_lowlevel_init();
+
+	fdt = __dtb_imx6q_h100_start - get_runtime_offset();
+	imx6q_barebox_entry(fdt);
 }
