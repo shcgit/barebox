@@ -342,7 +342,7 @@ config KALLSYMS
 	  This is useful to print a nice backtrace when an exception occurs.
 
 config RELOCATABLE
-	depends on PPC || ARM
+	depends on PPC || (ARM && !CPU_V8)
 	bool "generate relocatable barebox binary"
 	help
 	  A non relocatable barebox binary will run at it's compiled in
@@ -471,7 +471,7 @@ config MENU
 	select PROCESS_ESCAPE_SEQUENCE
 	help
 	  a menu framework that allow us to create list menu to simplify
-	  barebox and make it more user-frendly
+	  barebox and make it more user-friendly
 
 config PASSWORD
 	bool
@@ -844,6 +844,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select CMD_BASENAME
 	select CMD_READLINK
 	select CMD_DIRNAME
+	select CMD_TEST
 	select NVVAR
 	select CMD_NV
 	select FLEXIBLE_BOOTARGS
@@ -1042,6 +1043,13 @@ config DEBUG_IMX35_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX35.
 
+config DEBUG_IMX50_UART
+	bool "i.MX50 Debug UART"
+	depends on ARCH_IMX50
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX50.
+
 config DEBUG_IMX51_UART
 	bool "i.MX51 Debug UART"
 	depends on ARCH_IMX51
@@ -1085,11 +1093,11 @@ config DEBUG_AM33XX_UART
 	  on AM33XX.
 
 config DEBUG_ROCKCHIP_UART
-	bool "RK31xx Debug UART"
+	bool "RK3xxx Debug UART"
 	depends on ARCH_ROCKCHIP
 	help
 	  Say Y here if you want kernel low-level debugging support
-	  on RK31XX.
+	  on RK3XXX.
 
 endchoice
 
@@ -1124,7 +1132,7 @@ config DEBUG_OMAP_UART_PORT
 	  AM33XX: 0 - 2
 
 config DEBUG_ROCKCHIP_UART_PORT
-	int "RK31xx UART debug port" if DEBUG_ROCKCHIP_UART
+	int "RK3xxx UART debug port" if DEBUG_ROCKCHIP_UART
 	default 2
 	depends on ARCH_ROCKCHIP
 	help

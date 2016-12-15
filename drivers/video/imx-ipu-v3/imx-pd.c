@@ -21,6 +21,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
+#include <video/media-bus-format.h>
 #include <video/vpl.h>
 #include <linux/err.h>
 
@@ -29,7 +30,7 @@
 struct imx_pd {
 	struct device_d *dev;
 	struct display_timings *timings;
-	u32 interface_pix_fmt;
+	u32 bus_format;
 	struct vpl vpl;
 };
 
@@ -45,7 +46,7 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 		mode = data;
 
 		mode->di_clkflags = IPU_DI_CLKMODE_SYNC;
-		mode->interface_pix_fmt = imx_pd->interface_pix_fmt;
+		mode->bus_format = imx_pd->bus_format;
 		return 0;
 
 	case VPL_GET_VIDEOMODES:
@@ -77,11 +78,11 @@ static int imx_pd_probe(struct device_d *dev)
 	ret = of_property_read_string(node, "interface-pix-fmt", &fmt);
 	if (!ret) {
 		if (!strcmp(fmt, "rgb24"))
-			imx_pd->interface_pix_fmt = V4L2_PIX_FMT_RGB24;
+			imx_pd->bus_format = MEDIA_BUS_FMT_RGB888_1X24;
 		else if (!strcmp(fmt, "rgb565"))
-			imx_pd->interface_pix_fmt = V4L2_PIX_FMT_RGB565;
+			imx_pd->bus_format = MEDIA_BUS_FMT_RGB565_1X16;
 		else if (!strcmp(fmt, "bgr666"))
-			imx_pd->interface_pix_fmt = V4L2_PIX_FMT_BGR666;
+			imx_pd->bus_format = MEDIA_BUS_FMT_RGB666_1X18;
 	}
 
 	imx_pd->timings = of_get_display_timings(node);

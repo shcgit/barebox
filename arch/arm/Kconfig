@@ -1,8 +1,6 @@
 config ARM
 	bool
 	select HAS_KALLSYMS
-	select HAS_MODULES
-	select HAS_DMA
 	select HAS_CACHE
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	select HAVE_PBL_IMAGE
@@ -378,6 +376,7 @@ config ARM_UNWIND
 
 config ARM_SEMIHOSTING
 	bool "enable ARM semihosting support"
+	depends on !CPU_V8
 	help
 	  This option enables ARM semihosting support in barebox. ARM
 	  semihosting is a communication discipline that allows code
