@@ -155,7 +155,6 @@ config OMAP_SERIALBOOT
 
 config OMAP_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
 
 if OMAP_MULTI_BOARDS
@@ -168,7 +167,6 @@ config MACH_AFI_GF
 
 config MACH_BEAGLE
 	bool "Texas Instrument's Beagle Board"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_OMAP3
 	help
 	  Say Y here if you are using Beagle Board
@@ -184,6 +182,13 @@ config MACH_PHYTEC_SOM_AM335X
 	select ARCH_AM33XX
 	help
 	  Say Y here if you are using a am335x based Phytecs SOM
+
+config MACH_VSCOM_BALTOS
+	bool "VScom Baltos Devices"
+	select ARCH_AM33XX
+	help
+	  Say Y here if you are using a am335x based VScom Baltos devices
+
 endif
 
 choice
@@ -204,7 +209,6 @@ config MACH_OMAP3EVM
 
 config MACH_PANDA
 	bool "Texas Instrument's Panda Board"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_OMAP4
 	help
 	  Say Y here if you are using OMAP4 Panda board
