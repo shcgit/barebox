@@ -28,6 +28,12 @@
 			clock-frequency = <20000000>;
 			#clock-cells = <0>;
 		};
+
+		clk54m: clk54m {
+			compatible = "fixed-clock";
+			clock-frequency = <54000000>;
+			#clock-cells = <0>;
+		};
 	};
 
 	csi@csi0 {
@@ -174,6 +180,22 @@
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
 	};
 
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		video3v3: regulator@0 {
+			compatible = "regulator-fixed";
+			reg = <0>;
+			regulator-name = "video3v3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&outgpios 1 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
+	};
+
 	soc {
 		aips@80000000 {
 			vpu: vpu@83ff4000 {
@@ -222,22 +244,22 @@
 			compatible = "simple-audio-card";
 			simple-audio-card,name = "SSI1TW2837";
 			simple-audio-card,format = "i2s";
-			/*simple-audio-card,bitclock-master = <&audio1_master>;
+			simple-audio-card,bitclock-master = <&audio1_master>;
 			simple-audio-card,frame-master = <&audio1_master>;
-			simple-audio-card,widgets =
+			/*simple-audio-card,widgets =
 				"Headphone", "Line Out";
 			simple-audio-card,routing =
 				"Line Out", "LOUT1",
 				"Line Out", "ROUT1";*/
 
-			simple-audio-card,cpu {
+			audio1_master: simple-audio-card,cpu {
 				sound-dai = <&ssi2>;
 			};
 
-			/*audio1_master: simple-audio-card,codec {
-				sound-dai = <&tw2837>;
-				system-clock-frequency = <12000000>;
-			};*/
+			simple-audio-card,codec {
+				sound-dai = <&tw2837_audio>;
+				/*system-clock-frequency = <12000000>;*/
+			};
 		};
 	};
 };
@@ -311,20 +333,6 @@
 		registers-number = <1>;
 		gpio-controller;
 		#gpio-cells = <2>;
-
-		videorst {
-			gpio-hog;
-			gpios = <0 GPIO_ACTIVE_HIGH>;
-			output-low;
-			line-name = "VIDEO RESET";
-		};
-
-		videoen {
-			gpio-hog;
-			gpios = <1 GPIO_ACTIVE_HIGH>;
-			output-low;
-			line-name = "VIDEO ENABLE";
-		};
 
 		soundworld {
 			gpio-hog;
@@ -426,6 +434,23 @@
 		#sound-dai-cells = <0>;
 		compatible = "wlf,wm8753";
 		reg = <0x1b>;
+	};
+
+	tw2837: tw2837@42 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tw2837>;
+		compatible = "intersil,tw2837";
+		reg = <0x42>;
+		clocks = <&clk54m>;
+		interrupt-parent = <&gpio3>;
+		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
+		vddo-supply = <&video3v3>;
+		reset-gpios = <&outgpios 0 GPIO_ACTIVE_HIGH>;
+
+		tw2837_audio: audio {
+			#sound-dai-cells = <0>;
+			/**/
+		};
 	};
 
 	at24@50 {
@@ -638,10 +663,6 @@
 				MX51_PAD_DI1_PIN13__GPIO3_2		0x85
 				/* USBH1 Reset */
 				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x85
-				/* Video module (Unused) */
-				MX51_PAD_CSI1_HSYNC__GPIO3_15		0xe5
-				/* Video IRQ */
-				MX51_PAD_CSI1_VSYNC__GPIO3_14		0xe5
 				/* GPIO Beeper */
 	  			MX51_PAD_NANDF_CS7__GPIO3_23		0x85
 				/* OTG ID */
@@ -791,6 +812,13 @@
 		pinctrl_owire: owiregrp {
 			fsl,pins = <
 				MX51_PAD_OWIRE_LINE__OWIRE_LINE		0x40000000
+			>;
+		};
+
+		pinctrl_tw2837: tw2837grp {
+			fsl,pins = <
+				MX51_PAD_CSI1_VSYNC__GPIO3_14		0xe5 /* IRQ */
+				MX51_PAD_CSI1_HSYNC__GPIO3_15		0xe5 /* Unused */
 			>;
 		};
 
