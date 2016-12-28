@@ -451,6 +451,9 @@
 			#sound-dai-cells = <0>;
 			/**/
 		};
+
+		video {
+		};
 	};
 
 	at24@50 {
