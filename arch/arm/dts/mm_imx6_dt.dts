@@ -1,5 +1,215 @@
-#include "imx6q-phytec-pbab01.dts"
+/dts-v1/;
+
+#include <arm/imx6q.dtsi>
+#include <arm/imx6qdl-phytec-pfla02.dtsi>
+
+/ {
+	model = "Phytec phyFLEX-i.MX6 Quad";
+	compatible = "phytec,imx6q-pfla02", "fsl,imx6q";
+
+	memory {
+		/* let barebox fill the memory node */
+		reg = <0 0>;
+	};
+
+	chosen {
+		linux,stdout-path = &uart4;
+
+		environment-spinor {
+			compatible = "barebox,environment";
+			device-path = &ecspi3, "partname:env";
+			status = "disabled";
+		};
+
+		environment-sd3 {
+			compatible = "barebox,environment";
+			device-path = &ecspi3, "partname:env";
+			status = "disabled";
+		};
+	};
+};
+
+&can1 {
+	status = "okay";
+};
+
+&ecspi3 {
+	flash: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "boot";
+			reg = <0x00000 0x80000>;
+		};
+
+		partition@1 {
+			label = "env";
+			reg = <0x80000 0x40000>;
+		};
+	};
+};
+
+&eeprom {
+	pagesize = <32>;
+};
+
+&fec {
+	status = "okay";
+	phy-handle = <&ethphy>;
+	phy-reset-duration = <10>; /* in msecs */
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy: ethernet-phy@3 {
+			reg = <3>;
+
+			txc-skew-ps = <1680>;
+			rxc-skew-ps = <1860>;
+		};
+	};
+};
+
+//&gpmi {
+//	#address-cells = <1>;
+//	#size-cells = <1>;
+//
+//	partition@0 {
+//		label = "barebox";
+//		reg = <0x0 0x400000>;
+//	};
+//
+//	partition@400000 {
+//		label = "barebox-environment";
+//		reg = <0x400000 0x100000>;
+//	};
+//
+//	partition@500000 {
+//		label = "oftree";
+//		reg = <0x500000 0x100000>;
+//	};
+//
+//	partition@600000 {
+//		label = "kernel";
+//		reg = <0x600000 0x800000>;
+//	};
+//
+//	partition@e00000 {
+//		label = "root";
+//		reg = <0xe00000 0x0>;
+//	};
+//};
+
+&i2c1 {
+	/* WM8753 SCLK Low pulse-width MIN 1.3us */
+	clock-frequency = <350000>;
+
+//	wm8753: wm8753@1b {
+//		#sound-dai-cells = <0>;
+//		compatible = "wlf,wm8753";
+//		reg = <0x1b>;
+//	};
+
+//	rtc@68 {
+//		compatible = "maxim,ds3231";
+//		reg = <0x68>;
+//		#clock-cells = <1>;
+//	};
+};
+
+//&hdmi {
+//	status = "okay";
+//};
+
+&ldb {
+	status = "okay";
+};
+
+&mipi_dsi {
+	status = "okay";
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
+&sata {
+	status = "okay";
+};
+
+&snvs {
+	status = "disabled";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&uart4 {
+	status = "okay";
+};
+
+&usbotg {
+	status = "okay";
+};
+
+&usbphy2 {
+	status = "disabled";
+};
 
 &usdhc3 {
+	status = "okay";
 	bus-width = <1>;
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>, <&pinctrl_rev>;
+
+	imx6q-phytec-pfla02 {
+		pinctrl_rev: revgrp {
+			fsl,pins = <
+				MX6QDL_PAD_SD4_DAT3__GPIO2_IO11 0x80000000
+				MX6QDL_PAD_SD4_DAT4__GPIO2_IO12	0x80000000
+				MX6QDL_PAD_SD4_DAT5__GPIO2_IO13	0x80000000
+				MX6QDL_PAD_SD4_DAT6__GPIO2_IO14	0x80000000
+				MX6QDL_PAD_SD4_DAT7__GPIO2_IO15	0x80000000
+			>;
+		};
+
+		pinctrl_gpmi_nand: gpminandgrp {
+			fsl,pins = <
+				MX6QDL_PAD_NANDF_CLE__NAND_CLE     0xb0b1
+				MX6QDL_PAD_NANDF_ALE__NAND_ALE     0xb0b1
+				MX6QDL_PAD_NANDF_WP_B__NAND_WP_B   0xb0b1
+				MX6QDL_PAD_NANDF_RB0__NAND_READY_B 0xb000
+				MX6QDL_PAD_NANDF_CS0__NAND_CE0_B   0xb0b1
+				MX6QDL_PAD_NANDF_CS1__NAND_CE1_B   0xb0b1
+				MX6QDL_PAD_NANDF_CS2__NAND_CE2_B   0xb0b1
+				MX6QDL_PAD_NANDF_CS3__NAND_CE3_B   0xb0b1
+				MX6QDL_PAD_SD4_CMD__NAND_RE_B      0xb0b1
+				MX6QDL_PAD_SD4_CLK__NAND_WE_B      0xb0b1
+				MX6QDL_PAD_NANDF_D0__NAND_DATA00   0xb0b1
+				MX6QDL_PAD_NANDF_D1__NAND_DATA01   0xb0b1
+				MX6QDL_PAD_NANDF_D2__NAND_DATA02   0xb0b1
+				MX6QDL_PAD_NANDF_D3__NAND_DATA03   0xb0b1
+				MX6QDL_PAD_NANDF_D4__NAND_DATA04   0xb0b1
+				MX6QDL_PAD_NANDF_D5__NAND_DATA05   0xb0b1
+				MX6QDL_PAD_NANDF_D6__NAND_DATA06   0xb0b1
+				MX6QDL_PAD_NANDF_D7__NAND_DATA07   0xb0b1
+				MX6QDL_PAD_SD4_DAT0__NAND_DQS      0x00b1
+			>;
+		};
+
+/*		pinctrl_uart3: uart3grp {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_D24__UART3_TX_DATA	0x1b0b1
+				MX6QDL_PAD_EIM_D25__UART3_RX_DATA	0x1b0b1
+				MX6QDL_PAD_EIM_D30__UART3_RTS_B		0x1b0b1
+				MX6QDL_PAD_EIM_D31__UART3_CTS_B		0x1b0b1
+			>;
+		};*/
+	};
 };
