@@ -53,9 +53,9 @@
 };
 
 &fec {
-	status = "okay";
 	phy-handle = <&ethphy>;
 	phy-reset-duration = <10>;
+	status = "okay";
 
 	mdio {
 		#address-cells = <1>;
@@ -69,36 +69,6 @@
 		};
 	};
 };
-
-//&gpmi {
-//	#address-cells = <1>;
-//	#size-cells = <1>;
-//
-//	partition@0 {
-//		label = "barebox";
-//		reg = <0x0 0x400000>;
-//	};
-//
-//	partition@400000 {
-//		label = "barebox-environment";
-//		reg = <0x400000 0x100000>;
-//	};
-//
-//	partition@500000 {
-//		label = "oftree";
-//		reg = <0x500000 0x100000>;
-//	};
-//
-//	partition@600000 {
-//		label = "kernel";
-//		reg = <0x600000 0x800000>;
-//	};
-//
-//	partition@e00000 {
-//		label = "root";
-//		reg = <0xe00000 0x0>;
-//	};
-//};
 
 &i2c1 {
 	/* WM8753 SCLK Low pulse-width MIN 1.3us */
@@ -116,10 +86,6 @@
 //		#clock-cells = <1>;
 //	};
 };
-
-//&hdmi {
-//	status = "okay";
-//};
 
 &ldb {
 	status = "okay";
@@ -177,10 +143,10 @@
 				MX6QDL_PAD_SD4_DAT7__GPIO2_IO15		0x80000000	/* Revision */
 
 				/* FIXME */
-				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x80000000
+				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x80000000	/* FEC Reset */
 
-				MX6QDL_PAD_ENET_TXD0__GPIO1_IO30	0x80000000	/* LED */
-				MX6QDL_PAD_EIM_EB3__GPIO2_IO31		0x80000000	/* LED */
+				MX6QDL_PAD_ENET_TXD0__GPIO1_IO30	0x80000000	/* Green LED */
+				MX6QDL_PAD_EIM_EB3__GPIO2_IO31		0x80000000	/* Red LED */
 			>;
 		};
 
