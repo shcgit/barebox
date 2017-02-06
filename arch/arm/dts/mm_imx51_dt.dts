@@ -334,13 +334,6 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 
-		soundworld {
-			gpio-hog;
-			gpios = <2 GPIO_ACTIVE_HIGH>;
-			output-low;
-			line-name = "SOUND WORLD";
-		};
-
 		disp1blen {
 			gpio-hog;
 			gpios = <3 GPIO_ACTIVE_HIGH>;
