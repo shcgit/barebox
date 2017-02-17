@@ -656,14 +656,14 @@
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
 				/* IO Enable */
-				MX51_PAD_DI1_PIN13__GPIO3_2		0x85
+				MX51_PAD_DI1_PIN13__GPIO3_2		0x04
 				/* USBH1 Reset */
-				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x85
+				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x04
 				/* GPIO Beeper */
-	  			MX51_PAD_NANDF_CS7__GPIO3_23		0x85
+				MX51_PAD_NANDF_CS7__GPIO3_23		0x04
 				/* OTG ID */
-				MX51_PAD_AUD3_BB_RXD__GPIO4_19		0xe5
-	  		>;
+				MX51_PAD_AUD3_BB_RXD__GPIO4_19		0x1c4
+			>;
 		};
 	};
 
@@ -723,22 +723,22 @@
 				MX51_PAD_GPIO1_0__GPIO1_0		0x85 /* CS1 */
 				MX51_PAD_GPIO1_1__GPIO1_1		0x85 /* CS2 */
 				MX51_PAD_CSPI1_RDY__GPIO4_26		0x85 /* CS3 */
-				MX51_PAD_DISPB2_SER_CLK__GPIO3_7	0xe5 /* IRQ */
-				MX51_PAD_CSI2_VSYNC__GPIO4_13		0xe5 /* IRQ */
-				MX51_PAD_CSI2_HSYNC__GPIO4_14		0xe5 /* IRQ */
-				MX51_PAD_CSPI1_SS1__GPIO4_25		0xe5 /* IRQ */
+				MX51_PAD_DISPB2_SER_CLK__GPIO3_7	0x185 /* IRQ */
+				MX51_PAD_CSI2_VSYNC__GPIO4_13		0x185 /* IRQ */
+				MX51_PAD_CSI2_HSYNC__GPIO4_14		0x185 /* IRQ */
+				MX51_PAD_CSPI1_SS1__GPIO4_25		0x185 /* IRQ */
 			>;
 		};
 
 		pinctrl_gpiokeys: gpiokeysgrp {
 			fsl,pins = <
-				MX51_PAD_NANDF_RB1__GPIO3_9		0xe5
-				MX51_PAD_NANDF_CS1__GPIO3_17		0xe5
-				MX51_PAD_NANDF_CS2__GPIO3_18		0xe5
-				MX51_PAD_NANDF_CS3__GPIO3_19		0xe5
-				MX51_PAD_NANDF_CS4__GPIO3_20		0xe5
-				MX51_PAD_NANDF_CS5__GPIO3_21		0xe5
-				MX51_PAD_NANDF_CS6__GPIO3_22		0xe5
+				MX51_PAD_NANDF_RB1__GPIO3_9		0x1f4
+				MX51_PAD_NANDF_CS1__GPIO3_17		0x84
+				MX51_PAD_NANDF_CS2__GPIO3_18		0x84
+				MX51_PAD_NANDF_CS3__GPIO3_19		0x84
+				MX51_PAD_NANDF_CS4__GPIO3_20		0x84
+				MX51_PAD_NANDF_CS5__GPIO3_21		0x84
+				MX51_PAD_NANDF_CS6__GPIO3_22		0x84
 			>;
 		};
 
@@ -792,10 +792,10 @@
 
 		pinctrl_kpp: kppgrp {
 			fsl,pins = <
-				MX51_PAD_KEY_ROW0__KEY_ROW0		0xe0
-				MX51_PAD_KEY_ROW1__KEY_ROW1		0xe0
-				MX51_PAD_KEY_ROW2__KEY_ROW2		0xe0
-				MX51_PAD_KEY_ROW3__KEY_ROW3		0xe0
+				MX51_PAD_KEY_ROW0__KEY_ROW0		0x1e0
+				MX51_PAD_KEY_ROW1__KEY_ROW1		0x1e0
+				MX51_PAD_KEY_ROW2__KEY_ROW2		0x1e0
+				MX51_PAD_KEY_ROW3__KEY_ROW3		0x1e0
 				MX51_PAD_KEY_COL0__KEY_COL0		0xe8
 				MX51_PAD_KEY_COL1__KEY_COL1		0xe8
 				MX51_PAD_KEY_COL2__KEY_COL2		0xe8
@@ -807,35 +807,35 @@
 
 		pinctrl_owire: owiregrp {
 			fsl,pins = <
-				MX51_PAD_OWIRE_LINE__OWIRE_LINE		0x40000000
+				MX51_PAD_OWIRE_LINE__OWIRE_LINE		0x40000001
 			>;
 		};
 
 		pinctrl_tw2837: tw2837grp {
 			fsl,pins = <
-				MX51_PAD_CSI1_VSYNC__GPIO3_14		0xe5 /* IRQ */
-				MX51_PAD_CSI1_HSYNC__GPIO3_15		0xe5 /* Unused */
+				MX51_PAD_CSI1_VSYNC__GPIO3_14		0x101 /* IRQ */
+				MX51_PAD_CSI1_HSYNC__GPIO3_15		0x101 /* Unused */
 			>;
 		};
 
 		pinctrl_uart1: uart1grp {
 			fsl,pins = <
 				MX51_PAD_UART1_RXD__UART1_RXD		0x1c5
-				MX51_PAD_UART1_TXD__UART1_TXD		0x1c5
+				MX51_PAD_UART1_TXD__UART1_TXD		0xc5
 			>;
 		};
 
 		pinctrl_uart2: uart2grp {
 			fsl,pins = <
 				MX51_PAD_UART2_RXD__UART2_RXD		0x1c5
-				MX51_PAD_UART2_TXD__UART2_TXD		0x1c5
+				MX51_PAD_UART2_TXD__UART2_TXD		0xc5
 			>;
 		};
 
 		pinctrl_uart3: uart3grp {
 			fsl,pins = <
 				MX51_PAD_UART3_RXD__UART3_RXD		0x1c5
-				MX51_PAD_UART3_TXD__UART3_TXD		0x1c5
+				MX51_PAD_UART3_TXD__UART3_TXD		0xc5
 			>;
 		};
 
@@ -858,7 +858,7 @@
 
 		pinctrl_weimcs: weimcsgrp {
 			fsl,pins = <
-				MX51_PAD_EIM_CS4__EIM_CS4		0x80000000
+				MX51_PAD_EIM_CS4__EIM_CS4		0xc5
 			>;
 		};
 	};

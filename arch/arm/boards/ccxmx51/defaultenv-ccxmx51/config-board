@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# SOUND WORLD
-gpio_direction_output 115 0
-
 # Beeper ON
 gpio_direction_output 87 1
 
@@ -18,9 +15,9 @@ gpio_direction_output 87 0
 if [ -e /dev/fb0 ]; then
 	fb0.enable=1
 fi
-if [ -e /dev/fb1 ]; then
-	fb1.enable=1
-fi
+#if [ -e /dev/fb1 ]; then
+#	fb1.enable=1
+#fi
 
 # Backlight
 #gpio_direction_output 64 1
