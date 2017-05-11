@@ -17,6 +17,24 @@
 		};
 	};
 
+	backlight {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "simple-bus";
+
+		backlight@0 {
+			compatible = "gpio-backlight";
+			reg = <0>;
+			gpios = <&outgpios 3 GPIO_ACTIVE_HIGH>;
+		};
+
+		backlight@1 {
+			compatible = "gpio-backlight";
+			reg = <1>;
+			gpios = <&outgpios 4 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
 	beeper: beeper {
 		compatible = "gpio-beeper";
 		gpios = <&gpio3 23 GPIO_ACTIVE_HIGH>;
@@ -83,6 +101,7 @@
 		};
 	};
 
+/*
 	display@di1 {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -117,6 +136,7 @@
 			};
 		};
 	};
+*/
 
 	gpiokeys: gpiokeys {
 		pinctrl-names = "default";
@@ -333,20 +353,6 @@
 		registers-number = <1>;
 		gpio-controller;
 		#gpio-cells = <2>;
-
-		disp1blen {
-			gpio-hog;
-			gpios = <3 GPIO_ACTIVE_HIGH>;
-			output-low;
-			line-name = "DISP1 BACKLIGHT ENABLE";
-		};
-
-		disp2blen {
-			gpio-hog;
-			gpios = <4 GPIO_ACTIVE_HIGH>;
-			output-low;
-			line-name = "DISP2 BACKLIGHT ENABLE";
-		};
 	};
 };
 
@@ -480,6 +486,7 @@
 	remote-endpoint = <&disp0_in>;
 };
 
+/*
 &ipu_di1 {
 	ipu_di1_tve: endpoint@1 {
 		reg = <1>;
@@ -490,6 +497,7 @@
 &ipu_di1_disp1 {
 	remote-endpoint = <&disp1_in>;
 };
+*/
 
 &kpp {
 	pinctrl-names = "default";
@@ -579,6 +587,7 @@
 	status = "okay";
 };
 
+/*
 &tve {
 	fsl,tve-mode = "tvout";
 
@@ -588,6 +597,7 @@
 		};
 	};
 };
+*/
 
 &uart1 {
 	pinctrl-names = "default";
