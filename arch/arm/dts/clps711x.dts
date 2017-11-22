@@ -267,6 +267,16 @@
 		};
 	};
 
+	i2c: i2c0 {
+		compatible = "i2c-gpio";
+		gpios = <&sdagpio 0 GPIO_ACTIVE_HIGH>,
+			<&sclgpio 0 GPIO_ACTIVE_HIGH>;
+		i2c-gpio,sda-open-drain;
+		i2c-gpio,scl-open-drain;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
 	inputs {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -433,6 +443,22 @@
 		reg = <1 0x00000000 0x800>;
 	};
 
+	sdagpio: sdagpio@10000804 {
+		compatible = "wd,mbl-gpio";
+		reg = <1 0x00000804 0x1>;
+		reg-names = "dat";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	sclgpio: sclgpio@10000805 {
+		compatible = "wd,mbl-gpio";
+		reg = <1 0x00000805 0x1>;
+		reg-names = "dat";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
 	uart@10100000 {
 		compatible = "nxp,sc2892";
 		reg = <1 0x00100000 0x10>;
@@ -512,6 +538,20 @@
 &fb {
 	display = <&display>;
 	status = "okay";
+};
+
+&i2c {
+	at24@50 {
+		compatible = "at,24c16";
+		reg = <0x50>;
+		pagesize = <256>;
+	};
+
+	rtc@68 {
+		compatible = "maxim,ds3231";
+		reg = <0x68>;
+		#clock-cells = <1>;
+	};
 };
 
 &spi {
