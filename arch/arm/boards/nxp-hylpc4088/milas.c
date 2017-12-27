@@ -157,7 +157,7 @@ static int do_mmupdate(int argc, char *argv[])
 				ret = 0;
 				goto out_err;
 			} else {
-				lseek(fdin, data.next_sector, SEEK_SET);
+				lseek(fdin, data.next_sector * ATA_SECTOR_SIZE, SEEK_SET);
 				continue;
 			}
 		}
