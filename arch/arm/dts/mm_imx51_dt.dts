@@ -195,10 +195,10 @@
 		};
 	};
 
-	otgid: extcon {
+/*	otgid: extcon {
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
-	};
+	};*/
 
 	regulators {
 		compatible = "simple-bus";
@@ -618,8 +618,8 @@
 };
 
 &usbotg {
-	dr_mode = "otg";
-	extcon = <&otgid>;
+	dr_mode = "host";
+/*	extcon = <&otgid>;*/
 	status = "okay";
 };
 
