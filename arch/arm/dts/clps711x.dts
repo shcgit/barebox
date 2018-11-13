@@ -463,7 +463,7 @@
 		compatible = "nxp,sc2892";
 		reg = <1 0x00100000 0x10>;
 		clocks = <&clk3m>;
-		poll-interval = <10000>;
+		poll-interval = <2000>;
 		nxp,sccnxp-io-cfg = <0x01000000 0x02000000>;
 		vcc-supply = <&sc2892rst>;
 	};
