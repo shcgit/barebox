@@ -1,0 +1,5 @@
+#!/bin/sh
+
+unprotect /dev/nand0.env
+erase /dev/nand0.env
+protect /dev/nand0.env

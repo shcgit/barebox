@@ -7,3 +7,5 @@ erase /dev/nand0.boot
 cp /mnt/barebox.imximg /dev/nand0.boot
 protect /dev/nand0.boot
 umount /mnt
+
+erase_env
