@@ -195,10 +195,12 @@
 		};
 	};
 
-/*	otgid: extcon {
+	otgid: extcon {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_otgid>;
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
-	};*/
+	};
 
 	regulators {
 		compatible = "simple-bus";
@@ -565,14 +567,14 @@
 
 		led-usb {
 			reg = <4>;
-			label = "red:usb";
-			linux,default-trigger = "usb-host";
+			label = "red:mtd";
+			linux,default-trigger = "mtd";
 		};
 
 		led-none {
 			reg = <5>;
-			label = "red:none";
-			linux,default-trigger = "none";
+			label = "red:usb";
+			linux,default-trigger = "usb-host";
 		};
 	};
 };
@@ -618,8 +620,8 @@
 };
 
 &usbotg {
-	dr_mode = "host";
-/*	extcon = <&otgid>;*/
+	dr_mode = "otg";
+	extcon = <&otgid>;
 	status = "okay";
 };
 
@@ -671,8 +673,6 @@
 				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x04
 				/* GPIO Beeper */
 				MX51_PAD_NANDF_CS7__GPIO3_23		0x04
-				/* OTG ID */
-				MX51_PAD_AUD3_BB_RXD__GPIO4_19		0x1c4
 			>;
 		};
 	};
@@ -863,6 +863,12 @@
 				MX51_PAD_USBH1_DATA5__USBH1_DATA5	0x1e5
 				MX51_PAD_USBH1_DATA6__USBH1_DATA6	0x1e5
 				MX51_PAD_USBH1_DATA7__USBH1_DATA7	0x1e5
+			>;
+		};
+
+		pinctrl_otgid: otgidgrp {
+			fsl,pins = <
+				MX51_PAD_AUD3_BB_RXD__GPIO4_19		0x1c4
 			>;
 		};
 
