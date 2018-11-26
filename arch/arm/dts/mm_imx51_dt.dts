@@ -76,33 +76,19 @@
 			native-mode = <&timing_di0_0>;
 
 			timing_di0_0: PH320240T {
-/*				clock-frequency = <6333333>;*/
 				clock-frequency = <6394000>;
 				hactive = <320>;
 				vactive = <240>;
 				hback-porch = <38>;
 				hfront-porch = <20>;
 				hsync-len = <30>;
-				vback-porch = <23>;
-				vfront-porch = <47>;
+				vback-porch = <15>;/*23>;*/
+				vfront-porch = <5>;/*47>;*/
 				vsync-len = <3>;
 				pixelclk-active = <1>;
 				hsync-active = <0>;
 				vsync-active = <0>;
 				de-active = <1>;
-/*
-				clock-frequency = <33250000>;
-				hactive = <800>;
-				vactive = <600>;
-				hback-porch = <30>;
-				hfront-porch = <30>;
-				hsync-len = <60>;
-				vback-porch = <1>;
-				vfront-porch = <1>;
-				vsync-len = <2>;
-				pixelclk-active = <1>;
-				de-active = <1>;
-*/
 			};
 		};
 
