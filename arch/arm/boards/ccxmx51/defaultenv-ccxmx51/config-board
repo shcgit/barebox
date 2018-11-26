@@ -14,11 +14,32 @@ gpio_direction_output 87 0
 
 if [ -e /dev/fb0 ]; then
 	fb0.enable=1
-fi
-#if [ -e /dev/fb1 ]; then
-#	fb1.enable=1
-#fi
 
-# Backlight
-#gpio_direction_output 64 1
-#i2c_write -a 0x30 -b 0 -r 0x00 0x0b
+	# Backlight1 Enable
+	gpio_direction_output 139 1
+	msleep 4
+
+	# Backlight1 PWM set to 75% and Turn ON
+	i2c_write -a 0x2c -b 0 -r 0x00 0xbf
+	i2c_write -a 0x2c -b 0 -r 0x01 0x05
+
+	# Load LOGO
+	if [ -f /env/milas.png ]; then
+		splash -f /dev/fb0 /env/milas.png
+	fi
+fi
+
+if [ -e /dev/fb1 ]; then
+#	fb1.enable=1
+
+	# Backlight2 Enable
+#	gpio_direction_output 140 1
+#	msleep 4
+
+#	TODO
+
+	# Load LOGO
+#	if [ -f /env/milas.png ]; then
+#		splash -f /dev/fb1 /env/milas.png
+#	fi
+fi
