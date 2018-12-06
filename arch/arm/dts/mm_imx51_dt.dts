@@ -22,11 +22,10 @@
 		#size-cells = <0>;
 		compatible = "simple-bus";
 
-		backlight@0 {
+/*		backlight@0 {
 			compatible = "gpio-backlight";
 			reg = <0>;
-			gpios = <&outgpios 3 GPIO_ACTIVE_HIGH>;
-		};
+		};*/
 
 		backlight@1 {
 			compatible = "gpio-backlight";
@@ -82,8 +81,8 @@
 				hback-porch = <38>;
 				hfront-porch = <20>;
 				hsync-len = <30>;
-				vback-porch = <15>;/*23>;*/
-				vfront-porch = <5>;/*47>;*/
+				vback-porch = <15>;
+				vfront-porch = <5>;
 				vsync-len = <3>;
 				pixelclk-active = <1>;
 				hsync-active = <0>;
@@ -202,20 +201,13 @@
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
 	};
 
-	regulators {
-		compatible = "simple-bus";
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		video3v3: regulator@0 {
-			compatible = "regulator-fixed";
-			reg = <0>;
-			regulator-name = "video3v3";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			gpio = <&outgpios 1 GPIO_ACTIVE_HIGH>;
-			enable-active-high;
-		};
+	reg_video3v3: regulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "video3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&outgpios 1 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
 	};
 
 	soc {
@@ -427,6 +419,15 @@
 	};
 };
 
+&gpio4 {
+	disp1gpio {
+		gpio-hog;
+		gpios = <31 GPIO_ACTIVE_LOW>;
+		input;
+		line-name = "DISP1 GPIO";
+	};
+};
+
 &i2c2 {
 	/* WM8753 SCLK Low pulse-width MIN 1.3us */
 	clock-frequency = <350000>;
@@ -450,7 +451,7 @@
 		clocks = <&clk54m>;
 		interrupt-parent = <&gpio3>;
 		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
-		vddo-supply = <&video3v3>;
+		vddo-supply = <&reg_video3v3>;
 		reset-gpios = <&outgpios 0 GPIO_ACTIVE_HIGH>;
 
 		tw2837_audio: audio {
@@ -625,7 +626,7 @@
 };
 
 &usbotg {
-	dr_mode = "otg";
+	dr_mode = "host"; /* otg */
 	extcon = <&otgid>;
 	status = "okay";
 };
@@ -678,6 +679,8 @@
 				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x04
 				/* GPIO Beeper */
 				MX51_PAD_NANDF_CS7__GPIO3_23		0x04
+				/* DISP1 GPIO */
+				MX51_PAD_UART1_CTS__GPIO4_31		0xc5
 			>;
 		};
 	};
