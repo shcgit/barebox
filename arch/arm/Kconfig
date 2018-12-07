@@ -19,15 +19,6 @@ config ARM_USE_COMPRESSED_DTB
 	select UNCOMPRESS
 	select LZO_DECOMPRESS
 
-config ARCH_BCM283X
-	bool
-	select GPIOLIB
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select CLOCKSOURCE_BCM283X
-	select ARM_AMBA
-	select HAS_DEBUG_LL
-
 menu "System Type"
 
 config BUILTIN_DTB
@@ -56,15 +47,19 @@ config ARCH_AT91
 	select HAVE_CLK
 	select PINCTRL_AT91
 
-config ARCH_BCM2835
-	bool "Broadcom BCM2835 boards"
-	select ARCH_BCM283X
-	select CPU_ARM1176
 
-config ARCH_BCM2836
-	bool "Broadcom BCM2836 boards"
-	select ARCH_BCM283X
-	select CPU_V7
+config ARCH_BCM283X
+	bool "Broadcom BCM283x based boards"
+	select GPIOLIB
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select CLOCKSOURCE_BCM283X
+	select ARM_AMBA
+	select HAS_DEBUG_LL
+	select RELOCATABLE
+	select OFTREE
+	select OFDEVICE
+	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
@@ -123,6 +118,7 @@ config ARCH_MVEBU
 	select GPIOLIB
 	select HAS_DEBUG_LL
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_MACH_ARM_HEAD
 	select HAVE_PBL_MULTI_IMAGES
 	select HW_HAS_PCI
 	select MVEBU_MBUS
@@ -268,6 +264,7 @@ source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-highbank/Kconfig
 source arch/arm/mach-imx/Kconfig
 source arch/arm/mach-mxs/Kconfig
+source scripts/imx/Kconfig
 source arch/arm/mach-mvebu/Kconfig
 source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig

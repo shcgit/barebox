@@ -12,6 +12,10 @@ config FRAMEBUFFER_CONSOLE
 	select FONTS
 	prompt "framebuffer console support"
 
+config DRIVER_VIDEO_FB_SSD1307
+	bool "Solomon SSD1307 framebuffer support"
+	depends on I2C && GPIOLIB
+
 config VIDEO_VPL
 	depends on OFTREE
 	bool
@@ -23,6 +27,10 @@ config DRIVER_VIDEO_ATMEL
 config DRIVER_VIDEO_ATMEL_HLCD
 	bool "Atmel HLCDC framebuffer driver"
 	depends on ARCH_AT91
+
+config DRIVER_VIDEO_EFI_GOP
+	bool "EFI Graphics Output Protocol (GOP)"
+	depends on EFI_BOOTUP
 
 config DRIVER_VIDEO_IMX
 	bool "i.MX framebuffer driver"
