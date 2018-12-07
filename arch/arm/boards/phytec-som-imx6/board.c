@@ -31,7 +31,6 @@
 #include <mach/bbu.h>
 #include <platform_data/eth-fec.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
-#include <linux/clk.h>
 #include <linux/micrel_phy.h>
 
 #include <globalvar.h>
@@ -97,48 +96,6 @@ int ksz8081_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int imx6ul_setup_fec(void)
-{
-	void __iomem *gprbase = IOMEM(MX6_IOMUXC_BASE_ADDR) + 0x4000;
-	uint32_t val;
-	struct clk *clk;
-
-	phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
-			ksz8081_phy_fixup);
-
-	clk = clk_lookup("enet_ptp");
-	if (IS_ERR(clk))
-		goto err;
-
-	clk_enable(clk);
-
-	clk = clk_lookup("enet_ref");
-	if (IS_ERR(clk))
-		goto err;
-	clk_enable(clk);
-
-	clk = clk_lookup("enet_ref_125m");
-	if (IS_ERR(clk))
-		goto err;
-
-	clk_enable(clk);
-
-	val = readl(gprbase + IOMUXC_GPR1);
-	/* Use 50M anatop loopback REF_CLK1 for ENET1, clear gpr1[13], set gpr1[17]*/
-	val &= ~(1 << 13);
-	val |= (1 << 17);
-	/* Use 50M anatop loopback REF_CLK1 for ENET2, clear gpr1[14], set gpr1[18]*/
-	val &= ~(1 << 14);
-	val |= (1 << 18);
-	writel(val, gprbase + IOMUXC_GPR1);
-
-	return 0;
-err:
-	pr_err("Setting up DFEC\n");
-
-	return -EIO;
-}
-
 static int physom_imx6_devices_init(void)
 {
 	int ret;
@@ -152,7 +109,7 @@ static int physom_imx6_devices_init(void)
 		phyflex_err006282_workaround();
 
 		pfla02_module_revision = get_module_rev();
-		globalvar_add_simple_uint32_fixed("board.revision", pfla02_module_revision, "%u");
+		globalvar_add_simple_int("board.revision", &pfla02_module_revision, "%u");
 		pr_info("Module Revision: %u\n", pfla02_module_revision);
 
 		barebox_set_hostname("phyFLEX-i.MX6");
@@ -178,7 +135,10 @@ static int physom_imx6_devices_init(void)
 		barebox_set_hostname("phyCORE-i.MX6UL");
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
-		imx6ul_setup_fec();
+
+		phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
+				ksz8081_phy_fixup);
+
 	} else
 		return 0;
 
