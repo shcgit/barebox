@@ -1,0 +1,178 @@
+/dts-v1/;
+
+#include <arm/imx6q.dtsi>
+#include <arm/imx6qdl-phytec-pfla02.dtsi>
+
+/ {
+	memory {
+		reg = <0 0>;
+	};
+
+	chosen {
+		linux,stdout-path = &uart4;
+
+		environment-spinor {
+			compatible = "barebox,environment";
+			device-path = &ecspi3, "partname:env";
+			status = "disabled";
+		};
+
+		environment-sd3 {
+			compatible = "barebox,environment";
+			device-path = &ecspi3, "partname:env";
+			status = "disabled";
+		};
+	};
+};
+
+&can1 {
+	status = "okay";
+};
+
+&ecspi3 {
+	/* cs-gpios = <&gpio4 24 GPIO_ACTIVE_LOW>; */
+
+	flash: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "boot";
+			reg = <0x00000 0x80000>;
+		};
+
+		partition@1 {
+			label = "env";
+			reg = <0x80000 0x40000>;
+		};
+	};
+};
+
+&eeprom {
+	pagesize = <32>;
+};
+
+&fec {
+	phy-handle = <&ethphy>;
+	phy-reset-duration = <10>;
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy: ethernet-phy@3 {
+			reg = <3>;
+
+			txc-skew-ps = <1680>;
+			rxc-skew-ps = <1860>;
+		};
+	};
+};
+
+&i2c1 {
+	/* WM8753 SCLK Low pulse-width MIN 1.3us */
+	clock-frequency = <350000>;
+
+//	wm8753: wm8753@1b {
+//		#sound-dai-cells = <0>;
+//		compatible = "wlf,wm8753";
+//		reg = <0x1b>;
+//	};
+
+//	rtc@68 {
+//		compatible = "maxim,ds3231";
+//		reg = <0x68>;
+//		#clock-cells = <1>;
+//	};
+};
+
+&ldb {
+	status = "okay";
+};
+
+&mipi_dsi {
+	status = "okay";
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
+&sata {
+	status = "okay";
+};
+
+&snvs {
+	status = "disabled";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&uart4 {
+	status = "okay";
+};
+
+&usbotg {
+	status = "okay";
+};
+
+&usbphy2 {
+	status = "disabled";
+};
+
+&usdhc3 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usdhc3>;
+	cd-gpios = <>;
+	wp-gpios = <>;
+	bus-width = <1>;
+	status = "okay";
+};
+
+&iomuxc {
+	imx6q-phytec-pfla02 {
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				MX6QDL_PAD_SD4_DAT3__GPIO2_IO11 	0x80000000	/* Revision */
+				MX6QDL_PAD_SD4_DAT4__GPIO2_IO12		0x80000000	/* Revision */
+				MX6QDL_PAD_SD4_DAT5__GPIO2_IO13		0x80000000	/* Revision */
+				MX6QDL_PAD_SD4_DAT6__GPIO2_IO14		0x80000000	/* Revision */
+				MX6QDL_PAD_SD4_DAT7__GPIO2_IO15		0x80000000	/* Revision */
+
+				/* FIXME */
+				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x80000000	/* FEC Reset */
+
+				MX6QDL_PAD_ENET_TXD0__GPIO1_IO30	0x80000000	/* Green LED */
+				MX6QDL_PAD_EIM_EB3__GPIO2_IO31		0x80000000	/* Red LED */
+			>;
+		};
+
+		pinctrl_ecspi3: ecspi3grp {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT2__ECSPI3_MISO	0x100b1
+				MX6QDL_PAD_DISP0_DAT1__ECSPI3_MOSI	0x100b1
+				MX6QDL_PAD_DISP0_DAT0__ECSPI3_SCLK	0x100b1
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24	0x80000000	/* CS0 */
+				MX6QDL_PAD_SD4_DAT1__GPIO2_IO09		0x80000000	/* IRQ */
+			>;
+		};
+
+		pinctrl_uart3: uart3grp {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_D24__UART3_TX_DATA	0x1b0b1
+				MX6QDL_PAD_EIM_D25__UART3_RX_DATA	0x1b0b1
+			>;
+		};
+
+		pinctrl_usdhc3: usdhc3grp {
+			fsl,pins = <
+				MX6QDL_PAD_SD3_CMD__SD3_CMD		0x17059
+				MX6QDL_PAD_SD3_CLK__SD3_CLK		0x10059
+				MX6QDL_PAD_SD3_DAT0__SD3_DATA0		0x17059
+			>;
+		};
+	};
+};
