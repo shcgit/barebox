@@ -21,10 +21,26 @@
 	};
 };
 
+&esdhc1 {
+	status = "okay";
+};
+
 &owire {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_owire>;
 	status = "okay";
+};
+
+&pmic {
+	fsl,mc13xxx-uses-rtc;
+
+	regulators {
+		vcoincell_reg: vcoincell {
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			regulator-always-on;
+		};
+	};
 };
 
 &uart1 {
@@ -53,10 +69,20 @@
 &usbh1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbh1>;
+	fsl,usbphy = <&usbphy1>;
 	dr_mode = "host";
 	phy_type = "ulpi";
 	disable-over-current;
 	status = "okay";
+};
+
+&usbphy {
+	usbphy1: usbphy@1 {
+		compatible = "usb-nop-xceiv";
+		reg = <1>;
+		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
+		clock-names = "main_clk";
+	};
 };
 
 &iomuxc {

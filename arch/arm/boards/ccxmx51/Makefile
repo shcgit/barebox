@@ -1,3 +1,3 @@
-obj-y					+= ccxmx51.o
-lwl-y				+= lowlevel.o
-obj-$(CONFIG_MACH_CCMX51_BASEBOARD)	+= ccxmx51js.o
+obj-y	+= ccxmx51.o
+lwl-y	+= lowlevel.o
+bbenv-y += defaultenv-ccxmx51

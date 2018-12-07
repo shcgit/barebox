@@ -1,6 +1,8 @@
 #!/bin/sh
 
-mtdparts="512k(barebox)ro,256k(bareboxenv),3328k(kernel),-(root)"
+mtdparts="512k(boot),256k(env),-(system)"
 kernelname="mxc_nand"
 
 mtdparts-add -b -d nand0 -k ${kernelname} -p ${mtdparts}
+
+ubiattach /dev/nand0.system

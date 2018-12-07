@@ -497,14 +497,6 @@ config MACH_CCMX51
 	  Say Y here if you are using Digi ConnectCore (W)i-i.MX51
 	  equipped with a Freescale i.MX51 Processor
 
-config MACH_CCMX51_BASEBOARD
-	bool "Digi development board for CCMX51 module"
-	depends on MACH_CCMX51
-	default y
-	help
-	  This adds board specific devices that can be found on Digi
-	  evaluation board for CCMX51 module.
-
 # ----------------------------------------------------------
 
 comment "i.MX53 Boards"

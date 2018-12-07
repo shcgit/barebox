@@ -93,7 +93,7 @@
 		};
 	};
 
-	usbphy {
+	usbphy: usbphy {
 		#address-cells = <1>;
 		#size-cells = <0>;
 		compatible = "simple-bus";
@@ -136,16 +136,22 @@
 			resets = <&src 2>;
 
 			ipu_di0: port@2 {
+				#address-cells = <1>;
+				#size-cells = <0>;
 				reg = <2>;
 
-				ipu_di0_disp0: endpoint {
+				ipu_di0_disp0: endpoint@0 {
+					reg = <0>;
 				};
 			};
 
 			ipu_di1: port@3 {
+				#address-cells = <1>;
+				#size-cells = <0>;
 				reg = <3>;
 
-				ipu_di1_disp1: endpoint {
+				ipu_di1_disp1: endpoint@0 {
+					reg = <0>;
 				};
 			};
 		};
@@ -172,6 +178,7 @@
 					         <&clks IMX5_CLK_DUMMY>,
 					         <&clks IMX5_CLK_ESDHC1_PER_GATE>;
 					clock-names = "ipg", "ahb", "per";
+					bus-width = <4>;
 					status = "disabled";
 				};
 
@@ -194,6 +201,8 @@
 					clocks = <&clks IMX5_CLK_UART3_IPG_GATE>,
 					         <&clks IMX5_CLK_UART3_PER_GATE>;
 					clock-names = "ipg", "per";
+					dmas = <&sdma 43 5 1>, <&sdma 44 5 2>;
+					dma-names = "rx", "tx";
 					status = "disabled";
 				};
 
@@ -206,6 +215,8 @@
 					clocks = <&clks IMX5_CLK_ECSPI1_IPG_GATE>,
 					         <&clks IMX5_CLK_ECSPI1_PER_GATE>;
 					clock-names = "ipg", "per";
+					//dmas = <&sdma 6 8 1>, <&sdma 7 8 2>;
+					//dma-names = "rx", "tx";
 					status = "disabled";
 				};
 
@@ -247,6 +258,11 @@
 					bus-width = <4>;
 					status = "disabled";
 				};
+			};
+
+			aipstz@73f00000 {
+				compatible = "fsl,imx51-aipstz";
+				reg = <0x73f00000 0x60>;
 			};
 
 			usbotg: usb@73f80000 {
@@ -373,6 +389,11 @@
 				reg = <0x73fa8000 0x4000>;
 			};
 
+			gpr: iomuxc-gpr@73fa8000 {
+				compatible = "fsl,imx51-iomuxc-gpr", "syscon";
+				reg = <0x73fa8000 8>;
+			};
+
 			pwm1: pwm@73fb4000 {
 				#pwm-cells = <2>;
 				compatible = "fsl,imx51-pwm", "fsl,imx27-pwm";
@@ -400,6 +421,8 @@
 				clocks = <&clks IMX5_CLK_UART1_IPG_GATE>,
 				         <&clks IMX5_CLK_UART1_PER_GATE>;
 				clock-names = "ipg", "per";
+				dmas = <&sdma 18 4 1>, <&sdma 19 4 2>;
+				dma-names = "rx", "tx";
 				status = "disabled";
 			};
 
@@ -410,6 +433,8 @@
 				clocks = <&clks IMX5_CLK_UART2_IPG_GATE>,
 				         <&clks IMX5_CLK_UART2_PER_GATE>;
 				clock-names = "ipg", "per";
+				dmas = <&sdma 16 4 1>, <&sdma 17 4 2>;
+				dma-names = "rx", "tx";
 				status = "disabled";
 			};
 
@@ -433,6 +458,11 @@
 			#size-cells = <1>;
 			reg = <0x80000000 0x10000000>;
 			ranges;
+
+			aipstz@83f00000 {
+				compatible = "fsl,imx51-aipstz";
+				reg = <0x83f00000 0x60>;
+			};
 
 			iim: iim@83f98000 {
 				compatible = "fsl,imx51-iim", "fsl,imx27-iim";
@@ -458,6 +488,8 @@
 				clocks = <&clks IMX5_CLK_ECSPI2_IPG_GATE>,
 				         <&clks IMX5_CLK_ECSPI2_PER_GATE>;
 				clock-names = "ipg", "per";
+				//dmas = <&sdma 8 7 1>, <&sdma 9 7 2>;
+				//dma-names = "rx", "tx";
 				status = "disabled";
 			};
 
@@ -468,6 +500,7 @@
 				clocks = <&clks IMX5_CLK_SDMA_GATE>,
 				         <&clks IMX5_CLK_SDMA_GATE>;
 				clock-names = "ipg", "ahb";
+				gpr = <&gpr>;
 				#dma-cells = <3>;
 				fsl,sdma-ram-script-name = "imx/sdma/sdma-imx51.bin";
 			};
@@ -481,6 +514,8 @@
 				clocks = <&clks IMX5_CLK_CSPI_IPG_GATE>,
 				         <&clks IMX5_CLK_CSPI_IPG_GATE>;
 				clock-names = "ipg", "per";
+				//dmas = <&sdma 38 7 1>, <&sdma 39 7 2>;
+				//dma-names = "rx", "tx";
 				status = "disabled";
 			};
 
@@ -541,6 +576,7 @@
 					4 0 0xcc000000 0x02000000
 					5 0 0xce000000 0x02000000
 				>;
+				fsl,weim-cs-gpr = <&gpr>;
 				status = "disabled";
 			};
 
@@ -587,6 +623,29 @@
 				clock-names = "ipg", "ahb", "ptp";
 				status = "disabled";
 			};
+
+			tve: tve@83ff0000 {
+				compatible = "fsl,imx51-tve";
+				reg = <0x83ff0000 0x4000>;
+				interrupts = <92>;
+				clocks = <&clks IMX5_CLK_TVE_GATE>,
+					 <&clks IMX5_CLK_IPU_DI0_SEL>;
+				clock-names = "tve", "di_sel";
+			};
+
+			sahara: crypto@83ff8000 {
+				compatible = "fsl,imx53-sahara";
+				reg = <0x83ff8000 0x4000>;
+				interrupts = <19 20>;
+				clocks = <&clks IMX5_CLK_SAHARA_IPG_GATE>,
+				         <&clks IMX5_CLK_SAHARA_IPG_GATE>;
+				clock-names = "ipg", "ahb";
+			};
+		};
+
+		pmu {
+			compatible = "arm,cortex-a8-pmu";
+			interrupts = <77>;
 		};
 	};
 };
