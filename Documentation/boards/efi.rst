@@ -1,3 +1,5 @@
+.. _barebox_on_uefi:
+
 barebox on (U)EFI
 =================
 
@@ -42,6 +44,35 @@ architectures. Switching to USB boot in the BIOS should then be enough to
 start barebox via USB. Some BIOSes allow to specify a path to a binary to
 be executed, others have a "start UEFI shell" entry which executes
 EFI/Shellx64.efi on the :term:`ESP`. This can be a barebox binary aswell.
+To use the :ref:`state_framework`, the describing devicetree file ``state.dtb``
+has to be put into the ``EFI/barebox/`` directory.
+Supported backends for EFI are raw partitions that can be discovered via a
+partition UUID.
+
+With this sample script you can create bootable image and transfer it to the
+flash driver:
+
+.. code-block:: sh
+
+  truncate --size 128M barebox-boot.img
+  echo 'start=2048, type=ef' | sfdisk barebox-boot.img
+
+  LOOPDEV=$(losetup --find --show barebox-boot.img)
+  partprobe ${LOOPDEV}
+
+  # Create filesystems
+  mkfs.fat -F32 ${LOOPDEV}p1
+  MOUNTDIR=$(mktemp -d -t demoXXXXXX)
+  mount ${LOOPDEV}p1 $MOUNTDIR
+  mkdir -p ${MOUNTDIR}/EFI/BOOT/
+  cp barebox.efi ${MOUNTDIR}/EFI/BOOT/BOOTx64.EFI
+  if [ -d network-drivers ]; then
+    cp -r network-drivers ${MOUNTDIR}/
+  fi
+  umount ${MOUNTDIR}
+  losetup -d ${LOOPDEV}
+
+  dd if=barebox-boot.img of=/dev/sdX
 
 Running EFI barebox on qemu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

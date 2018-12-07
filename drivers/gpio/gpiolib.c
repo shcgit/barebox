@@ -119,33 +119,34 @@ void gpio_free(unsigned gpio)
 int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 {
 	int err;
+	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	/*
+	 * Not all of the flags below are mulit-bit, but, for the sake
+	 * of consistency, the code is written as if all of them were.
+	 */
+	const bool active_low  = (flags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
+	const bool dir_in      = (flags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
+	const bool logical     = (flags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
+	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
+	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
 
 	err = gpio_request(gpio, label);
 	if (err)
 		return err;
 
-	if (flags & GPIOF_ACTIVE_LOW) {
-		struct gpio_info *gi = gpio_to_desc(gpio);
-		gi->active_low = true;
-	}
+	gi->active_low = active_low;
 
-	if (flags & GPIOF_DIR_IN) {
+	if (dir_in)
 		err = gpio_direction_input(gpio);
-	} else if (flags & GPIOF_LOGICAL) {
-		err = gpio_direction_active(gpio,
-					    !!(flags & GPIOF_INIT_ACTIVE));
-	} else {
-		err = gpio_direction_output(gpio,
-					    !!(flags & GPIOF_INIT_HIGH));
-	}
+	else if (logical)
+		err = gpio_direction_active(gpio, init_active);
+	else
+		err = gpio_direction_output(gpio, init_high);
 
 	if (err)
-		goto free_gpio;
+		gpio_free(gpio);
 
-	return 0;
-
- free_gpio:
-	gpio_free(gpio);
 	return err;
 }
 EXPORT_SYMBOL_GPL(gpio_request_one);
@@ -203,6 +204,10 @@ EXPORT_SYMBOL(gpio_set_value);
 void gpio_set_active(unsigned gpio, bool value)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	if (!gi)
+		return;
+
 	gpio_set_value(gpio, gpio_adjust_value(gi, value));
 }
 EXPORT_SYMBOL(gpio_set_active);
@@ -228,6 +233,10 @@ EXPORT_SYMBOL(gpio_get_value);
 int gpio_is_active(unsigned gpio)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	if (!gi)
+		return -ENODEV;
+
 	return gpio_adjust_value(gi, gpio_get_value(gpio));
 }
 EXPORT_SYMBOL(gpio_is_active);
@@ -254,6 +263,10 @@ EXPORT_SYMBOL(gpio_direction_output);
 int gpio_direction_active(unsigned gpio, bool value)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	if (!gi)
+		return -ENODEV;
+
 	return gpio_direction_output(gpio, gpio_adjust_value(gi, value));
 }
 EXPORT_SYMBOL(gpio_direction_active);
@@ -378,6 +391,9 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 {
 	struct device_node *np;
 	int ret, i;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->device_node)
+		return 0;
 
 	for_each_available_child_of_node(chip->dev->device_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))

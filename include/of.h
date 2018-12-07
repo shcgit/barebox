@@ -144,12 +144,15 @@ extern struct device_node *of_new_node(struct device_node *parent,
 				const char *name);
 extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
+extern struct device_node *of_copy_node(struct device_node *parent,
+				const struct device_node *other);
 extern void of_delete_node(struct device_node *node);
 
 extern int of_machine_is_compatible(const char *compat);
 extern int of_device_is_compatible(const struct device_node *device,
 		const char *compat);
 extern int of_device_is_available(const struct device_node *device);
+extern bool of_device_is_big_endian(const struct device_node *device);
 
 extern struct device_node *of_get_parent(const struct device_node *node);
 extern struct device_node *of_get_next_available_child(
@@ -593,6 +596,11 @@ static inline int of_device_is_compatible(const struct device_node *device,
 static inline int of_device_is_available(const struct device_node *device)
 {
 	return 0;
+}
+
+static inline bool of_device_is_big_endian(const struct device_node *device)
+{
+	return false;
 }
 
 static inline void of_alias_scan(void)

@@ -145,6 +145,7 @@ char *normalise_path(const char *pathname)
 EXPORT_SYMBOL(normalise_path);
 
 static int __lstat(const char *filename, struct stat *s);
+static struct fs_device_d *get_fsdevice_by_path(const char *path);
 
 static char *__canonicalize_path(const char *_pathname, int level)
 {
@@ -158,8 +159,8 @@ static char *__canonicalize_path(const char *_pathname, int level)
 
 	path = freep = xstrdup(_pathname);
 
-	if (*path == '/')
-		outpath = xstrdup("/");
+	if (*path == '/' || !strcmp(cwd, "/"))
+		outpath = xstrdup("");
 	else
 		outpath = __canonicalize_path(cwd, level + 1);
 
@@ -167,6 +168,7 @@ static char *__canonicalize_path(const char *_pathname, int level)
 		char *p = strsep(&path, "/");
 		char *tmp;
 		char link[PATH_MAX] = {};
+		struct fs_device_d *fsdev;
 
 		if (!p)
 			break;
@@ -184,6 +186,14 @@ static char *__canonicalize_path(const char *_pathname, int level)
 		tmp = basprintf("%s/%s", outpath, p);
 		free(outpath);
 		outpath = tmp;
+
+		/*
+		 * Don't bother filesystems without link support
+		 * with an additional stat() call.
+		 */
+		fsdev = get_fsdevice_by_path(outpath);
+		if (!fsdev->driver->readlink)
+			continue;
 
 		ret = __lstat(outpath, &s);
 		if (ret)
@@ -211,6 +221,11 @@ static char *__canonicalize_path(const char *_pathname, int level)
 	}
 out:
 	free(freep);
+
+	if (!*outpath) {
+		free(outpath);
+		outpath = xstrdup("/");
+	}
 
 	return outpath;
 }
@@ -246,7 +261,7 @@ char *canonicalize_path(const char *pathname)
  *
  * Return: Path with links resolved. Allocated, must be freed after use.
  */
-char *canonicalize_dir(const char *pathname)
+static char *canonicalize_dir(const char *pathname)
 {
 	char *f, *d, *r, *ret, *p;
 	char *freep1, *freep2;

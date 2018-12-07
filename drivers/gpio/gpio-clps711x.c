@@ -47,8 +47,6 @@ static int clps711x_gpio_probe(struct device_d *dev)
 	}
 
 	bgc = xzalloc(sizeof(struct bgpio_chip));
-	if (!bgc)
-		return -ENOMEM;
 
 	err = bgpio_init(bgc, dev, 1, dat, NULL, NULL, dir, dir_inv, 0);
 	if (err)
@@ -74,6 +72,7 @@ out_err:
 
 static struct of_device_id __maybe_unused clps711x_gpio_dt_ids[] = {
 	{ .compatible = "cirrus,clps711x-gpio", },
+	{ /* sentinel */ }
 };
 
 static struct driver_d clps711x_gpio_driver = {

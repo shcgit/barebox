@@ -194,8 +194,6 @@ void of_alias_scan(void)
 
 		/* Allocate an alias_prop with enough space for the stem */
 		ap = xzalloc(sizeof(*ap) + len + 1);
-		if (!ap)
-			continue;
 		ap->alias = start;
 		of_alias_add(ap, np, id, start, len);
 	}
@@ -1622,6 +1620,29 @@ int of_device_is_available(const struct device_node *device)
 EXPORT_SYMBOL(of_device_is_available);
 
 /**
+ *  of_device_is_big_endian - check if a device has BE registers
+ *
+ *  @device: Node to check for endianness
+ *
+ *  Returns true if the device has a "big-endian" property, or if the kernel
+ *  was compiled for BE *and* the device has a "native-endian" property.
+ *  Returns false otherwise.
+ *
+ *  Callers would nominally use ioread32be/iowrite32be if
+ *  of_device_is_big_endian() == true, or readl/writel otherwise.
+ */
+bool of_device_is_big_endian(const struct device_node *device)
+{
+	if (of_property_read_bool(device, "big-endian"))
+		return true;
+	if (IS_ENABLED(CONFIG_CPU_BIG_ENDIAN) &&
+	    of_property_read_bool(device, "native-endian"))
+		return true;
+	return false;
+}
+EXPORT_SYMBOL(of_device_is_big_endian);
+
+/**
  *	of_get_parent - Get a node's parent if any
  *	@node:	Node to get parent
  *
@@ -1915,8 +1936,8 @@ int of_probe(void)
 	if (memory)
 		of_add_memory(memory, false);
 
-	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 	of_clk_init(root_node, NULL);
+	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
 	return 0;
 }
@@ -1965,6 +1986,22 @@ out:
 	return dn;
 }
 
+struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
+{
+	struct device_node *np, *child;
+	struct property *pp;
+
+	np = of_new_node(parent, other->name);
+
+	list_for_each_entry(pp, &other->properties, list)
+		of_new_property(np, pp->name, pp->value, pp->length);
+
+	for_each_child_of_node(other, child)
+		of_copy_node(np, child);
+
+	return np;
+}
+
 void of_delete_node(struct device_node *node)
 {
 	struct device_node *n, *nt;
@@ -2001,6 +2038,11 @@ int of_device_is_stdout_path(struct device_d *dev)
 {
 	struct device_node *dn;
 	const char *name;
+	const char *p;
+	char *q;
+
+	if (!dev->device_node)
+		return 0;
 
 	name = of_get_property(of_chosen, "stdout-path", NULL);
 	if (!name)
@@ -2009,14 +2051,18 @@ int of_device_is_stdout_path(struct device_d *dev)
 	if (!name)
 		return 0;
 
-	dn = of_find_node_by_path(name);
-	if (!dn)
-		return 0;
+	/* This could make use of strchrnul if it were available */
+	p = strchr(name, ':');
+	if (!p)
+		p = name + strlen(name);
 
-	if (dn == dev->device_node)
-		return 1;
+	q = xstrndup(name, p - name);
 
-	return 0;
+	dn = of_find_node_by_path_or_alias(NULL, q);
+
+	free(q);
+
+	return dn == dev->device_node;
 }
 
 /**

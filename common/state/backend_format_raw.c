@@ -108,7 +108,7 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 	ssize_t complete_len;
 
 	if (len < format_raw_min_length) {
-		dev_err(backend_raw->dev, "Error, buffer length (%d) is shorter than the minimum required header length\n",
+		dev_err(backend_raw->dev, "Error, buffer length (%zd) is shorter than the minimum required header length\n",
 			len);
 		return -EINVAL;
 	}
@@ -222,8 +222,6 @@ static int backend_format_raw_pack(struct state_backend_format *format,
 	size_full = size_data + sizeof(*header) + backend_raw->digest_length;
 
 	buf = xzalloc(size_full);
-	if (!buf)
-		return -ENOMEM;
 
 	header = buf;
 	data = buf + sizeof(*header);
@@ -308,8 +306,6 @@ int backend_format_raw_create(struct state_backend_format **format,
 	int ret;
 
 	raw = xzalloc(sizeof(*raw));
-	if (!raw)
-		return -ENOMEM;
 
 	raw->dev = dev;
 	ret = backend_format_raw_init_digest(raw, node, secret_name);
