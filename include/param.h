@@ -6,7 +6,6 @@
 #include <linux/list.h>
 
 #define PARAM_FLAG_RO	(1 << 0)
-#define PARAM_GLOBALVAR_UNQUALIFIED	(1 << 1)
 
 struct device_d;
 typedef uint32_t          IPaddr_t;
@@ -99,9 +98,9 @@ static inline struct param_d *get_param_by_name(struct device_d *dev,
 	return NULL;
 }
 
-static inline struct param_d *dev_add_param(struct device_d *dev, char *name,
-		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		const char *(*get)(struct device_d *, struct param_d *p),
+static inline struct param_d *dev_add_param(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, const char *val),
+		const char *(*get)(struct param_d *p),
 		unsigned long flags)
 {
 	return ERR_PTR(-ENOSYS);

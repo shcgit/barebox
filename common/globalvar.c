@@ -29,22 +29,6 @@ void nv_var_set_clean(void)
 	nv_dirty = 0;
 }
 
-int globalvar_add(const char *name,
-		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		const char *(*get)(struct device_d *, struct param_d *p),
-		unsigned long flags)
-{
-	struct param_d *param;
-
-	if (!strncmp(name, "global.", 7))
-		name += 7;
-
-	param = dev_add_param(&global_device, name, set, get, flags);
-	if (IS_ERR(param))
-		return PTR_ERR(param);
-	return 0;
-}
-
 void globalvar_remove(const char *name)
 {
 	struct param_d *p, *tmp;
@@ -115,6 +99,9 @@ void dev_param_init_from_nv(struct device_d *dev, const char *name)
 	const char *val;
 	int ret = 0;
 
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return;
+
 	if (dev == &nv_device)
 		return;
 	if (dev == &global_device)
@@ -181,14 +168,18 @@ static int nvvar_device_dispatch(const char *name, struct device_d **dev,
 
 static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
 {
+	struct param_d *g;
 	int ret;
 
 	if (!val)
 		val = "";
 
-	ret = dev_set_param(&global_device, p->name, val);
-	if (ret)
-		return ret;
+	g = get_param_by_name(&global_device, p->name);
+	if (g) {
+		ret = dev_set_param(&global_device, p->name, val);
+		if (ret)
+			return ret;
+	}
 
 	free(p->value);
 	p->value = xstrdup(val);
@@ -215,7 +206,6 @@ static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val
 static int __nvvar_add(const char *name, const char *value)
 {
 	struct param_d *p;
-	int ret;
 
 	if (!IS_ENABLED(CONFIG_NVVAR))
 		return -ENOSYS;
@@ -227,11 +217,6 @@ static int __nvvar_add(const char *name, const char *value)
 		if (IS_ERR(p))
 			return PTR_ERR(p);
 	}
-
-	/* Create corresponding globalvar if it doesn't exist yet */
-	ret = globalvar_add_simple(name, value);
-	if (ret && ret != -EEXIST)
-		return ret;
 
 	if (value)
 		return nv_set(&nv_device, p, value);
@@ -327,7 +312,10 @@ static void device_param_print(struct device_d *dev)
 		if (IS_ENABLED(CONFIG_NVVAR) && dev != &nv_device)
 			nv = dev_get_param(&nv_device, param->name);
 
-		printf("%s%s: %s\n", nv ? "* " : "  ", param->name, p);
+		printf("%s%s: %s", nv ? "* " : "  ", param->name, p);
+		if (param->info)
+			param->info(param);
+		printf("\n");
 	}
 }
 
@@ -406,6 +394,18 @@ static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const c
 	return dev_param_set_generic(dev, p, val);
 }
 
+static void globalvar_nv_sync(const char *name)
+{
+	const char *val;
+
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return;
+
+	val = dev_get_param(&nv_device, name);
+	if (val)
+		dev_set_param(&global_device, name, val);
+}
+
 /*
  * globalvar_add_simple
  *
@@ -416,51 +416,23 @@ int globalvar_add_simple(const char *name, const char *value)
 	struct param_d *param;
 
 	param = dev_add_param(&global_device, name, globalvar_simple_set, NULL,
-			      PARAM_GLOBALVAR_UNQUALIFIED);
+			      0);
 	if (IS_ERR(param)) {
 		if (PTR_ERR(param) != -EEXIST)
 			return PTR_ERR(param);
 	}
 
-	if (!value)
-		return 0;
+	globalvar_nv_sync(name);
 
-	return dev_set_param(&global_device, name, value);
-}
-
-static int globalvar_remove_unqualified(const char *name)
-{
-	struct param_d *p;
-
-	p = get_param_by_name(&global_device, name);
-	if (!p)
-		return 0;
-
-	if (!(p->flags & PARAM_GLOBALVAR_UNQUALIFIED))
-		return -EEXIST;
-
-	dev_remove_param(p);
+	if (value)
+		dev_set_param(&global_device, name, value);
 
 	return 0;
-}
-
-static void globalvar_nv_sync(const char *name)
-{
-	const char *val;
-
-	val = dev_get_param(&nv_device, name);
-	if (val)
-		dev_set_param(&global_device, name, val);
 }
 
 int globalvar_add_simple_string(const char *name, char **value)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_string(&global_device, name, NULL, NULL,
 		value, NULL);
@@ -477,11 +449,6 @@ int globalvar_add_simple_int(const char *name, int *value,
 			     const char *format)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_int(&global_device, name, NULL, NULL,
 		value, format, NULL);
@@ -497,11 +464,6 @@ int globalvar_add_simple_int(const char *name, int *value,
 int globalvar_add_simple_bool(const char *name, int *value)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_bool(&global_device, name, NULL, NULL,
 		value, NULL);
@@ -518,11 +480,6 @@ int globalvar_add_simple_enum(const char *name,	int *value,
 			      const char * const *names, int max)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_enum(&global_device, name, NULL, NULL,
 		value, names, max, NULL);
@@ -552,11 +509,6 @@ int globalvar_add_simple_bitmask(const char *name, unsigned long *value,
 int globalvar_add_simple_ip(const char *name, IPaddr_t *ip)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_ip(&global_device, name, NULL, NULL,
 		ip, NULL);
@@ -596,6 +548,8 @@ int nvvar_save(void)
 	const char *env = default_environment_path_get();
 	int ret;
 #define TMPDIR "/.env.tmp"
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return -ENOSYS;
 	if (!nv_dirty || !env)
 		return 0;
 
@@ -656,7 +610,9 @@ static int nv_global_param_complete(struct device_d *dev, struct string_list *sl
 int nv_global_complete(struct string_list *sl, char *instr)
 {
 	nv_global_param_complete(&global_device, sl, instr, 0);
-	nv_global_param_complete(&nv_device, sl, instr, 0);
+
+	if (IS_ENABLED(CONFIG_NVVAR))
+		nv_global_param_complete(&nv_device, sl, instr, 0);
 
 	return 0;
 }

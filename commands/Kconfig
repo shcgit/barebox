@@ -6,10 +6,6 @@ config COMMAND_SUPPORT
 	depends on !SHELL_NONE
 	default y
 
-config HAS_POWEROFF
-	bool
-	default n
-
 if COMMAND_SUPPORT
 
 config COMPILE_HASH
@@ -1848,7 +1844,6 @@ config CMD_NAND_BITFLIP
 
 config CMD_POWEROFF
 	tristate
-	depends on HAS_POWEROFF
 	prompt "poweroff"
 	help
 	  Turn the power off.
@@ -1930,6 +1925,11 @@ config CMD_WD_DEFAULT_TIMOUT
 	  'wd' is done without a timeout value (which means the watchdog gets
 	  enabled and re-triggered with the default timeout value).
 
+config CMD_HAB
+	bool
+	depends on HAB
+	prompt "High Assurance boot (hab)"
+
 # end Hardware manipulation commands
 endmenu
 
@@ -1967,6 +1967,12 @@ config CMD_FIRMWARELOAD
 	  Provides the "firmwareload" command which deals with devices which need
 	  firmware to work. It is also used to upload firmware to FPGA devices.
 
+config CMD_KEYSTORE
+	depends on CRYPTO_KEYSTORE
+	bool
+	prompt "keystore"
+	help
+	  keystore provides access to the barebox keystore.
 
 config CMD_LINUX_EXEC
 	bool "linux exec"
@@ -2114,6 +2120,12 @@ config CMD_SPD_DECODE
 	select DDR_SPD
 	help
 	  decode spd eeprom
+
+config CMD_SEED
+	tristate
+	prompt "seed"
+	help
+	  Seed the pseudo random number generator (PRNG)
 
 # end Miscellaneous commands
 endmenu
