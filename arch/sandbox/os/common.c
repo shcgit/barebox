@@ -359,24 +359,6 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 			break;
-		case 'O':
-			fd = open(optarg, O_WRONLY);
-			if (fd < 0) {
-				perror("open");
-				exit(1);
-			}
-
-			barebox_register_console("cout", -1, fd);
-			break;
-		case 'I':
-			fd = open(optarg, O_RDWR);
-			if (fd < 0) {
-				perror("open");
-				exit(1);
-			}
-
-			barebox_register_console("cin", fd, -1);
-			break;
 		case 'x':
 			sdl_xres = strtoul(optarg, NULL, 0);
 			break;
@@ -384,7 +366,7 @@ int main(int argc, char *argv[])
 			sdl_yres = strtoul(optarg, NULL, 0);
 			break;
 		default:
-			exit(1);
+			break;
 		}
 	}
 
@@ -421,12 +403,30 @@ int main(int argc, char *argv[])
 			if (ret)
 				exit(1);
 			break;
+		case 'O':
+			fd = open(optarg, O_WRONLY);
+			if (fd < 0) {
+				perror("open");
+				exit(1);
+			}
+
+			barebox_register_console(-1, fd);
+			break;
+		case 'I':
+			fd = open(optarg, O_RDWR);
+			if (fd < 0) {
+				perror("open");
+				exit(1);
+			}
+
+			barebox_register_console(fd, -1);
+			break;
 		default:
 			break;
 		}
 	}
 
-	barebox_register_console("console", fileno(stdin), fileno(stdout));
+	barebox_register_console(fileno(stdin), fileno(stdout));
 
 	rawmode();
 	start_barebox();

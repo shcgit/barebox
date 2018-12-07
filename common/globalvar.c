@@ -19,7 +19,7 @@ struct device_d global_device = {
 	.id = DEVICE_ID_SINGLE,
 };
 
-struct device_d nv_device = {
+static struct device_d nv_device = {
 	.name = "nv",
 	.id = DEVICE_ID_SINGLE,
 };
@@ -120,28 +120,21 @@ void dev_param_init_from_nv(struct device_d *dev, const char *name)
 }
 
 /**
- * nvvar_device_dispatch - dispatch dev.<dev>.<param> name into device and parameter name
+ * nvvar_device_set - set device parameter dev.<dev>.<param>
  * @name: The incoming name in the form dev.<dev>.<param>
- * @dev: The returned device_d * belonging to <dev>
- * @pname: the parameter name
+ * val: The value <dev>.<param> should be set to
  *
- * Given a dev.<dev>.<param> string this function finds the device_d * belonging to
- * <dev> and the parameter name from <param>.
+ * Given a dev.<dev>.<param> string this function sets the corresponding parameter
+ * in the struct device_d * named <param> to @val.
  *
- * Return: When incoming string does not belong to the device namespace (does not begin
- * with "dev." this function returns 0. A value > 0 is returned when the incoming string
- * is in the device namespace and the string can be dispatched into a device_d * and a
- * parameter name. A negative error code is returned when the incoming string belongs to
- * the device namespace, but cannot be dispatched.
+ * Return: 0 for success, negative error code for failure
  */
-static int nvvar_device_dispatch(const char *name, struct device_d **dev,
-				 const char **pname)
+static int nvvar_device_set(const char *name, const char *val)
 {
+	struct device_d *dev;
 	char *devname;
-	const char *dot;
-	int dotpos;
-
-	*dev = NULL;
+	const char *dot, *pname;
+	int dotpos, ret;
 
 	if (strncmp(name, "dev.", 4))
 		return 0;
@@ -155,24 +148,33 @@ static int nvvar_device_dispatch(const char *name, struct device_d **dev,
 	dotpos = dot - name;
 
 	devname = xstrndup(name, dotpos);
-	*dev = get_device_by_name(devname);
+	dev = get_device_by_name(devname);
 	free(devname);
 
-	if (*dev == &nv_device || *dev == &global_device)
+	if (dev == &nv_device || dev == &global_device)
 		return -EINVAL;
 
-	*pname = dot + 1;
+	pname = dot + 1;
 
-	return 1;
+	ret = dev_set_param(dev, pname, val);
+	if (ret)
+		pr_err("Cannot init param from nv: %s.%s=%s: %s\n",
+			dev_name(dev), pname, val, strerror(-ret));
+
+	return 0;
 }
 
-static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
+static int nv_set(struct param_d *p, const char *val)
 {
 	struct param_d *g;
 	int ret;
 
 	if (!val)
 		val = "";
+
+	ret = nvvar_device_set(p->name, val);
+	if (ret)
+		return ret;
 
 	g = get_param_by_name(&global_device, p->name);
 	if (g) {
@@ -187,16 +189,16 @@ static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
 	return 0;
 }
 
-static const char *nv_param_get(struct device_d *dev, struct param_d *p)
+static const char *nv_param_get(struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
 
-static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val)
+static int nv_param_set(struct param_d *p, const char *val)
 {
 	int ret;
 
-	ret = nv_set(dev, p, val);
+	ret = nv_set(p, val);
 	if (ret)
 		return ret;
 
@@ -219,7 +221,7 @@ static int __nvvar_add(const char *name, const char *value)
 	}
 
 	if (value)
-		return nv_set(&nv_device, p, value);
+		return nv_set(p, value);
 
 	value = dev_get_param(&global_device, name);
 	if (value) {
@@ -373,27 +375,6 @@ void globalvar_set_match(const char *match, const char *val)
 	}
 }
 
-static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
-{
-	struct device_d *rdev;
-	const char *pname = NULL;
-	int ret;
-
-	ret = nvvar_device_dispatch(p->name, &rdev, &pname);
-	if (ret < 0)
-		return ret;
-
-	if (ret && rdev) {
-		ret = dev_set_param(rdev, pname, val);
-		if (ret)
-			pr_err("Cannot init param from global: %s.%s=%s: %s\n",
-				dev_name(rdev), pname, val, strerror(-ret));
-	}
-
-	/* Pass to the generic function we have overwritten */
-	return dev_param_set_generic(dev, p, val);
-}
-
 static void globalvar_nv_sync(const char *name)
 {
 	const char *val;
@@ -415,7 +396,7 @@ int globalvar_add_simple(const char *name, const char *value)
 {
 	struct param_d *param;
 
-	param = dev_add_param(&global_device, name, globalvar_simple_set, NULL,
+	param = dev_add_param(&global_device, name, NULL, NULL,
 			      0);
 	if (IS_ERR(param)) {
 		if (PTR_ERR(param) != -EEXIST)
@@ -430,7 +411,7 @@ int globalvar_add_simple(const char *name, const char *value)
 	return 0;
 }
 
-int globalvar_add_simple_string(const char *name, char **value)
+int __globalvar_add_simple_string(const char *name, char **value)
 {
 	struct param_d *p;
 
@@ -445,28 +426,14 @@ int globalvar_add_simple_string(const char *name, char **value)
 	return 0;
 }
 
-int globalvar_add_simple_int(const char *name, int *value,
-			     const char *format)
+int __globalvar_add_simple_int(const char *name, void *value,
+				      enum param_type type,
+				      const char *format)
 {
 	struct param_d *p;
 
-	p = dev_add_param_int(&global_device, name, NULL, NULL,
-		value, format, NULL);
-
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	globalvar_nv_sync(name);
-
-	return 0;
-}
-
-int globalvar_add_simple_bool(const char *name, int *value)
-{
-	struct param_d *p;
-
-	p = dev_add_param_bool(&global_device, name, NULL, NULL,
-		value, NULL);
+	p = __dev_add_param_int(&global_device, name, NULL, NULL,
+		value, type, format, NULL);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);
@@ -528,7 +495,7 @@ static int globalvar_init(void)
 	if (IS_ENABLED(CONFIG_NVVAR))
 		register_device(&nv_device);
 
-	globalvar_add_simple("version", UTS_RELEASE);
+	globalvar_add_simple_string_fixed("version", UTS_RELEASE);
 
 	return 0;
 }
