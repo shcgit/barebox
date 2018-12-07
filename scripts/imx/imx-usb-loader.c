@@ -72,16 +72,44 @@ struct usb_work {
 };
 
 struct usb_id {
-	struct mach_id *mach_id;
+	const struct mach_id *mach_id;
 	struct usb_work *work;
 };
 
-struct mach_id imx_ids[] = {
+static const struct mach_id imx_ids[] = {
 	{
 		.vid = 0x066f,
 		.pid = 0x3780,
 		.name = "i.MX23",
 		.mode = MODE_BULK,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x0030,
+		.name = "i.MX35",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x003a,
+		.name = "i.MX25",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x0041,
+		.name = "i.MX51",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x004e,
+		.name = "i.MX53",
+		.header_type = HDR_MX53,
+		.mode = MODE_BULK,
+		.max_transfer = 512,
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x004f,
@@ -109,6 +137,13 @@ struct mach_id imx_ids[] = {
 		.max_transfer = 1024,
 	}, {
 		.vid = 0x15a2,
+		.pid = 0x0063,
+		.name = "i.MX6sl",
+		.header_type = HDR_MX53,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+	}, {
+		.vid = 0x15a2,
 		.pid = 0x0071,
 		.name = "i.MX6 SoloX",
 		.header_type = HDR_MX53,
@@ -123,32 +158,11 @@ struct mach_id imx_ids[] = {
 		.max_transfer = 1024,
 	}, {
 		.vid = 0x15a2,
-		.pid = 0x0041,
-		.name = "i.MX51",
-		.header_type = HDR_MX51,
-		.mode = MODE_BULK,
-		.max_transfer = 64,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x004e,
-		.name = "i.MX53",
+		.pid = 0x0076,
+		.name = "i.MX7S",
 		.header_type = HDR_MX53,
-		.mode = MODE_BULK,
-		.max_transfer = 512,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x0030,
-		.name = "i.MX35",
-		.header_type = HDR_MX51,
-		.mode = MODE_BULK,
-		.max_transfer = 64,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x003a,
-		.name = "i.MX25",
-		.header_type = HDR_MX51,
-		.mode = MODE_BULK,
-		.max_transfer = 64,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
 	},
 };
 
@@ -167,12 +181,12 @@ struct sdp_command  {
 	uint8_t rsvd;
 } __attribute__((packed));
 
-static struct mach_id *imx_device(unsigned short vid, unsigned short pid)
+static const struct mach_id *imx_device(unsigned short vid, unsigned short pid)
 {
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(imx_ids); i++) {
-		struct mach_id *id = &imx_ids[i];
+		const struct mach_id *id = &imx_ids[i];
 		if (id->vid == vid && id->pid == pid) {
 			fprintf(stderr, "found %s USB device [%04x:%04x]\n",
 					id->name, vid, pid);
@@ -183,10 +197,10 @@ static struct mach_id *imx_device(unsigned short vid, unsigned short pid)
 	return NULL;
 }
 
-static libusb_device *find_imx_dev(libusb_device **devs, struct mach_id **pp_id)
+static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **pp_id)
 {
 	int i = 0;
-	struct mach_id *p;
+	const struct mach_id *p;
 
 	for (;;) {
 		struct libusb_device_descriptor desc;
@@ -1281,7 +1295,7 @@ static void usage(const char *prgname)
 
 int main(int argc, char *argv[])
 {
-	struct mach_id *mach;
+	const struct mach_id *mach;
 	libusb_device **devs;
 	libusb_device *dev;
 	int r;

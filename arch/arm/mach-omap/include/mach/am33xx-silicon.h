@@ -71,6 +71,7 @@
 
 #define AM33XX_PRM_RSTCTRL		(AM33XX_PRM_BASE + 0x0f00)
 #define AM33XX_PRM_RSTCTRL_RESET	0x1
+#define AM33XX_PRM_RSTTIME		(AM33XX_PRM_BASE + 0x0f04)
 #define AM33XX_PRM_RSTST		(AM33XX_PRM_BASE + 0x0f08)
 
 /* CTRL */
@@ -113,6 +114,7 @@
 #define EMIF4_SDRAM_TIM_3_SHADOW	0x2C
 #define EMIF0_SDRAM_MGMT_CTRL		0x38
 #define EMIF0_SDRAM_MGMT_CTRL_SHD	0x3C
+#define EMIF4_OCP_CONFIG		0x54
 #define EMIF4_ZQ_CONFIG			0xC8
 #define EMIF4_DDR_PHY_CTRL_1		0xE4
 #define EMIF4_DDR_PHY_CTRL_1_SHADOW	0xE8
@@ -216,6 +218,7 @@ struct am33xx_emif_regs {
 	u32 emif_tim1;
 	u32 emif_tim2;
 	u32 emif_tim3;
+	u32 ocp_config;
 	u32 sdram_config;
 	u32 sdram_config2;
 	u32 zq_config;

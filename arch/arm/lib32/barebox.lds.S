@@ -19,6 +19,7 @@
  */
 
 #include <asm-generic/barebox.lds.h>
+#include <asm/secure.h>
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
@@ -30,6 +31,7 @@ SECTIONS
 #else
 	. = TEXT_BASE;
 #endif
+	.image_start : { *(.__image_start) }
 
 #ifndef CONFIG_PBL_IMAGE
 	PRE_IMAGE
@@ -43,7 +45,7 @@ SECTIONS
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;
-		. = ALIGN(4);
+		. = ALIGN(0x20);
 		__exceptions_start = .;
 		KEEP(*(.text_exceptions*))
 		__exceptions_stop = .;
@@ -116,11 +118,21 @@ SECTIONS
 	}
 
 	_edata = .;
+	.image_end : { *(.__image_end) }
 
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss*) }
 	__bss_stop = .;
+
+#ifdef CONFIG_ARM_SECURE_MONITOR
+	. = ALIGN(16);
+	__secure_stack_start = .;
+	. = . + (ARM_SECURE_MAX_CPU << ARM_SECURE_STACK_SHIFT);
+	__secure_stack_end = .;
+	__secure_end = .;
+#endif
+
 	_end = .;
 	_barebox_image_size = __bss_start - TEXT_BASE;
 }

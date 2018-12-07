@@ -21,8 +21,8 @@
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
-#include <video/media-bus-format.h>
 #include <video/vpl.h>
+#include <video/media-bus-format.h>
 #include <linux/err.h>
 
 #include "imx-ipu-v3.h"
@@ -50,9 +50,6 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 		return 0;
 
 	case VPL_GET_VIDEOMODES:
-		if (!imx_pd->timings)
-			return -ENODATA;
-
 		timings = data;
 
 		timings->num_modes   = imx_pd->timings->num_modes;
@@ -83,9 +80,17 @@ static int imx_pd_probe(struct device_d *dev)
 			imx_pd->bus_format = MEDIA_BUS_FMT_RGB565_1X16;
 		else if (!strcmp(fmt, "bgr666"))
 			imx_pd->bus_format = MEDIA_BUS_FMT_RGB666_1X18;
+		else {
+			dev_err(dev, "invalid interface-pix-fmt\n");
+			return -EINVAL;
+		}
 	}
 
 	imx_pd->timings = of_get_display_timings(node);
+	if (!imx_pd->timings) {
+		dev_err(dev, "No display timings panel found\n");
+		return -EINVAL;
+	}
 
 	imx_pd->vpl.node = node;
 	imx_pd->vpl.ioctl = &imx_pd_ioctl;

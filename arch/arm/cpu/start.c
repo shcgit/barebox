@@ -116,7 +116,7 @@ static inline unsigned long arm_mem_boarddata(unsigned long membase,
 {
 	unsigned long mem;
 
-	mem = arm_mem_barebox_image(membase, endmem, barebox_image_size);
+	mem = arm_mem_barebox_image(membase, endmem, arm_barebox_size);
 	mem -= ALIGN(size, 64);
 
 	return mem;
@@ -158,7 +158,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
-	arm_stack_top = endmem;
+	arm_stack_top = arm_mem_stack_top(membase, endmem);
 	arm_barebox_size = barebox_size;
 	malloc_end = arm_mem_barebox_image(membase, endmem,
 						arm_barebox_size);
