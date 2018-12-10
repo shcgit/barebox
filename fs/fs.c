@@ -191,7 +191,7 @@ static char *__canonicalize_path(const char *_pathname, int level)
 		 * with an additional stat() call.
 		 */
 		fsdev = get_fsdevice_by_path(outpath);
-		if (!fsdev->driver->readlink)
+		if (!fsdev || !fsdev->driver->readlink)
 			continue;
 
 		ret = __lstat(outpath, &s);
@@ -1279,11 +1279,13 @@ static const char *detect_fs(const char *filename, const char *fsoptions)
 	enum filetype type;
 	struct driver_d *drv;
 	struct fs_driver_d *fdrv;
-	bool loop;
+	bool loop = false;
+	unsigned long long offset = 0;
 
 	parseopt_b(fsoptions, "loop", &loop);
+	parseopt_llu_suffix(fsoptions, "offset", &offset);
 	if (loop)
-		type = file_name_detect_type(filename);
+		type = file_name_detect_type_offset(filename, offset);
 	else
 		type = cdev_detect_type(filename);
 
@@ -1302,9 +1304,13 @@ static const char *detect_fs(const char *filename, const char *fsoptions)
 
 int fsdev_open_cdev(struct fs_device_d *fsdev)
 {
+	unsigned long long offset = 0;
+
 	parseopt_b(fsdev->options, "loop", &fsdev->loop);
+	parseopt_llu_suffix(fsdev->options, "offset", &offset);
 	if (fsdev->loop)
-		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR);
+		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR,
+					       offset);
 	else
 		fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
 	if (!fsdev->cdev)
@@ -1391,6 +1397,8 @@ int mount(const char *device, const char *fsname, const char *_path,
 
 		fsdev_set_linux_rootarg(fsdev, str);
 	}
+
+	free(path);
 
 	return 0;
 
@@ -1905,4 +1913,26 @@ char *path_get_linux_rootarg(const char *path)
 		return ERR_PTR(-ENOSYS);
 
 	return xstrdup(str);
+}
+
+/**
+ * __is_tftp_fs() - return true when path is mounted on TFTP
+ * @path: The path
+ *
+ * Do not use directly, use is_tftp_fs instead.
+ *
+ * Return: true when @path is on TFTP, false otherwise
+ */
+bool __is_tftp_fs(const char *path)
+{
+	struct fs_device_d *fsdev;
+
+	fsdev = get_fsdevice_by_path(path);
+	if (!fsdev)
+		return false;
+
+	if (strcmp(fsdev->driver->drv.name, "tftp"))
+		return false;
+
+	return true;
 }
