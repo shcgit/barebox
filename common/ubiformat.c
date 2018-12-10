@@ -190,6 +190,7 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 	int fd, img_ebs, eb, written_ebs = 0, ret = -1, eb_cnt;
 	off_t st_size;
 	char *buf = NULL;
+	uint64_t lastprint = 0;
 
 	eb_cnt = mtd_num_pebs(mtd);
 
@@ -229,8 +230,12 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 		long long ec;
 
 		if (!args->quiet && !args->verbose) {
-			printf("\rubiformat: flashing eraseblock %d -- %2u %% complete  ",
-			       eb, (eb + 1) * 100 / eb_cnt);
+			if (is_timeout(lastprint, 300 * MSECOND) ||
+			    eb == eb_cnt - 1) {
+				printf("\rubiformat: flashing eraseblock %d -- %2u %% complete  ",
+					eb, (eb + 1) * 100 / eb_cnt);
+				lastprint = get_time_ns();
+			}
 		}
 
 		if (si->ec[eb] == EB_BAD)
@@ -325,6 +330,7 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 	struct ubi_vtbl_record *vtbl;
 	int eb1 = -1, eb2 = -1;
 	long long ec1 = -1, ec2 = -1;
+	uint64_t lastprint = 0;
 
 	eb_cnt = mtd_num_pebs(mtd);
 
@@ -340,8 +346,12 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 		long long ec;
 
 		if (!args->quiet && !args->verbose) {
-			printf("\rubiformat: formatting eraseblock %d -- %2u %% complete  ",
-			       eb, (eb + 1 - start_eb) * 100 / (eb_cnt - start_eb));
+			if (is_timeout(lastprint, 300 * MSECOND) ||
+			    eb == eb_cnt - 1) {
+				printf("\rubiformat: formatting eraseblock %d -- %2u %% complete  ",
+					eb, (eb + 1 - start_eb) * 100 / (eb_cnt - start_eb));
+				lastprint = get_time_ns();
+			}
 		}
 
 		if (si->ec[eb] == EB_BAD)
@@ -679,3 +689,64 @@ out_close:
 	return err;
 }
 
+int ubiformat_write(struct mtd_info *mtd, const void *buf, size_t count,
+		    loff_t offset)
+{
+	int writesize = mtd->writesize >> mtd->subpage_sft;
+	size_t retlen;
+	int ret;
+
+	if (offset & (mtd->writesize - 1))
+		return -EINVAL;
+
+	if (count & (mtd->writesize - 1))
+		return -EINVAL;
+
+	while (count) {
+		size_t now;
+
+		now = ALIGN(offset, mtd->erasesize) - offset;
+		if (now > count)
+			now = count;
+
+		if (!now) {
+			const struct ubi_ec_hdr *ec = buf;
+			const struct ubi_vid_hdr *vid;
+
+			if (be32_to_cpu(ec->magic) != UBI_EC_HDR_MAGIC) {
+				pr_err("bad UBI magic %#08x, should be %#08x",
+					be32_to_cpu(ec->magic), UBI_EC_HDR_MAGIC);
+				return -EINVAL;
+			}
+
+			/* skip ec header */
+			offset += writesize;
+			buf += writesize;
+			count -= writesize;
+
+			if (!count)
+				break;
+
+			vid = buf;
+			if (be32_to_cpu(vid->magic) != UBI_VID_HDR_MAGIC) {
+				pr_err("bad UBI magic %#08x, should be %#08x",
+				       be32_to_cpu(vid->magic), UBI_VID_HDR_MAGIC);
+				return -EINVAL;
+			}
+
+			continue;
+		}
+
+		ret = mtd_write(mtd, offset, now, &retlen, buf);
+		if (ret < 0)
+			return ret;
+		if (retlen != now)
+			return -EIO;
+
+		buf += now;
+		count -= now;
+		offset += now;
+	}
+
+	return 0;
+}

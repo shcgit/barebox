@@ -35,8 +35,7 @@
 #include <libgen.h>
 #include <block.h>
 #include <libfile.h>
-
-#include "parseopt.h"
+#include <parseopt.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -741,6 +740,28 @@ int creat(const char *pathname, mode_t mode)
 	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
 }
 EXPORT_SYMBOL(creat);
+
+int ftruncate(int fd, loff_t length)
+{
+	struct fs_driver_d *fsdrv;
+	FILE *f;
+	int ret;
+
+	if (check_fd(fd))
+		return -errno;
+
+	f = &files[fd];
+
+	fsdrv = f->fsdev->driver;
+
+	ret = fsdrv->truncate(&f->fsdev->dev, f, length);
+	if (ret)
+		return ret;
+
+	f->size = length;
+
+	return 0;
+}
 
 int ioctl(int fd, int request, void *buf)
 {
