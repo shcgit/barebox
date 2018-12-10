@@ -95,7 +95,7 @@
 			reg = <0>;
 
 			disp0_in: endpoint {
-				remote-endpoint = <&ipu_di0_disp0>;
+				remote-endpoint = <&ipu_di0_disp1>;
 			};
 		};
 	};
@@ -490,7 +490,7 @@
 	};
 };
 
-&ipu_di0_disp0 {
+&ipu_di0_disp1 {
 	remote-endpoint = <&disp0_in>;
 };
 

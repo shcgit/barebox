@@ -146,12 +146,9 @@
 			resets = <&src 2>;
 
 			ipu_di0: port@2 {
-				#address-cells = <1>;
-				#size-cells = <0>;
 				reg = <2>;
 
-				ipu_di0_disp0: endpoint@0 {
-					reg = <0>;
+				ipu_di0_disp1: endpoint {
 				};
 			};
 
@@ -160,8 +157,7 @@
 				#size-cells = <0>;
 				reg = <3>;
 
-				ipu_di1_disp1: endpoint@0 {
-					reg = <0>;
+				ipu_di1_disp1: endpoint {
 				};
 			};
 		};
