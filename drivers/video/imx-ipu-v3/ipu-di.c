@@ -162,7 +162,6 @@ static int ipu_di_clk_calc_div(unsigned long inrate, unsigned long outrate)
 			div &= ~0xF;
 		}
 	}
-
 #endif
 	return div;
 }
