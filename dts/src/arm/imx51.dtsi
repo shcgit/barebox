@@ -640,6 +640,17 @@
 				clock-names = "tve", "di_sel";
 			};
 
+			vpu: vpu@83ff4000 {
+				compatible = "fsl,imx51-vpu", "cnm,codahx4";
+				reg = <0x83ff4000 0x1000>;
+				interrupts = <9>;
+				clocks = <&clks IMX5_CLK_VPU_REFERENCE_GATE>,
+					 <&clks IMX5_CLK_VPU_GATE>;
+				clock-names = "per", "ahb";
+				resets = <&src 1>;
+				iram = <&iram>;
+			};
+
 			sahara: crypto@83ff8000 {
 				compatible = "fsl,imx53-sahara";
 				reg = <0x83ff8000 0x4000>;
