@@ -1,6 +1,7 @@
 *.pbl
 *.pblx
 *.pblx.*
+*.pblx
 *.pblb
 *.img
 *.imximg

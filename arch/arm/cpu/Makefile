@@ -1,17 +1,13 @@
 obj-y += cpu.o
 
-obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions$(S64).o
+obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions$(S64).o interrupts$(S64).o
 obj-$(CONFIG_MMU) += mmu$(S64).o
 lwl-y += lowlevel$(S64).o
+obj-pbl-$(CONFIG_MMU) += mmu-early$(S64).o
 
-ifeq ($(CONFIG_CPU_32), y)
-obj-pbl-$(CONFIG_MMU) += mmu-early.o
-endif
-
-obj-$(CONFIG_ARM_EXCEPTIONS) += interrupts.o
 obj-y += start.o entry.o
 
-obj-pbl-y += setupc$(S64).o
+obj-pbl-y += setupc$(S64).o cache$(S64).o
 
 #
 # Any variants can be called as start-armxyz.S
@@ -19,7 +15,6 @@ obj-pbl-y += setupc$(S64).o
 obj-$(CONFIG_CMD_ARM_CPUINFO) += cpuinfo.o
 obj-$(CONFIG_CMD_ARM_MMUINFO) += mmuinfo.o
 obj-$(CONFIG_OFDEVICE) += dtb.o
-obj-$(CONFIG_MMU) += cache.o
 
 ifeq ($(CONFIG_MMU),)
 obj-y += no-mmu.o
@@ -46,4 +41,4 @@ pbl-y += entry.o
 pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
 pbl-$(CONFIG_PBL_MULTI_IMAGES) += uncompress.o
 
-obj-pbl-y += common.o cache.o
+obj-pbl-y += common.o sections.o

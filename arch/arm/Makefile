@@ -23,6 +23,8 @@ endif
 # accesses
 ifneq ($(CONFIG_CPU_V8),y)
 CFLAGS += -mno-unaligned-access
+else
+CFLAGS += -mstrict-align
 endif
 
 
@@ -255,8 +257,6 @@ imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX25) += $(boarddir)/eukrea_cpuimx25/flash-heade
 imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX35) += $(boarddir)/eukrea_cpuimx35/flash-header.imxcfg
 imxcfg-$(CONFIG_MACH_PCM043) += $(boarddir)/phytec-phycore-imx35/flash-header.imxcfg
 imxcfg-$(CONFIG_MACH_KINDLE3) += $(boarddir)/kindle3/flash-header.imxcfg
-imxcfg-$(CONFIG_TX53_REV_1011) += $(boarddir)/karo-tx53/flash-header-tx53-rev1011.imxcfg
-imxcfg-$(CONFIG_TX53_REV_XX30) += $(boarddir)/karo-tx53/flash-header-tx53-revxx30.imxcfg
 ifneq ($(imxcfg-y),)
 CFG_barebox.imximg := $(imxcfg-y)
 KBUILD_IMAGE  := barebox.imximg
@@ -296,7 +296,6 @@ endif
 
 common-y += $(BOARD) arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
-common-y += arch/arm/lib/
 
 ifeq ($(CONFIG_CPU_V8), y)
 common-y += arch/arm/lib64/
