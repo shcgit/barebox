@@ -144,14 +144,14 @@
 
 		button@0 {
 			label = "CONFIRM";
-			linux,code = <KEY_RESERVED>;
+			linux,code = <SW_MICROPHONE_INSERT>;
 			linux,input-type = <EV_SW>;
 			gpios = <&gpio3 22 GPIO_ACTIVE_LOW>;
 		};
 
 		button@1 {
 			label = "PF_LOW";
-			linux,code = <KEY_ESC>;
+			linux,code = <SW_TABLET_MODE>;
 			linux,input-type = <EV_SW>;
 			debounce-interval = <0>;
 			gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
@@ -159,7 +159,7 @@
 
 		button@2 {
 			label = "PF_HIGH";
-			linux,code = <KEY_1>;
+			linux,code = <SW_HEADPHONE_INSERT>;
 			linux,input-type = <EV_SW>;
 			debounce-interval = <0>;
 			gpios = <&gpio3 18 GPIO_ACTIVE_LOW>;
@@ -167,28 +167,28 @@
 
 		button@3 {
 			label = "REVERSE";
-			linux,code = <KEY_2>;
+			linux,code = <SW_RFKILL_ALL>;
 			linux,input-type = <EV_SW>;
 			gpios = <&gpio3 17 GPIO_ACTIVE_LOW>;
 		};
 
 		button@4 {
 			label = "RESERVED1";
-			linux,code = <KEY_NUMERIC_0>;
+			linux,code = <SW_DOCK>;
 			linux,input-type = <EV_SW>;
 			gpios = <&gpio3 20 GPIO_ACTIVE_LOW>;
 		};
 
 		button@5 {
 			label = "RESERVED2";
-			linux,code = <KEY_NUMERIC_1>;
+			linux,code = <SW_LINEOUT_INSERT>;
 			linux,input-type = <EV_SW>;
 			gpios = <&gpio3 21 GPIO_ACTIVE_LOW>;
 		};
 
 		button@6 {
 			label = "RESERVED3";
-			linux,code = <KEY_NUMERIC_2>;
+			linux,code = <SW_JACK_PHYSICAL_INSERT>;
 			linux,input-type = <EV_SW>;
 			gpios = <&gpio3 9 GPIO_ACTIVE_LOW>;
 		};
