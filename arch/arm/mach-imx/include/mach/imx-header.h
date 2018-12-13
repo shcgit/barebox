@@ -4,6 +4,14 @@
 #include <linux/types.h>
 
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
+#define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
+
+#define DEK_BLOB_HEADER 8	/* length of DEK blob header */
+#define DEK_BLOB_KEY 32		/* length of DEK blob AES-256 key */
+#define DEK_BLOB_MAC 16		/* length of DEK blob MAC */
+
+/* DEK blob length excluding DEK itself */
+#define DEK_BLOB_OVERHEAD (DEK_BLOB_HEADER + DEK_BLOB_KEY + DEK_BLOB_MAC)
 
 /*
  * ============================================================================
@@ -46,6 +54,14 @@ struct imx_dcd_rec_v1 {
 #define TAG_CHECK	0xcf
 #define PARAMETER_FLAG_MASK	(1 << 3)
 #define PARAMETER_FLAG_SET	(1 << 4)
+
+#define PLUGIN_HDMI_IMAGE	0x0002
+
+/*
+ * As per Table 6-22 "eMMC/SD BOOT layout", in Normal Boot layout HDMI
+ * firmware image starts at LBA# 64 and ends at LBA# 271
+ */
+#define PLUGIN_HDMI_SIZE	((271 - 64 + 1) * 512)
 
 struct imx_ivt_header {
 	uint8_t tag;
@@ -94,6 +110,9 @@ struct config_data {
 	int (*nop)(const struct config_data *data);
 	int csf_space;
 	char *csf;
+	char *signed_hdmi_firmware_file;
+	int encrypt_image;
+	size_t dek_size;
 };
 
 #define MAX_RECORDS_DCD_V2 1024
