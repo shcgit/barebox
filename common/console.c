@@ -305,10 +305,11 @@ static ssize_t fops_write(struct cdev* dev, const void* buf, size_t count,
 
 int console_register(struct console_device *newcdev)
 {
+	struct device_node *serdev_node = console_is_serdev_node(newcdev);
 	struct device_d *dev = &newcdev->class_dev;
 	int activate = 0, ret;
 
-	if (initialized == CONSOLE_UNINITIALIZED)
+	if (!serdev_node && initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
 
 	if (newcdev->devname) {
@@ -323,6 +324,17 @@ int console_register(struct console_device *newcdev)
 		dev->parent = newcdev->dev;
 	platform_device_register(dev);
 
+	newcdev->open_count = 0;
+
+	/*
+	 * If our console device is a serdev, we skip the creation of
+	 * corresponding entry in /dev as well as registration in
+	 * console_list and just go straight to populating child
+	 * devices.
+	 */
+	if (serdev_node)
+		return of_platform_populate(serdev_node, NULL, dev);
+
 	if (newcdev->setbrg) {
 		ret = newcdev->setbrg(newcdev, CONFIG_BAUDRATE);
 		if (ret)
@@ -334,8 +346,6 @@ int console_register(struct console_device *newcdev)
 
 	if (newcdev->putc && !newcdev->puts)
 		newcdev->puts = __console_puts;
-
-	newcdev->open_count = 0;
 
 	dev_add_param_string(dev, "active", console_active_set, console_active_get,
 			     &newcdev->active_string, newcdev);
@@ -385,6 +395,14 @@ int console_unregister(struct console_device *cdev)
 {
 	struct device_d *dev = &cdev->class_dev;
 	int status;
+
+	/*
+	 * We don't do any sophisticated serdev device de-population
+	 * and instead claim this console busy, preventing its
+	 * de-initialization, 'till the very end of our execution.
+	 */
+	if (console_is_serdev_node(cdev))
+		return -EBUSY;
 
 	devfs_remove(&cdev->devfs);
 
@@ -495,6 +513,8 @@ void console_putc(unsigned int ch, char c)
 
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
+		if (c == '\n')
+			putc_ll('\r');
 		putc_ll(c);
 		return;
 
@@ -532,10 +552,9 @@ int console_puts(unsigned int ch, const char *str)
 	}
 
 	while (*s) {
-		if (*s == '\n') {
-			console_putc(ch, '\r');
+		if (*s == '\n')
 			n++;
-		}
+
 		console_putc(ch, *s);
 		n++;
 		s++;
@@ -569,4 +588,4 @@ EXPORT_SYMBOL(ctrlc);
 #endif /* ARCH_HAS_CTRC */
 
 BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_console, global.linux.bootargs.console,
-		"console= argument for Linux from the linux,stdout-path property in /chosen node");
+		"console= argument for Linux from the stdout-path property in /chosen node");

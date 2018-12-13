@@ -19,6 +19,7 @@
 #include <mach/generic.h>
 #include <mach/imx6.h>
 #include <mach/xload.h>
+#include <mach/iomux-mx6.h>
 #include <asm/barebox-arm.h>
 
 struct reginit {
@@ -255,12 +256,7 @@ static inline void setup_uart(void)
 {
 	void __iomem *iomuxbase = IOMEM(MX6_IOMUXC_BASE_ADDR);
 
-	writel(0x1b0b1, iomuxbase + 0x0650);
-	writel(3, iomuxbase + 0x0280);
-
-	writel(0x1b0b1, iomuxbase + 0x0654);
-	writel(3, iomuxbase + 0x0284);
-	writel(1, iomuxbase + 0x0920);
+	imx_setup_pad(iomuxbase, MX6Q_PAD_CSI0_DAT10__UART1_TXD);
 
 	imx6_uart_setup_ll();
 
@@ -278,19 +274,19 @@ static noinline void rdu2_sram_setup(void)
 	imx6_ungate_all_peripherals();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
-			setup_uart();
+		setup_uart();
 
 	arm_setup_stack(0x00920000 - 8);
 	relocate_to_current_adr();
 	setup_c();
 
-	if (__imx6_cpu_revision() == IMX_CHIP_REV_2_0)
+	if (__imx6_cpu_type() == IMX6_CPUTYPE_IMX6QP)
 		write_regs(imx6qp_dcd, ARRAY_SIZE(imx6qp_dcd));
 	else
 		write_regs(imx6q_dcd, ARRAY_SIZE(imx6q_dcd));
 
 	imx6_get_boot_source(&bootsrc, &instance);
-	if (bootsrc == BOOTSOURCE_SPI)
+	if (bootsrc == BOOTSOURCE_SPI_NOR)
 		imx6_spi_start_image(0);
 	else
 		imx6_esdhc_start_image(instance);
@@ -304,10 +300,10 @@ ENTRY_FUNCTION(start_imx6_zii_rdu2, r0, r1, r2)
 	 * When still running in SRAM, we need to setup the DRAM now and load
 	 * the remaining image.
 	 */
-	if (get_pc() < MX6_MMDC_PORT0_BASE_ADDR)
+	if (get_pc() < MX6_MMDC_PORT01_BASE_ADDR)
 		rdu2_sram_setup();
 
-	if (__imx6_cpu_revision() == IMX_CHIP_REV_2_0)
+	if (__imx6_cpu_type() == IMX6_CPUTYPE_IMX6QP)
 		imx6q_barebox_entry(__dtb_imx6qp_zii_rdu2_start +
 				    get_runtime_offset());
 	else

@@ -13,7 +13,7 @@ config MFD_DA9053
 
 config MFD_DA9063
 	depends on I2C
-	bool "DA9063 PMIC driver"
+	bool "DA9063/DA9062 PMIC driver"
 
 config MFD_LP3972
 	depends on I2C
@@ -52,5 +52,13 @@ config MFD_TWL6030
 	depends on I2C
 	select MFD_TWLCORE
 	bool "TWL6030 driver"
+
+config RAVE_SP_CORE
+	tristate "RAVE SP MCU core driver"
+	depends on SERIAL_DEV_BUS
+	select CRC_CCITT
+	help
+	  Select this to get support for the Supervisory Processor
+	  device found on several devices in RAVE line of hardware.
 
 endmenu

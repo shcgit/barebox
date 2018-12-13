@@ -35,12 +35,18 @@
 
 #include <include/filetype.h>
 
-#define MAX_DCD 1024
+#define FLASH_HEADER_OFFSET 0x400
+#define ARM_HEAD_SIZE_INDEX	(ARM_HEAD_SIZE_OFFSET / sizeof(uint32_t))
+
+/*
+ * Conservative DCD element limit set to restriction v2 header size to
+ * HEADER_SIZE
+ */
+#define MAX_DCD ((HEADER_LEN - FLASH_HEADER_OFFSET - sizeof(struct imx_flash_header_v2)) / sizeof(u32))
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
 
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
-static int add_barebox_header;
 static int create_usb_image;
 static char *prgname;
 
@@ -50,10 +56,8 @@ static char *prgname;
  * ============================================================================
  */
 
-#define FLASH_HEADER_OFFSET 0x400
 
-static uint32_t bb_header[] = {
-	0xea0003fe,	/* b 0x1000 */
+static uint32_t bb_header_aarch32[] = {
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
@@ -61,6 +65,30 @@ static uint32_t bb_header[] = {
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
+	0xeafffffe,	/* 1: b 1b  */
+	0x65726162,	/* 'bare'   */
+	0x00786f62,	/* 'box\0'  */
+	0x00000000,
+	0x00000000,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+};
+
+static uint32_t bb_header_aarch64[] = {
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
 	0x65726162,	/* 'bare'   */
 	0x00786f62,	/* 'box\0'  */
 	0x00000000,
@@ -94,12 +122,23 @@ struct hab_rsa_public_key {
 #include <openssl/pem.h>
 #include <openssl/bio.h>
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+void RSA_get0_key(const RSA *r, const BIGNUM **n,
+		  const BIGNUM **e, const BIGNUM **d)
+{
+	if (n != NULL)
+		*n = r->n;
+	if (e != NULL)
+		*e = r->e;
+	if (d != NULL)
+		*d = r->d;
+}
+#endif
+
 static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len,
 	uint8_t **exponent, int *exponent_len)
 {
-	char buf[PUBKEY_ALGO_LEN];
-	int pubkey_algonid;
-	const char *sslbuf;
+	const BIGNUM *n, *e;
 	EVP_PKEY *pkey;
 	FILE *fp;
 	X509 *cert;
@@ -120,37 +159,26 @@ static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len
 
 	fclose(fp);
 
-	pubkey_algonid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
-	if (pubkey_algonid == NID_undef) {
-		fprintf(stderr, "unable to find specified public key algorithm name.\n");
-		return -EINVAL;
-	}
-
-	if (pubkey_algonid != NID_rsaEncryption)
-		return -EINVAL;
-
-	sslbuf = OBJ_nid2ln(pubkey_algonid);
-	strncpy(buf, sslbuf, PUBKEY_ALGO_LEN);
-
 	pkey = X509_get_pubkey(cert);
 	if (!pkey) {
 		fprintf(stderr, "unable to extract public key from certificate");
 		return -EINVAL;
 	}
 
-	rsa_key = pkey->pkey.rsa;
+	rsa_key = EVP_PKEY_get0_RSA(pkey);
 	if (!rsa_key) {
 		fprintf(stderr, "unable to extract RSA public key");
 		return -EINVAL;
 	}
 
-	*modulus_len = BN_num_bytes(rsa_key->n);
+	RSA_get0_key(rsa_key, &n, &e, NULL);
+	*modulus_len = BN_num_bytes(n);
 	*modulus = malloc(*modulus_len);
-	BN_bn2bin(rsa_key->n, *modulus);
+	BN_bn2bin(n, *modulus);
 
-	*exponent_len = BN_num_bytes(rsa_key->e);
+	*exponent_len = BN_num_bytes(e);
 	*exponent = malloc(*exponent_len);
-	BN_bn2bin(rsa_key->e, *exponent);
+	BN_bn2bin(e, *exponent);
 
 	EVP_PKEY_free(pkey);
 	X509_free(cert);
@@ -202,17 +230,13 @@ static int add_srk(void *buf, int offset, uint32_t loadaddr, const char *srkfile
 static int dcd_ptr_offset;
 static uint32_t dcd_ptr_content;
 
-static int add_header_v1(struct config_data *data, void *buf)
+static size_t add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
 	int offset = data->image_dcd_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
-
-	if (add_barebox_header)
-		memcpy(buf, bb_header, sizeof(bb_header));
 
 	buf += offset;
 	hdr = buf;
@@ -245,12 +269,9 @@ static int add_header_v1(struct config_data *data, void *buf)
 		imagesize += CSF_LEN;
 	}
 
-	if (add_barebox_header)
-		*psize = imagesize;
-
 	*(uint32_t *)buf = imagesize;
 
-	return 0;
+	return imagesize;
 }
 
 static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, int clear_bits)
@@ -261,7 +282,7 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 	}
 
 	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", (int)MAX_DCD);
 		return -ENOMEM;
 	}
 
@@ -278,17 +299,13 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
  * ============================================================================
  */
 
-static int add_header_v2(const struct config_data *data, void *buf)
+static size_t add_header_v2(const struct config_data *data, void *buf)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
 	int offset = data->image_dcd_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
-
-	if (add_barebox_header)
-		memcpy(buf, bb_header, sizeof(bb_header));
 
 	buf += offset;
 	hdr = buf;
@@ -315,9 +332,6 @@ static int add_header_v2(const struct config_data *data, void *buf)
 		hdr->boot_data.size += CSF_LEN;
 	}
 
-	if (add_barebox_header)
-		*psize = hdr->boot_data.size;
-
 	hdr->dcd_header.tag	= TAG_DCD_HEADER;
 	hdr->dcd_header.length	= htobe16(sizeof(uint32_t) + dcdsize);
 	hdr->dcd_header.version	= DCD_VERSION;
@@ -326,7 +340,7 @@ static int add_header_v2(const struct config_data *data, void *buf)
 
 	memcpy(buf, dcdtable, dcdsize);
 
-	return 0;
+	return imagesize;
 }
 
 static void usage(const char *prgname)
@@ -383,7 +397,7 @@ static int write_mem_v2(uint32_t addr, uint32_t val, int width, int set_bits, in
 		cmd |= 1 << 3;
 
 	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", (int)MAX_DCD);
 		return -ENOMEM;
 	}
 
@@ -427,7 +441,7 @@ static int xwrite(int fd, void *buf, int len)
 	return 0;
 }
 
-static int write_dcd(const char *outfile)
+static void write_dcd(const char *outfile)
 {
 	int outfd, ret;
 	int dcdsize = curdcd * sizeof(uint32_t);
@@ -443,8 +457,6 @@ static int write_dcd(const char *outfile)
 		perror("write");
 		exit(1);
 	}
-
-	return 0;
 }
 
 static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
@@ -456,7 +468,7 @@ static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
 		return -EINVAL;
 	}
 	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", (int)MAX_DCD);
 		return -ENOMEM;
 	}
 
@@ -497,7 +509,7 @@ static int nop(const struct config_data *data)
 	case 2:
 		if (curdcd > MAX_DCD - 1) {
 			fprintf(stderr, "At maximum %d DCD entries allowed\n",
-				MAX_DCD);
+				(int)MAX_DCD);
 			return -ENOMEM;
 		}
 
@@ -663,6 +675,11 @@ static void *read_file(const char *filename, size_t *size)
 	return buf;
 }
 
+static bool cpu_is_aarch64(const struct config_data *data)
+{
+	return data->cpu_type == IMX_CPU_IMX8MQ;
+}
+
 int main(int argc, char *argv[])
 {
 	int opt, ret;
@@ -676,12 +693,17 @@ int main(int argc, char *argv[])
 	int dcd_only = 0;
 	int now = 0;
 	int sign_image = 0;
+	int i, header_copies;
+	int add_barebox_header;
+	uint32_t barebox_image_size;
 	struct config_data data = {
 		.image_dcd_offset = 0xffffffff,
 		.write_mem = write_mem,
 		.check = check,
 		.nop = nop,
 	};
+	uint32_t *bb_header;
+	size_t sizeof_bb_header;
 
 	prgname = argv[0];
 
@@ -778,19 +800,17 @@ int main(int argc, char *argv[])
 		check_last_dcd(0);
 
 	if (dcd_only) {
-		ret = write_dcd(data.outfile);
-		if (ret)
-			exit(1);
-		exit (0);
+		write_dcd(data.outfile);
+		exit(0);
 	}
+
+	buf = calloc(1, HEADER_LEN);
+	if (!buf)
+		exit(1);
 
 	switch (data.header_version) {
 	case 1:
-		buf = calloc(1, HEADER_LEN);
-		if (!buf)
-			exit(1);
-
-		add_header_v1(&data, buf);
+		barebox_image_size = add_header_v1(&data, buf);
 		if (data.srkfile) {
 			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
 				      data.srkfile);
@@ -799,17 +819,30 @@ int main(int argc, char *argv[])
 		}
 		break;
 	case 2:
-		buf = calloc(1, data.image_dcd_offset + sizeof(struct imx_flash_header_v2) + MAX_DCD * sizeof(u32));
-		if (!buf)
+		if (data.image_dcd_offset + sizeof(struct imx_flash_header_v2) +
+		    MAX_DCD * sizeof(u32) > HEADER_LEN) {
+			fprintf(stderr, "i.MX v2 header exceeds SW limit set by imx-image\n");
 			exit(1);
+		}
 
-		add_header_v2(&data, buf);
+		barebox_image_size = add_header_v2(&data, buf);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",
 				data.header_version);
 		exit(1);
 	}
+
+	if (cpu_is_aarch64(&data)) {
+		bb_header = bb_header_aarch64;
+		sizeof_bb_header = sizeof(bb_header_aarch64);
+	} else {
+		bb_header = bb_header_aarch32;
+		sizeof_bb_header = sizeof(bb_header_aarch32);
+	}
+
+	bb_header[0] = data.first_opcode;
+	bb_header[ARM_HEAD_SIZE_INDEX] = barebox_image_size;
 
 	infile = read_file(imagename, &insize);
 	if (!infile)
@@ -821,14 +854,23 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	ret = xwrite(outfd, buf, HEADER_LEN);
-	if (ret < 0) {
-		perror("write");
-		exit(1);
-	}
+	header_copies = (data.cpu_type == IMX_CPU_IMX35) ? 2 : 1;
 
-	if (data.cpu_type == IMX_CPU_IMX35) {
-		ret = xwrite(outfd, buf, HEADER_LEN);
+	for (i = 0; i < header_copies; i++) {
+		ret = xwrite(outfd, add_barebox_header ? bb_header : buf,
+			     sizeof_bb_header);
+		if (ret < 0) {
+			perror("write");
+			exit(1);
+		}
+
+		if (lseek(outfd, data.header_gap, SEEK_CUR) < 0) {
+			perror("lseek");
+			exit(1);
+		}
+
+		ret = xwrite(outfd, buf + sizeof_bb_header,
+			     HEADER_LEN - sizeof_bb_header);
 		if (ret < 0) {
 			perror("write");
 			exit(1);

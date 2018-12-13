@@ -181,10 +181,12 @@ EXPORT_SYMBOL(is_timeout_non_interruptible);
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 {
+	int ret = is_timeout_non_interruptible(start_ns, time_offset_ns);
+
 	if (time_offset_ns >= 100 * USECOND)
 		poller_call();
 
-	return is_timeout_non_interruptible(start_ns, time_offset_ns);
+	return ret;
 }
 EXPORT_SYMBOL(is_timeout);
 
@@ -206,9 +208,7 @@ EXPORT_SYMBOL(udelay);
 
 void mdelay(unsigned long msecs)
 {
-	uint64_t start = get_time_ns();
-
-	while(!is_timeout(start, msecs * MSECOND));
+	udelay(msecs * USECOND);
 }
 EXPORT_SYMBOL(mdelay);
 

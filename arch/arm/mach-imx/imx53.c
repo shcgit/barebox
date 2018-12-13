@@ -21,6 +21,7 @@
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 #define SI_REV 0x48
 
@@ -52,7 +53,10 @@ static int imx53_silicon_revision(void)
 
 int imx53_init(void)
 {
+	void __iomem *src = IOMEM(MX53_SRC_BASE_ADDR);
+
 	imx53_silicon_revision();
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx53_boot_save_loc();
 	add_generic_device("imx53-esdctl", 0, NULL, MX53_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
@@ -82,7 +86,7 @@ int imx53_devices_init(void)
 void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX53_CCM_BASE_ADDR;
-	u32 r;
+	u32 r, cbcdr, cbcmr;
 
 	imx5_init_lowlevel();
 
@@ -118,8 +122,16 @@ void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 	imx5_setup_pll_400((void __iomem *)MX53_PLL3_BASE_ADDR);
 
         /* Switch peripheral to PLL3 */
-	writel(0x00015154, ccm + MX5_CCM_CBCMR);
-	writel(0x02888945 | (1<<16), ccm + MX5_CCM_CBCDR);
+	cbcmr = readl(ccm + MX5_CCM_CBCMR);
+	cbcmr &= ~(3 << 12);
+	cbcmr |= (1 << 12);
+	writel(cbcmr, ccm + MX5_CCM_CBCMR);
+
+	cbcdr = readl(ccm + MX5_CCM_CBCDR);
+	cbcdr |= (1 << 25);
+	cbcdr &= ~(7 << 16);
+	cbcdr |= (1 << 16);
+	writel(cbcdr, ccm + MX5_CCM_CBCDR);
 
 	/* make sure change is effective */
 	while (readl(ccm + MX5_CCM_CDHIPR));
@@ -127,14 +139,13 @@ void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 	imx5_setup_pll_400((void __iomem *)MX53_PLL2_BASE_ADDR);
 
 	/* Switch peripheral to PLL2 */
-	r = 0x00808145 |
-		(2 << 10) |
-		(0 << 16) |
-		(1 << 19);
+	cbcdr &= ~(1 << 25);
+	cbcdr &= ~(7 << 16);
+	writel(cbcdr, ccm + MX5_CCM_CBCDR);
 
-	writel(r, ccm + MX5_CCM_CBCDR);
-
-	writel(0x00016154, ccm + MX5_CCM_CBCMR);
+	cbcmr &= ~(3 << 12);
+	cbcmr |= (2 << 12);
+	writel(cbcmr, ccm + MX5_CCM_CBCMR);
 
 	r = readl(ccm + MX5_CCM_CSCMR1);
 

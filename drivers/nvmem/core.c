@@ -88,26 +88,14 @@ static struct cdev_operations nvmem_chrdev_ops = {
 	.lseek = dev_lseek_default,
 };
 
-static int nvmem_register_cdev(struct nvmem_device *nvmem)
+static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 {
 	struct device_d *dev = &nvmem->dev;
 	const char *alias;
-	char *devname;
-	int err;
 
 	alias = of_alias_get(dev->device_node);
-	if (alias) {
-		devname = xstrdup(alias);
-	} else {
-		err = cdev_find_free_index("nvmem");
-		if (err < 0) {
-			dev_err(dev, "no index found to name device\n");
-			return err;
-		}
-		devname = xasprintf("nvmem%d", err);
-	}
 
-	nvmem->cdev.name = devname;
+	nvmem->cdev.name = xstrdup(alias ?: name);
 	nvmem->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	nvmem->cdev.ops = &nvmem_chrdev_ops;
 	nvmem->cdev.dev = &nvmem->dev;
@@ -222,7 +210,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 		return ERR_PTR(rval);
 	}
 
-	rval = nvmem_register_cdev(nvmem);
+	rval = nvmem_register_cdev(nvmem, config->name);
 	if (rval) {
 		kfree(nvmem);
 		return ERR_PTR(rval);
@@ -762,3 +750,26 @@ int nvmem_device_write(struct nvmem_device *nvmem,
 	return bytes;
 }
 EXPORT_SYMBOL_GPL(nvmem_device_write);
+
+void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
+			      size_t bytes)
+{
+	struct nvmem_cell *cell;
+	void *value;
+	size_t len;
+
+	cell = of_nvmem_cell_get(np, cell_name);
+	if (IS_ERR(cell))
+		return cell;
+
+	value = nvmem_cell_read(cell, &len);
+	if (!IS_ERR(value) && len != bytes) {
+		kfree(value);
+		value = ERR_PTR(-EINVAL);
+	}
+
+	nvmem_cell_put(cell);
+
+	return value;
+}
+EXPORT_SYMBOL_GPL(nvmem_cell_get_and_read);

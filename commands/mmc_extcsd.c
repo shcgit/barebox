@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <mci.h>
 #include <getopt.h>
+#include <fs.h>
 
 #define EXT_CSD_BLOCKSIZE	512
 
@@ -1482,7 +1483,7 @@ static int print_field(u8 *reg, int index)
 			str = "may";
 		else
 			str = "shall not";
-		printf("\t[1] AUTO_EN: Device %s perform background ops while"
+		printf("\t[1] AUTO_EN: Device %s perform background ops while\n"
 		       "\t    not servicing the host\n", str);
 		return 1;
 
@@ -2306,10 +2307,8 @@ static int request_write_operation(void)
 	return 0;
 }
 
-static void write_field(struct mci *mci, u8 *reg, u16 index, u8 value,
-				int always_write)
+static int request_one_time_programmable(u16 index)
 {
-
 	switch (index) {
 	case EXT_CSD_BOOT_CONFIG_PROT:
 	case EXT_CSD_BOOT_WP:
@@ -2349,18 +2348,15 @@ static void write_field(struct mci *mci, u8 *reg, u16 index, u8 value,
 	case 52:
 	case EXT_CSD_BARRIER_CTRL:
 	case EXT_CSD_SECURE_REMOVAL_TYPE:
-		if (!always_write)
-			if (request_write_operation() == 0) {
-				printf("Abort write operation!\n");
-				goto out;
-			}
-		break;
+		if (request_write_operation() == 0) {
+			printf("Abort write operation!\n");
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 
-	mci_switch(mci, index, value);
-
-out:
-	return;
+	return 0;
 }
 
 static int do_mmc_extcsd(int argc, char *argv[])
@@ -2376,11 +2372,12 @@ static int do_mmc_extcsd(int argc, char *argv[])
 	int			write_operation = 0;
 	int			always_write = 0;
 	int			print_as_raw = 0;
+	int			set_bkops_en = 0;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	while ((opt = getopt(argc, argv, "i:v:yr")) > 0)
+	while ((opt = getopt(argc, argv, "i:v:yrb")) > 0)
 		switch (opt) {
 		case 'i':
 			index = simple_strtoul(optarg, NULL, 0);
@@ -2395,16 +2392,21 @@ static int do_mmc_extcsd(int argc, char *argv[])
 		case 'r':
 			print_as_raw = 1;
 			break;
+		case 'b':
+			set_bkops_en = 1;
+			index = EXT_CSD_BKOPS_EN;
+			value = BIT(0);
+			write_operation = 1;
+			always_write = 1;
+			break;
 		}
 
 	if (optind == argc)
 		return COMMAND_ERROR_USAGE;
 
 	devname = argv[optind];
-	if (!strncmp(devname, "/dev/", 5))
-		devname += 5;
 
-	mci = mci_get_device_by_name(devname);
+	mci = mci_get_device_by_name(devpath_to_name(devname));
 	if (mci == NULL) {
 		retval = -ENOENT;
 		goto error;
@@ -2426,15 +2428,40 @@ static int do_mmc_extcsd(int argc, char *argv[])
 		goto error_with_mem;
 	}
 
+	if (set_bkops_en) {
+		if (dst[index]) {
+			printf("Abort: EXT_CSD [%u] already set to %#02x!\n",
+			       index, dst[index]);
+			goto error_with_mem;
+		}
+		if (dst[EXT_CSD_REV] >= 7)
+			value |= BIT(1);	/* set AUTO_EN bit too */
+	}
+
 	if (write_operation)
 		if (!print_field(dst, index)) {
 			printf("No field with this index found. Abort write operation!\n");
 		} else {
-			write_field(mci, dst, index, value, always_write);
+			struct extcsd_reg *ext;
+			int i;
+			int val = 0;
+
+			if (!always_write) {
+				retval = request_one_time_programmable(index);
+				if (retval)
+					goto error_with_mem;
+			}
+
+			ext = &extcsd[index];
+			for (i = 0; i < ext->width; i++) {
+				val = (value >> (i * 8)) & 0xFF;
+
+				mci_switch(mci, index + i, val);
+				retval = mci_send_ext_csd(mci, dst);
+				if (retval != 0)
+					goto error_with_mem;
+			}
 			printf("\nValue written!\n\n");
-			retval = mci_send_ext_csd(mci, dst);
-			if (retval != 0)
-				goto error_with_mem;
 			print_field(dst, index);
 		}
 	else
@@ -2456,12 +2483,14 @@ BAREBOX_CMD_HELP_OPT("-r", "print the register as raw data")
 BAREBOX_CMD_HELP_OPT("-v", "value which will be written")
 BAREBOX_CMD_HELP_OPT("-y", "don't request when writing to one time programmable fields")
 BAREBOX_CMD_HELP_OPT("",   "__CAUTION__: this could damage the device!")
+BAREBOX_CMD_HELP_OPT("-b", "set bkops-enable (EXT_CSD_BKOPS_EN[163])")
+BAREBOX_CMD_HELP_OPT("",   "__WARNING__: this is a write-once setting!")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mmc_extcsd)
 	.cmd		= do_mmc_extcsd,
 	BAREBOX_CMD_DESC("Read/write the extended CSD register.")
-	BAREBOX_CMD_OPTS("dev [-r | -i index [-r | -v value [-y]]]")
+	BAREBOX_CMD_OPTS("dev [-r | -b | -i index [-r | -v value [-y]]]")
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_mmc_extcsd_help)
 BAREBOX_CMD_END

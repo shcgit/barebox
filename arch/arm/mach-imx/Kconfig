@@ -85,6 +85,15 @@ config RESET_IMX_SRC
 	def_bool y
 	depends on ARCH_IMX6 || ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53
 
+#
+# PMIC configuration found on i.MX51 Babbadge board
+#
+config MACH_FREESCALE_MX51_PDK_POWER
+        bool
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
+
 comment "Freescale i.MX System-on-Chip"
 
 config ARCH_IMX1
@@ -170,6 +179,15 @@ config ARCH_IMX7
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 
+config ARCH_IMX8MQ
+	bool
+	select CPU_V8
+	select PINCTRL_IMX_IOMUX_V3
+	select OFTREE
+	select SYS_SUPPORTS_64BIT_KERNEL
+	select COMMON_CLK_OF_PROVIDER
+	select ARCH_HAS_FEC_IMX
+
 config ARCH_VF610
 	bool
 	select ARCH_HAS_L2X0
@@ -179,6 +197,7 @@ config ARCH_VF610
 	select OFTREE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
+	select NVMEM
 	select IMX_OCOTP	# Needed for clock adjustement
 
 config IMX_MULTI_BOARDS
@@ -246,9 +265,7 @@ config MACH_EMBEDSKY_E9
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51
-	select SPI
-	select DRIVER_SPI_IMX
-	select MFD_MC13XXX
+	select MACH_FREESCALE_MX51_PDK_POWER
 
 config MACH_CCMX53
 	bool "Digi ConnectCore i.MX53"
@@ -393,6 +410,11 @@ config MACH_CM_FX6
 	bool "CM FX6"
 	select ARCH_IMX6
 
+config MACH_ADVANTECH_ROM_742X
+	bool "Advantech ROM 742X"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_WARP7
 	bool "NXP i.MX7: element 14 WaRP7 Board"
 	select ARCH_IMX7
@@ -400,6 +422,11 @@ config MACH_WARP7
 config MACH_VF610_TWR
 	bool "Freescale VF610 Tower Board"
 	select ARCH_VF610
+
+config MACH_ZII_RDU1
+	bool "ZII i.MX51 RDU1"
+	select ARCH_IMX51
+	select MACH_FREESCALE_MX51_PDK_POWER
 
 config MACH_ZII_RDU2
 	bool "ZII i.MX6Q(+) RDU2"
@@ -429,6 +456,11 @@ config MACH_FREESCALE_MX7_SABRESD
 config MACH_NXP_IMX6ULL_EVK
 	bool "NXP i.MX6ull EVK Board"
 	select ARCH_IMX6UL
+
+config MACH_NXP_IMX8MQ_EVK
+	bool "NXP i.MX8MQ EVK Board"
+	select ARCH_IMX8MQ
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 
 endif
 
@@ -712,33 +744,13 @@ config IMX_IIM_FUSE_BLOW
 	  enable it:
 	    imx_iim0.permanent_write_enable=1
 
-config IMX_OCOTP
-	tristate "i.MX6 On Chip OTP controller"
-	depends on ARCH_IMX6 || ARCH_VF610
-	depends on OFDEVICE
-	help
-	  This adds support for the i.MX6 On-Chip OTP controller. Currently the
-	  only supported functionality is reading the MAC address and assigning
-	  it to an ethernet device.
-
-config IMX_OCOTP_WRITE
-	bool
-	prompt "Enable write support of i.MX6 CPUs OTP fuses"
-	depends on IMX_OCOTP
-	help
-	  This adds write support to IMX6 On-Chip OTP registers. Example of set
-	  MAC to 12:34:56:78:9A:BC (2 words with address 0x22 (OCOTP_MAC0) and
-	  address 0x23 (OCOTP_MAC1)). To calculate the file offset multiply
-	  the value of the address by 4.
-	    mw -l -d /dev/imx-ocotp 0x8C 0x00001234
-	    mw -l -d /dev/imx-ocotp 0x88 0x56789ABC
-
 config HAB
 	bool
 
 config HABV4
 	tristate "HABv4 support"
 	select HAB
+	select NVMEM
 	select IMX_OCOTP
 	depends on ARCH_IMX6
 	depends on OFDEVICE

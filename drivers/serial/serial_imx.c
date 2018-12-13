@@ -271,15 +271,6 @@ err_free:
 	return ret;
 }
 
-static void imx_serial_remove(struct device_d *dev)
-{
-	struct imx_serial_priv *priv = dev->priv;
-
-	imx_serial_flush(&priv->cdev);
-	console_unregister(&priv->cdev);
-	free(priv);
-}
-
 static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-uart",
@@ -290,8 +281,11 @@ static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-uart",
 		.data = &imx21_data,
-	},  {
+	}, {
 		.compatible = "fsl,imx7d-uart",
+		.data = &imx21_data,
+	}, {
+		.compatible = "fsl,imx8mq-uart",
 		.data = &imx21_data,
 	}, {
 		/* sentinel */
@@ -313,7 +307,6 @@ static struct platform_device_id imx_serial_ids[] = {
 static struct driver_d imx_serial_driver = {
 	.name   = "imx_serial",
 	.probe  = imx_serial_probe,
-	.remove = imx_serial_remove,
 	.of_compatible = DRV_OF_COMPAT(imx_serial_dt_ids),
 	.id_table = imx_serial_ids,
 };
