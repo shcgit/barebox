@@ -214,6 +214,8 @@ static int ccxmx51_sdram_fixup(void)
 	if (!ccxmx51_is_compatible())
 		return 0;
 
+	arm_add_mem_device("ram0", MX51_CSD0_BASE_ADDR, SZ_128M);
+
 	/*
 	 * On this board the SDRAM is always configured for 512Mib. The real
 	 * size is determined by the board id read from the IIM module.
