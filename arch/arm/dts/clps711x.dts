@@ -16,7 +16,8 @@
 	model = "Cirrus Logic CLPS711X";
 	compatible = "cirrus,ep7209";
 
-	memory {
+	memory@c0000000 {
+		device_type = "memory";
 		reg = <0xc0000000 0x04000000>;
 	};
 
