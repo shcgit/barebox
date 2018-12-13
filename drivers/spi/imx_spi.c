@@ -613,7 +613,7 @@ static int imx_spi_probe(struct device_d *dev)
 		master->bus_num = dev->id;
 		master->num_chipselect = pdata->num_chipselect;
 		imx->cs_array = pdata->chipselect;
-	} else {
+	} else if (IS_ENABLED(CONFIG_OFDEVICE)) {
 		ret = of_alias_get_id(dev->device_node, "spi");
 		if (ret < 0)
 			goto err_free;
