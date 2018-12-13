@@ -16,6 +16,9 @@
  * GNU General Public License for more details.
  *
  */
+
+#define pr_fmt(fmt) "tftp: " fmt
+
 #include <common.h>
 #include <command.h>
 #include <net.h>
@@ -54,6 +57,7 @@
 #define TFTP_ERROR	5
 #define TFTP_OACK	6
 
+#define STATE_INVALID	0
 #define STATE_RRQ	1
 #define STATE_WRQ	2
 #define STATE_RDATA	3
@@ -75,7 +79,7 @@ struct file_priv {
 	uint16_t last_block;
 	int state;
 	int err;
-	const char *filename;
+	char *filename;
 	int filesize;
 	uint64_t resend_timeout;
 	uint64_t progress_timeout;
@@ -89,30 +93,22 @@ struct tftp_priv {
 	IPaddr_t server;
 };
 
-static int tftp_create(struct device_d *dev, const char *pathname, mode_t mode)
-{
-	return 0;
-}
-
-static int tftp_unlink(struct device_d *dev, const char *pathname)
-{
-	return -ENOSYS;
-}
-
-static int tftp_mkdir(struct device_d *dev, const char *pathname)
-{
-	return -ENOSYS;
-}
-
-static int tftp_rmdir(struct device_d *dev, const char *pathname)
-{
-	return -ENOSYS;
-}
-
 static int tftp_truncate(struct device_d *dev, FILE *f, ulong size)
 {
 	return 0;
 }
+
+static char *tftp_states[] = {
+	[STATE_INVALID] = "INVALID",
+	[STATE_RRQ] = "RRQ",
+	[STATE_WRQ] = "WRQ",
+	[STATE_RDATA] = "RDATA",
+	[STATE_WDATA] = "WDATA",
+	[STATE_OACK] = "OACK",
+	[STATE_WAITACK] = "WAITACK",
+	[STATE_LAST] = "LAST",
+	[STATE_DONE] = "DONE",
+};
 
 static int tftp_send(struct file_priv *priv)
 {
@@ -122,7 +118,7 @@ static int tftp_send(struct file_priv *priv)
 	unsigned char *pkt = net_udp_get_payload(priv->tftp_con);
 	int ret;
 
-	debug("%s: state %d\n", __func__, priv->state);
+	pr_vdebug("%s: state %s\n", __func__, tftp_states[priv->state]);
 
 	switch (priv->state) {
 	case STATE_RRQ:
@@ -143,7 +139,7 @@ static int tftp_send(struct file_priv *priv)
 				"%d%c"
 				"blksize%c"
 				"1432",
-				priv->filename, 0,
+				priv->filename + 1, 0,
 				0,
 				0,
 				TIMEOUT, 0,
@@ -226,7 +222,7 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 
 	pkt[len - 1] = 0;
 
-	debug("got OACK\n");
+	pr_debug("got OACK\n");
 #ifdef DEBUG
 	memory_display(pkt, 0, len, 1, 0);
 #endif
@@ -242,7 +238,7 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 			priv->filesize = simple_strtoul(val, NULL, 10);
 		if (!strcmp(opt, "blksize"))
 			priv->blocksize = simple_strtoul(val, NULL, 10);
-		debug("OACK opt: %s val: %s\n", opt, val);
+		pr_debug("OACK opt: %s val: %s\n", opt, val);
 		s = val + strlen(val) + 1;
 	}
 }
@@ -267,7 +263,7 @@ static void tftp_recv(struct file_priv *priv,
 	len -= 2;
 	pkt += 2;
 
-	debug("%s: opcode 0x%04x\n", __func__, opcode);
+	pr_vdebug("%s: opcode 0x%04x\n", __func__, opcode);
 
 	switch (opcode) {
 	case TFTP_RRQ:
@@ -280,7 +276,7 @@ static void tftp_recv(struct file_priv *priv,
 
 		priv->block = ntohs(*(uint16_t *)pkt);
 		if (priv->block != priv->last_block) {
-			debug("ack %d != %d\n", priv->block, priv->last_block);
+			pr_vdebug("ack %d != %d\n", priv->block, priv->last_block);
 			break;
 		}
 
@@ -323,7 +319,7 @@ static void tftp_recv(struct file_priv *priv,
 			priv->last_block = 0;
 
 			if (priv->block != 1) {	/* Assertion */
-				printf("error: First block is not block 1 (%d)\n",
+				pr_err("error: First block is not block 1 (%d)\n",
 					priv->block);
 				priv->err = -EINVAL;
 				priv->state = STATE_DONE;
@@ -350,8 +346,7 @@ static void tftp_recv(struct file_priv *priv,
 		break;
 
 	case TFTP_ERROR:
-		debug("\nTFTP error: '%s' (%d)\n",
-				pkt + 2, ntohs(*(uint16_t *)pkt));
+		pr_debug("error: '%s' (%d)\n", pkt + 2, ntohs(*(uint16_t *)pkt));
 		switch (ntohs(*(uint16_t *)pkt)) {
 		case 1:
 			priv->err = -ENOENT;
@@ -379,15 +374,14 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 }
 
 static struct file_priv *tftp_do_open(struct device_d *dev,
-		int accmode, const char *filename)
+		int accmode, struct dentry *dentry)
 {
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct file_priv *priv;
 	struct tftp_priv *tpriv = dev->priv;
 	int ret;
 
 	priv = xzalloc(sizeof(*priv));
-
-	filename++;
 
 	switch (accmode & O_ACCMODE) {
 	case O_RDONLY:
@@ -397,14 +391,6 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	case O_WRONLY:
 		priv->push = 1;
 		priv->state = STATE_WRQ;
-		if (!(accmode & O_TRUNC)) {
-			/*
-			 * TFTP always truncates the existing file, so this
-			 * flag is mandatory when opening a file for writing.
-			 */
-			ret = -ENOSYS;
-			goto out;
-		}
 		break;
 	case O_RDWR:
 		ret = -ENOSYS;
@@ -413,7 +399,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 
 	priv->block = 1;
 	priv->err = -EINVAL;
-	priv->filename = filename;
+	priv->filename = dpath(dentry, fsdev->vfsmount.mnt_root);
 	priv->blocksize = TFTP_BLOCK_SIZE;
 	priv->block_requested = -1;
 
@@ -467,12 +453,11 @@ static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
 {
 	struct file_priv *priv;
 
-	priv = tftp_do_open(dev, file->flags, filename);
+	priv = tftp_do_open(dev, file->flags, file->dentry);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
 	file->priv = priv;
-	file->size = SZ_2G;
 
 	return 0;
 }
@@ -509,6 +494,7 @@ static int tftp_do_close(struct file_priv *priv)
 
 	net_unregister(priv->tftp_con);
 	kfifo_free(priv->fifo);
+	free(priv->filename);
 	free(priv->buf);
 	free(priv);
 
@@ -529,7 +515,7 @@ static int tftp_write(struct device_d *_dev, FILE *f, const void *inbuf,
 	size_t size, now;
 	int ret;
 
-	debug("%s: %zu\n", __func__, insize);
+	pr_vdebug("%s: %zu\n", __func__, insize);
 
 	size = insize;
 
@@ -564,7 +550,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 	size_t outsize = 0, now;
 	int ret;
 
-	debug("%s %zu\n", __func__, insize);
+	pr_vdebug("%s %zu\n", __func__, insize);
 
 	while (insize) {
 		now = kfifo_get(priv->fifo, buf, insize);
@@ -618,39 +604,107 @@ out_free:
 	return -ENOSYS;
 }
 
-static DIR* tftp_opendir(struct device_d *dev, const char *pathname)
+static const struct inode_operations tftp_file_inode_operations;
+static const struct inode_operations tftp_dir_inode_operations;
+static const struct file_operations tftp_file_operations;
+
+static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *dir,
+                                     umode_t mode)
 {
-	/* not implemented in tftp protocol */
-	return NULL;
+	struct inode *inode = new_inode(sb);
+
+	if (!inode)
+		return NULL;
+
+	inode->i_ino = get_next_ino();
+	inode->i_mode = mode;
+
+	switch (mode & S_IFMT) {
+	default:
+		return NULL;
+	case S_IFREG:
+		inode->i_op = &tftp_file_inode_operations;
+		inode->i_fop = &tftp_file_operations;
+		break;
+	case S_IFDIR:
+		inode->i_op = &tftp_dir_inode_operations;
+		inode->i_fop = &simple_dir_operations;
+		inc_nlink(inode);
+		break;
+	}
+
+	return inode;
 }
 
-static int tftp_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int tftp_create(struct inode *dir, struct dentry *dentry, umode_t mode)
 {
-	struct file_priv *priv;
+	struct inode *inode;
 
-	priv = tftp_do_open(dev, O_RDONLY, filename);
-	if (IS_ERR(priv))
-		return PTR_ERR(priv);
+	inode = tftp_get_inode(dir->i_sb, dir, mode);
+	if (!inode)
+		return -EPERM;
 
-	s->st_mode = S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO;
-	if (priv->filesize)
-		s->st_size = priv->filesize;
-	else
-		s->st_size = FILESIZE_MAX;
+	inode->i_size = 0;
 
-	tftp_do_close(priv);
+	d_instantiate(dentry, inode);
 
 	return 0;
 }
+
+static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
+			    unsigned int flags)
+{
+	struct super_block *sb = dir->i_sb;
+	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct inode *inode;
+	struct file_priv *priv;
+	int filesize;
+
+	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry);
+	if (IS_ERR(priv))
+		return NULL;
+
+	filesize = priv->filesize;
+
+	tftp_do_close(priv);
+
+	inode = tftp_get_inode(dir->i_sb, dir, S_IFREG | S_IRWXUGO);
+	if (!inode)
+		return ERR_PTR(-ENOMEM);
+
+	if (filesize)
+		inode->i_size = filesize;
+	else
+		inode->i_size = FILE_SIZE_STREAM;
+
+	d_add(dentry, inode);
+
+	return NULL;
+}
+
+static const struct inode_operations tftp_dir_inode_operations =
+{
+	.lookup = tftp_lookup,
+	.create = tftp_create,
+};
+
+static const struct super_operations tftp_ops;
 
 static int tftp_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct tftp_priv *priv = xzalloc(sizeof(struct tftp_priv));
+	struct super_block *sb = &fsdev->sb;
+	struct inode *inode;
 
 	dev->priv = priv;
 
 	priv->server = resolv(fsdev->backingstore);
+
+	sb->s_op = &tftp_ops;
+
+	inode = tftp_get_inode(sb, NULL, S_IFDIR);
+	sb->s_root = d_make_root(inode);
 
 	return 0;
 }
@@ -667,12 +721,6 @@ static struct fs_driver_d tftp_driver = {
 	.close     = tftp_close,
 	.read      = tftp_read,
 	.lseek     = tftp_lseek,
-	.opendir   = tftp_opendir,
-	.stat      = tftp_stat,
-	.create    = tftp_create,
-	.unlink    = tftp_unlink,
-	.mkdir     = tftp_mkdir,
-	.rmdir     = tftp_rmdir,
 	.write     = tftp_write,
 	.truncate  = tftp_truncate,
 	.flags     = 0,
