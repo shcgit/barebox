@@ -1,5 +1,3 @@
-#include <arm/imx51-digi-connectcore-som.dtsi>
-
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/sound/fsl-imx-audmux.h>
 
@@ -7,15 +5,6 @@
 	model = "Mega-Milas Informer i.MX51";
 	compatible = "milas,informer-imx51",
 		     "digi,connectcore-ccxmx51-som", "fsl,imx51";
-
-	chosen {
-		stdout-path = &uart1;
-
-		environment@0 {
-			compatible = "barebox,environment";
-			device-path = &nfc, "partname:env";
-		};
-	};
 
 	backlight {
 		#address-cells = <1>;
@@ -406,7 +395,6 @@
 };
 
 &esdhc1 {
-	non-removable;
 	status = "okay";
 };
 
@@ -483,10 +471,6 @@
 	};
 };
 
-&iim {
-	barebox,provide-mac-address = <&fec 1 9>;
-};
-
 &ipu {
 	ipu_csi0: port@0 {
 		reg = <0>;
@@ -546,25 +530,8 @@
 	status = "okay";
 };
 
-&nfc {
-	partition@0 {
-		label = "boot";
-		reg = <0x00000 0x80000>;
-	};
-
-	partition@1 {
-		label = "env";
-		reg = <0x80000 0x40000>;
-	};
-};
-
-&owire {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_owire>;
-	status = "okay";
-};
-
 &pmic {
+	/delete-property/ fsl,mc13xxx-uses-rtc;
 	fsl,mc13xxx-uses-touch;
 
 	leds {
@@ -590,6 +557,10 @@
 			linux,default-trigger = "usb-host";
 		};
 	};
+
+	regulators {
+		/delete-node/ vcoincell;
+	};
 };
 
 &ssi1 {
@@ -614,36 +585,9 @@
 };
 */
 
-&uart1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1>;
-	status = "okay";
-};
-
-&uart2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart2>;
-	status = "okay";
-};
-
-&uart3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart3>;
-	status = "okay";
-};
-
 &usbotg {
 	dr_mode = "host"; /* otg */
 	extcon = <&otgid>;
-	status = "okay";
-};
-
-&usbh1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbh1>;
-	fsl,usbphy = <&usbphy1>;
-	phy_type = "ulpi";
-	disable-over-current;
 	status = "okay";
 };
 
@@ -821,54 +765,10 @@
 			>;
 		};
 
-		pinctrl_owire: owiregrp {
-			fsl,pins = <
-				MX51_PAD_OWIRE_LINE__OWIRE_LINE		0x40000001
-			>;
-		};
-
 		pinctrl_tw2837: tw2837grp {
 			fsl,pins = <
 				MX51_PAD_CSI1_VSYNC__GPIO3_14		0x101 /* IRQ */
 				MX51_PAD_CSI1_HSYNC__GPIO3_15		0x101 /* Unused */
-			>;
-		};
-
-		pinctrl_uart1: uart1grp {
-			fsl,pins = <
-				MX51_PAD_UART1_RXD__UART1_RXD		0x1c5
-				MX51_PAD_UART1_TXD__UART1_TXD		0xc5
-			>;
-		};
-
-		pinctrl_uart2: uart2grp {
-			fsl,pins = <
-				MX51_PAD_UART2_RXD__UART2_RXD		0x1c5
-				MX51_PAD_UART2_TXD__UART2_TXD		0xc5
-			>;
-		};
-
-		pinctrl_uart3: uart3grp {
-			fsl,pins = <
-				MX51_PAD_UART3_RXD__UART3_RXD		0x1c5
-				MX51_PAD_UART3_TXD__UART3_TXD		0xc5
-			>;
-		};
-
-		pinctrl_usbh1: usbh1grp {
-			fsl,pins = <
-				MX51_PAD_USBH1_CLK__USBH1_CLK		0x1e5
-				MX51_PAD_USBH1_DIR__USBH1_DIR		0x1e5
-				MX51_PAD_USBH1_NXT__USBH1_NXT		0x1e5
-				MX51_PAD_USBH1_STP__USBH1_STP		0x1e5
-				MX51_PAD_USBH1_DATA0__USBH1_DATA0	0x1e5
-				MX51_PAD_USBH1_DATA1__USBH1_DATA1	0x1e5
-				MX51_PAD_USBH1_DATA2__USBH1_DATA2	0x1e5
-				MX51_PAD_USBH1_DATA3__USBH1_DATA3	0x1e5
-				MX51_PAD_USBH1_DATA4__USBH1_DATA4	0x1e5
-				MX51_PAD_USBH1_DATA5__USBH1_DATA5	0x1e5
-				MX51_PAD_USBH1_DATA6__USBH1_DATA6	0x1e5
-				MX51_PAD_USBH1_DATA7__USBH1_DATA7	0x1e5
 			>;
 		};
 
@@ -884,4 +784,31 @@
 			>;
 		};
 	};
+};
+
+&pinctrl_owire {
+	fsl,pins = <
+		MX51_PAD_OWIRE_LINE__OWIRE_LINE		0x40000001
+	>;
+};
+
+&pinctrl_uart1 {
+	fsl,pins = <
+		MX51_PAD_UART1_RXD__UART1_RXD		0x1c5
+		MX51_PAD_UART1_TXD__UART1_TXD		0xc5
+	>;
+};
+
+&pinctrl_uart2 {
+	fsl,pins = <
+		MX51_PAD_UART2_RXD__UART2_RXD		0x1c5
+		MX51_PAD_UART2_TXD__UART2_TXD		0xc5
+	>;
+};
+
+&pinctrl_uart3 {
+	fsl,pins = <
+		MX51_PAD_UART3_RXD__UART3_RXD		0x1c5
+		MX51_PAD_UART3_TXD__UART3_TXD		0xc5
+	>;
 };

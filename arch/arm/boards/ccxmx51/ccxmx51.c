@@ -278,7 +278,8 @@ static int ccxmx51_init(void)
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
 						BBU_HANDLER_FLAG_DEFAULT);
 
-	defaultenv_append_directory(defaultenv_ccxmx51);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		defaultenv_append_directory(defaultenv_ccxmx51);
 
 	return 0;
 }

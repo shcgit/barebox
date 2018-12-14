@@ -1,3 +1,3 @@
-obj-y	+= ccxmx51.o
-lwl-y	+= lowlevel.o
-bbenv-y += defaultenv-ccxmx51
+obj-y					+= ccxmx51.o
+lwl-y					+= lowlevel.o
+bbenv-$(CONFIG_DEFAULT_ENVIRONMENT)	+= defaultenv-ccxmx51

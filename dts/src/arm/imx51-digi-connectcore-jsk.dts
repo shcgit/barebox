@@ -19,6 +19,13 @@
 	chosen {
 		stdout-path = &uart1;
 	};
+
+	usbphy1: usbphy1 {
+		compatible = "usb-nop-xceiv";
+		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
+		clock-names = "main_clk";
+		#phy-cells = <0>;
+	};
 };
 
 &esdhc1 {
@@ -74,15 +81,6 @@
 	phy_type = "ulpi";
 	disable-over-current;
 	status = "okay";
-};
-
-&usbphy {
-	usbphy1: usbphy@1 {
-		compatible = "usb-nop-xceiv";
-		reg = <1>;
-		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
-		clock-names = "main_clk";
-	};
 };
 
 &iomuxc {
