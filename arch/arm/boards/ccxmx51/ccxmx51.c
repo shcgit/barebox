@@ -275,7 +275,7 @@ static int ccxmx51_init(void)
 	barebox_set_model("Digi ConnectCore i.MX51");
 	barebox_set_hostname("ccxmx51");
 
-	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/disk0",
+	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
 						BBU_HANDLER_FLAG_DEFAULT);
 
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
