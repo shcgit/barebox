@@ -530,6 +530,15 @@
 	status = "okay";
 };
 
+&nfc {
+	/delete-node/ partition@400000;
+
+	partition@c0000 {
+		label = "system";
+		reg = <0xc0000 0>;
+	};
+};
+
 &pmic {
 	/delete-property/ fsl,mc13xxx-uses-rtc;
 	fsl,mc13xxx-uses-touch;

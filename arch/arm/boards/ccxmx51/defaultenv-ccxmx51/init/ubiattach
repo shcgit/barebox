@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ubiattach /dev/nand0.system

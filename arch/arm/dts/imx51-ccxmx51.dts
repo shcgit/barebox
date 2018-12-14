@@ -4,9 +4,9 @@
 	chosen {
 		stdout-path = &uart1;
 
-	environment@0 {
-		compatible = "barebox,environment";
-		device-path = &nfc, "partname:env";
+		environment {
+			compatible = "barebox,environment";
+			device-path = &nfc, "partname:env";
 		};
 	};
 };
@@ -21,9 +21,19 @@
 		reg = <0x00000 0x80000>;
 	};
 
-	partition@1 {
+	partition@80000 {
 		label = "env";
 		reg = <0x80000 0x40000>;
+	};
+
+	partition@c0000 {
+		label = "kernel";
+		reg = <0xc0000 0x340000>;
+	};
+
+	partition@400000 {
+		label = "root";
+		reg = <0x400000 0>;
 	};
 };
 
