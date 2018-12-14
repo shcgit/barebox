@@ -6,7 +6,6 @@
 #include <mach/imx51-regs.h>
 
 ENTRY_FUNCTION(start_ccxmx51, r0, r1, r2)
-//void __naked barebox_arm_reset_vector(void)
 {
 	extern char __dtb_imx51_ccxmx51_start[];
 	void *fdt;
