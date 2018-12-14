@@ -395,7 +395,7 @@
 };
 
 &esdhc1 {
-	status = "okay";
+	non-removable;
 };
 
 &gpio3 {
