@@ -24,7 +24,7 @@
 static int clps711x_devices_init(void)
 {
 	u32 serial_h = 0, serial_l = readl(UNIQID);
-	void *cfi_io;
+//	void *cfi_io;
 
 	/* Setup Chipselects */
 	clps711x_setup_memcfg(0, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_16);
@@ -33,14 +33,14 @@ static int clps711x_devices_init(void)
 			      MEMCFG_CLKENB);
 	clps711x_setup_memcfg(3, MEMCFG_WAITSTATE_7_1 | MEMCFG_BUS_WIDTH_32);
 
-	cfi_io = map_io_sections(CS0_BASE, (void *)0x90000000, SZ_32M);
-	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_io, SZ_32M,
-			     IORESOURCE_MEM);
+//	cfi_io = map_io_sections(CS0_BASE, (void *)0x90000000, SZ_32M);
+//	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_io, SZ_32M,
+//			     IORESOURCE_MEM);
 
-	devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED,
-			    "self0");
-	devfs_add_partition("nor0", SZ_256K, SZ_256K, DEVFS_PARTITION_FIXED,
-			    "env0");
+//	devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED,
+//			    "self0");
+//	devfs_add_partition("nor0", SZ_256K, SZ_256K, DEVFS_PARTITION_FIXED,
+//			    "env0");
 
 	armlinux_set_architecture(MACH_TYPE_CLEP7212);
 	armlinux_set_serial(((u64)serial_h << 32) | serial_l);

@@ -45,4 +45,4 @@ gpio_set_value 25 1
 gpio_set_value 8 0
 
 #Load DTB
-oftree -l /env/clps711x.dtb
+#oftree -l /env/clps711x.dtb
