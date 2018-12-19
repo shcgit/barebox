@@ -1,14 +1,8 @@
-/*
- * (C) Copyright 2009-2010 Digi International, Inc.
- * Copyright (C) 2007 Sascha Hauer, Pengutronix
- * (c) 2011 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
- * Modified for barebox by Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+// (C) Copyright 2009-2010 Digi International, Inc.
+// Copyright (C) 2007 Sascha Hauer, Pengutronix
+// (c) 2011 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
+// Modified for barebox by Alexander Shiyan <shc_work@mail.ru>
 
 #include <common.h>
 #include <envfs.h>
