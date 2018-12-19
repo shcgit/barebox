@@ -44,5 +44,3 @@
 		reg = <0x400000 0>;
 	};
 };
-
-#include "mm_clps711x.dtsi"

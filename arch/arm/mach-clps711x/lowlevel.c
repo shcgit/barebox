@@ -18,7 +18,7 @@
 #endif
 
 #ifdef CONFIG_MACH_CLPS711X_CLEP7212
-# define __dtb_ptr_start	__dtb_ep7211_clep7212_start
+# define __dtb_ptr_start	__dtb_ep7212_clep7212_start
 #endif
 #ifdef CONFIG_MACH_CLPS711X_EDB7211
 # define __dtb_ptr_start	__dtb_ep7211_edb7211_start

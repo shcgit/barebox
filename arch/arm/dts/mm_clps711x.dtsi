@@ -1,3 +1,4 @@
+#include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/input/linux-event-codes.h>
 
@@ -10,9 +11,37 @@
 		reg = <0xc0000000 0x04000000>;
 	};
 
-	/delete-node/ i2c;
-	/delete-node/ lcddc;
-	/delete-node/ blen;
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pwm 0>;
+		brightness-levels = <
+			0x0 0x1 0x2 0x3 0x4 0x5 0x6 0x7
+			0x8 0x9 0xa 0xb 0xc 0xd 0xe 0xf
+		>;
+		default-brightness-level = <0x0>;
+		//power-supply = <&reg5v0>;
+	};
+
+	display: display {
+		model = "320x240x4";
+		native-mode = <&timing0>;
+		bits-per-pixel = <4>;
+		ac-prescale = <17>;
+
+		display-timings {
+			timing0: 320x240 {
+				hactive = <320>;
+				hback-porch = <0>;
+				hfront-porch = <0>;
+				hsync-len = <0>;
+				vactive = <240>;
+				vback-porch = <0>;
+				vfront-porch = <0>;
+				vsync-len = <0>;
+				clock-frequency = <6500000>;
+			};
+		};
+	};
 
 	clocks {
 		clk3m: clk3m {
@@ -36,6 +65,18 @@
 		i2c-gpio,scl-open-drain;
 		#address-cells = <1>;
 		#size-cells = <0>;
+
+		at24@50 {
+			compatible = "at,24c16";
+			reg = <0x50>;
+			pagesize = <256>;
+		};
+
+		rtc@68 {
+			compatible = "maxim,ds3231";
+			reg = <0x68>;
+			#clock-cells = <1>;
+		};
 	};
 
 	inputs {
@@ -200,10 +241,6 @@
 	};
 };
 
-&backlight {
-	power-supply = <&reg5v0>;
-};
-
 &bus {
 	rtc: rtc@10000000 {
 		compatible = "maxim,ds1742";
@@ -311,25 +348,8 @@
 };
 
 &fb {
-	/delete-property/ lcd-supply;
-};
-
-&i2c {
-	at24@50 {
-		compatible = "at,24c16";
-		reg = <0x50>;
-		pagesize = <256>;
-	};
-
-	rtc@68 {
-		compatible = "maxim,ds3231";
-		reg = <0x68>;
-		#clock-cells = <1>;
-	};
-};
-
-&portd {
-	/delete-node/ lcden;
+	display = <&display>;
+	status = "okay";
 };
 
 &spi {

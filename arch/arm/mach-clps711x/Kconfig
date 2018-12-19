@@ -6,12 +6,13 @@ choice
 config MACH_CLPS711X_CLEP7212
 	bool "Cirrus Logic CLEP7212"
 	help
-	  Boards based on the Cirrus Logic 7212/7312 CPU.
+	  Generic boards based on the Cirrus Logic 7212/7312 CPU.
 
 config MACH_CLPS711X_EDB7211
-	bool "Cirrus Logic EDB7211"
+	bool "Cirrus Logic EP7211 Development Board"
 	help
-	  Boards based on the Cirrus Logic 7212/7312 CPU.
+	  ARM/ARM7 Cirrus Logic EP7xxx (EDB7211, EDB7212, EDB7312)
+	  Development Board.
 
 endchoice
 

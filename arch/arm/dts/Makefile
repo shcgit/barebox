@@ -23,6 +23,7 @@ pbl-dtb-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += imx53-qsb.dtb.o imx53-qsrb.dtb.o
 pbl-dtb-$(CONFIG_MACH_TX53) += imx53-tx53-xx30.dtb.o imx53-tx53-1011.dtb.o
 pbl-dtb-$(CONFIG_MACH_CCMX51) += imx51-ccxmx51.dtb.o
 pbl-dtb-$(CONFIG_MACH_CCMX53) += imx53-ccxmx53.dtb.o
+pbl-dtb-$(CONFIG_MACH_CLPS711X_CLEP7212) += ep7212-clep7212.dtb.o
 pbl-dtb-$(CONFIG_MACH_CLPS711X_EDB7211) += ep7211-edb7211.dtb.o
 pbl-dtb-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += imx53-voipac-bsb.dtb.o
 pbl-dtb-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += imx7d-sdb.dtb.o
