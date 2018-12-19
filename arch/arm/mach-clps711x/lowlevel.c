@@ -15,11 +15,28 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 
-#include <mach/clps711x.h>
+#include "clps711x.h"
 
-void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
+#ifdef CONFIG_CLPS711X_RAISE_CPUFREQ
+# define CLPS711X_CPU_PLL_MULT	50
+#else
+# define CLPS711X_CPU_PLL_MULT	40
+#endif
+
+#ifdef CONFIG_MACH_CLEP7212
+# define __dtb_ptr_start	__dtb_ep7211_edb7211_start
+#endif
+
+void __naked __bare_init barebox_arm_reset_vector(void)
 {
-	u32 cpu, bus;
+	extern char *__dtb_ptr_start[];
+	void *fdt = __dtb_ptr_start;
+	u32 bus;
+
+	arm_cpu_lowlevel_init();
+
+	/* Stack in SRAM */
+	arm_setup_stack(CS6_BASE - 16);
 
 	/* Check if we running from external 13 MHz clock */
 	if (!(readl(SYSFLG2) & SYSFLG2_CKMODE)) {
@@ -27,24 +44,15 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
 		writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);
 		asm("nop");
 
-		/* Check valid multiplier, default to 74 MHz */
-		if ((pllmult < 20) || (pllmult > 50))
-			pllmult = 40;
-
 		/* Setup PLL */
-		writel(pllmult << 24, PLLW);
+		writel(CLPS711X_CPU_PLL_MULT << 24, PLLW);
 		asm("nop");
 
 		/* Check for old CPUs without PLL */
-		if ((readl(PLLR) >> 24) != pllmult)
-			cpu = 73728000;
+		if ((readl(PLLR) >> 24) != CLPS711X_CPU_PLL_MULT)
+			bus = 73728000 / 2;
 		else
-			cpu = pllmult * 3686400;
-
-		if (cpu >= 36864000)
-			bus = cpu / 2;
-		else
-			bus = 36864000 / 2;
+			bus = CLPS711X_CPU_PLL_MULT * 3686400 / 2;
 	} else {
 		bus = 13000000;
 		/* Setup bus wait state scaling factor to 1  */
@@ -69,5 +77,5 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
 	/* Disable LED flasher */
 	writew(0, LEDFLSH);
 
-	barebox_arm_entry(SDRAM0_BASE, SZ_8M, data);
+	barebox_arm_entry(SDRAM0_BASE, SZ_8M, fdt + get_runtime_offset());
 }

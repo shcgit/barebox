@@ -43,6 +43,3 @@ gpio_set_value 24 1
 gpio_set_value 25 1
 # Buzzer OFF
 gpio_set_value 8 0
-
-#Load DTB
-#oftree -l /env/clps711x.dtb

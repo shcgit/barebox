@@ -1,0 +1,45 @@
+#include <arm/ep7211-edb7211.dts>
+
+/ {
+	chosen {
+		stdout-path = &serial1;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:env";
+		};
+	};
+};
+
+&bus {
+	/* Setup Memory Timings */
+	/* CS0 = WAITSTATE_6_1 | BUS_WIDTH_16 */
+	/* CS1 = WAITSTATE_6_1 | BUS_WIDTH_8 */
+	/* CS2 = WAITSTATE_8_3 | BUS_WIDTH_16 | CLKENB */
+	/* CS3 = WAITSTATE_7_1 | BUS_WIDTH_32 */
+	barebox,ep7209-memcfg1 = <0x25802b28>;
+};
+
+&flash {
+	partition@0 {
+		label = "boot";
+		reg = <0x00000 0x80000>;
+	};
+
+	partition@80000 {
+		label = "env";
+		reg = <0x80000 0x40000>;
+	};
+
+	partition@c0000 {
+		label = "kernel";
+		reg = <0xc0000 0x340000>;
+	};
+
+	partition@400000 {
+		label = "root";
+		reg = <0x400000 0>;
+	};
+};
+
+#include "mm_clps711x.dtsi"

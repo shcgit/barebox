@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2013 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+// Author: Alexander Shiyan <shc_work@mail.ru>
 
 #include <common.h>
 #include <clock.h>
@@ -30,8 +24,13 @@ static struct clocksource clps711x_cs = {
 static int clps711x_cs_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	u32 rate;
 	struct clk *timer_clk;
+	u32 rate;
+	int id;
+
+	id = of_alias_get_id(dev->device_node, "timer");
+	if (id != 1)
+		return 0;
 
 	timer_clk = clk_get(dev, NULL);
 	if (IS_ERR(timer_clk))
@@ -51,13 +50,14 @@ static int clps711x_cs_probe(struct device_d *dev)
 	return init_clock(&clps711x_cs);
 }
 
+static __maybe_unused struct of_device_id clps711x_timer_dt_ids[] = {
+	{ .compatible = "cirrus,ep7209-timer", },
+	{ }
+};
+
 static struct driver_d clps711x_cs_driver = {
 	.name = "clps711x-cs",
 	.probe = clps711x_cs_probe,
+	.of_compatible = DRV_OF_COMPAT(clps711x_timer_dt_ids),
 };
-
-static __init int clps711x_cs_init(void)
-{
-	return platform_driver_register(&clps711x_cs_driver);
-}
-coredevice_initcall(clps711x_cs_init);
+coredevice_platform_driver(clps711x_cs_driver);

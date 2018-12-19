@@ -1,13 +1,5 @@
-/*
- * Simple CLPS711X serial driver
- *
- * (C) Copyright 2012-2014 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+// Author: Alexander Shiyan <shc_work@mail.ru>
 
 #include <common.h>
 #include <malloc.h>
@@ -43,7 +35,7 @@
 
 struct clps711x_uart {
 	void __iomem		*base;
-	void __iomem		*syscon;
+	struct regmap		*regmap;
 	struct clk		*uart_clk;
 	struct console_device	cdev;
 };
@@ -54,7 +46,7 @@ static int clps711x_setbaudrate(struct console_device *cdev, int baudrate)
 	int divisor;
 	u32 tmp;
 
-	divisor = (clk_get_rate(s->uart_clk) / 16) / baudrate;
+	divisor = DIV_ROUND_CLOSEST(clk_get_rate(s->uart_clk), baudrate * 16);
 
 	tmp = readl(s->base + UBRLCR) & ~UBRLCR_BAUD_MASK;
 	tmp |= divisor - 1;
@@ -69,8 +61,7 @@ static void clps711x_init_port(struct console_device *cdev)
 	u32 tmp;
 
 	/* Disable the UART */
-	tmp = readl(s->syscon + SYSCON);
-	writel(tmp & ~SYSCON_UARTEN, s->syscon + SYSCON);
+	regmap_update_bits(s->regmap, SYSCON, SYSCON_UARTEN, 0);
 
 	/* Setup Line Control Register */
 	tmp = readl(s->base + UBRLCR) & UBRLCR_BAUD_MASK;
@@ -78,17 +69,19 @@ static void clps711x_init_port(struct console_device *cdev)
 	writel(tmp, s->base + UBRLCR);
 
 	/* Enable the UART */
-	tmp = readl(s->syscon + SYSCON);
-	writel(tmp | SYSCON_UARTEN, s->syscon + SYSCON);
+	regmap_update_bits(s->regmap, SYSCON, SYSCON_UARTEN, SYSCON_UARTEN);
 }
 
 static void clps711x_putc(struct console_device *cdev, char c)
 {
 	struct clps711x_uart *s = cdev->dev->priv;
+	u32 tmp;
 
 	/* Wait until there is space in the FIFO */
 	do {
-	} while (readl(s->syscon + SYSFLG) & SYSFLG_UTXFF);
+		regmap_read(s->regmap, SYSFLG, &tmp);
+		
+	} while (tmp & SYSFLG_UTXFF);
 
 	/* Send the character */
 	writew(c, s->base + UARTDR);
@@ -98,10 +91,12 @@ static int clps711x_getc(struct console_device *cdev)
 {
 	struct clps711x_uart *s = cdev->dev->priv;
 	u16 data;
+	u32 tmp;
 
 	/* Wait until there is data in the FIFO */
 	do {
-	} while (readl(s->syscon + SYSFLG) & SYSFLG_URXFE);
+		regmap_read(s->regmap, SYSFLG, &tmp);
+	} while (tmp & SYSFLG_URXFE);
 
 	data = readw(s->base + UARTDR);
 
@@ -115,31 +110,32 @@ static int clps711x_getc(struct console_device *cdev)
 static int clps711x_tstc(struct console_device *cdev)
 {
 	struct clps711x_uart *s = cdev->dev->priv;
+	u32 tmp;
 
-	return !(readl(s->syscon + SYSFLG) & SYSFLG_URXFE);
+	regmap_read(s->regmap, SYSFLG, &tmp);
+
+	return !(tmp & SYSFLG_URXFE);
 }
 
 static void clps711x_flush(struct console_device *cdev)
 {
 	struct clps711x_uart *s = cdev->dev->priv;
+	u32 tmp;
 
 	do {
-	} while (readl(s->syscon + SYSFLG) & SYSFLG_UBUSY);
+		regmap_read(s->regmap, SYSFLG, &tmp);
+	} while (tmp & SYSFLG_UBUSY);
 }
 
 static int clps711x_probe(struct device_d *dev)
 {
+	struct device_node *syscon;
 	struct clps711x_uart *s;
-	int err, id = dev->id;
-	char syscon_dev[8];
-
-	if (dev->device_node)
-		id = of_alias_get_id(dev->device_node, "serial");
-
-	if (id != 0 && id != 1)
-		return -EINVAL;
+	const char *devname;
+	int err;
 
 	s = xzalloc(sizeof(struct clps711x_uart));
+
 	s->uart_clk = clk_get(dev, NULL);
 	if (IS_ERR(s->uart_clk)) {
 		err = PTR_ERR(s->uart_clk);
@@ -147,19 +143,15 @@ static int clps711x_probe(struct device_d *dev)
 	}
 
 	s->base = dev_get_mem_region(dev, 0);
-	if (IS_ERR(s->base))
-		return PTR_ERR(s->base);
-
-	if (!dev->device_node) {
-		sprintf(syscon_dev, "syscon%i", id + 1);
-		s->syscon = syscon_base_lookup_by_pdevname(syscon_dev);
-	} else {
-		s->syscon = syscon_base_lookup_by_phandle(dev->device_node,
-							  "syscon");
+	if (IS_ERR(s->base)) {
+		err = PTR_ERR(s->base);
+		goto out_err;
 	}
 
-	if (IS_ERR(s->syscon)) {
-		err = PTR_ERR(s->syscon);
+	syscon = of_parse_phandle(dev->device_node, "syscon", 0);
+	s->regmap = syscon_node_to_regmap(syscon);
+	if (IS_ERR(s->regmap)) {
+		err = PTR_ERR(s->regmap);
 		goto out_err;
 	}
 
@@ -170,6 +162,14 @@ static int clps711x_probe(struct device_d *dev)
 	s->cdev.getc	= clps711x_getc;
 	s->cdev.flush	= clps711x_flush;
 	s->cdev.setbrg	= clps711x_setbaudrate;
+	s->cdev.linux_console_name = "ttyCL";
+
+	devname = of_alias_get(dev->device_node);
+	if (devname) {
+		s->cdev.devname = xstrdup(devname);
+		s->cdev.devid = DEVICE_ID_SINGLE;
+	}
+
 	clps711x_init_port(&s->cdev);
 
 	err = console_register(&s->cdev);
@@ -182,7 +182,7 @@ out_err:
 }
 
 static struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
-	{ .compatible = "cirrus,clps711x-uart", },
+	{ .compatible = "cirrus,ep7209-uart", },
 };
 
 static struct driver_d clps711x_driver = {

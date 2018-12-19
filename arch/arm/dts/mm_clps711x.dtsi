@@ -1,48 +1,18 @@
-/*
- * The code contained herein is licensed under the GNU General Public
- * License. You may obtain a copy of the GNU General Public License
- * Version 2 or later at the following locations:
- */
-
-/dts-v1/;
-#include "skeleton.dtsi"
-
-#include <dt-bindings/clock/clps711x-clock.h>
-#include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/input/linux-event-codes.h>
 
 / {
-	model = "Cirrus Logic CLPS711X";
-	compatible = "cirrus,ep7209";
+	model = "Mega-Milas Informer EP7312";
+	compatible = "milas,informer-clps711x", "cirrus,ep7209";
 
-	memory@c0000000 {
+	memory {
 		device_type = "memory";
 		reg = <0xc0000000 0x04000000>;
 	};
 
-	aliases {
-		gpio0 = &porta;
-		gpio1 = &portb;
-		gpio2 = &portc;
-		gpio3 = &portd;
-		gpio4 = &porte;
-		serial0 = &uart1;
-		serial1 = &uart2;
-		spi0 = &spi;
-		timer0 = &timer1;
-		timer1 = &timer2;
-	};
-
-	cpus {
-		#address-cells = <0>;
-		#size-cells = <0>;
-
-		cpu {
-			device_type = "cpu";
-			compatible = "arm,arm720t";
-		};
-	};
+	/delete-node/ i2c;
+	/delete-node/ lcddc;
+	/delete-node/ blen;
 
 	clocks {
 		clk3m: clk3m {
@@ -55,216 +25,6 @@
 			compatible = "fixed-clock";
 			clock-frequency = <16000000>;
 			#clock-cells = <0>;
-		};
-	};
-
-	display: display {
-		model = "320x240x4";
-		native-mode = <&timing0>;
-		bits-per-pixel = <4>;
-		ac-prescale = <17>;
-
-		display-timings {
-			timing0: 320x240 {
-				hactive = <320>;
-				hback-porch = <0>;
-				hfront-porch = <0>;
-				hsync-len = <0>;
-				vactive = <240>;
-				vback-porch = <0>;
-				vfront-porch = <0>;
-				vsync-len = <0>;
-				clock-frequency = <6500000>;
-			};
-		};
-	};
-
-	sound {
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "DAICS4351";
-		simple-audio-card,format = "left_j";
-		simple-audio-card,bitclock-master = <&audio_master>;
-		simple-audio-card,frame-master = <&audio_master>;
-
-		audio_master: simple-audio-card,cpu {
-			sound-dai = <&dai>;
-			clocks = <&clks CLPS711X_CLK_DUMMY>;
-		};
-
-		simple-audio-card,codec {
-			sound-dai = <&codec>;
-		};
-	};
-
-	soc {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "simple-bus";
-		interrupt-parent = <&intc>;
-		ranges;
-
-		clks: clks@80000000 {
-			#clock-cells = <1>;
-			compatible = "cirrus,ep7312-clk", "cirrus,ep7209-clk";
-			reg = <0x80000000 0xc000>;
-			startup-frequency = <73728000>;
-		};
-
-		intc: intc@80000000 {
-			compatible = "cirrus,ep7312-intc", "cirrus,ep7209-intc";
-			reg = <0x80000000 0x4000>;
-			interrupt-controller;
-			#interrupt-cells = <1>;
-		};
-
-		porta: gpio@80000000 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
-			reg = <0x80000000 0x1 0x80000040 0x1>;
-			gpio-controller;
-			#gpio-cells = <2>;
-		};
-
-		portb: gpio@80000001 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
-			reg = <0x80000001 0x1 0x80000041 0x1>;
-			gpio-controller;
-			#gpio-cells = <2>;
-		};
-
-		portc: gpio@80000002 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
-			reg = <0x80000002 0x1 0x80000042 0x1>;
-			gpio-controller;
-			#gpio-cells = <2>;
-			status = "disabled";
-		};
-
-		portd: gpio@80000003 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
-			reg = <0x80000003 0x1 0x80000043 0x1>;
-			gpio-controller;
-			#gpio-cells = <2>;
-		};
-
-		porte: gpio@80000083 {
-			compatible = "cirrus,ep7312-gpio", "cirrus,ep7209-gpio";
-			reg = <0x80000083 0x1 0x800000c3 0x1>;
-			gpio-controller;
-			#gpio-cells = <2>;
-		};
-
-		syscon1: syscon@80000100 {
-			compatible = "cirrus,ep7209-syscon1", "syscon";
-			reg = <0x80000100 0x80>;
-		};
-
-		bus: bus@80000180 {
-			#address-cells = <2>;
-			#size-cells = <1>;
-			compatible = "cirrus,ep7312-bus", "cirrus,ep7209-bus", "simple-bus";
-			clocks = <&clks CLPS711X_CLK_BUS>;
-			reg = <0x80000180 0x80>;
-			ranges = <
-				0 0 0x00000000 0x10000000
-				1 0 0x10000000 0x10000000
-				2 0 0x20000000 0x10000000
-				3 0 0x30000000 0x10000000
-				4 0 0x40000000 0x10000000
-				5 0 0x50000000 0x10000000
-				6 0 0x60000000 0x0000c000
-				7 0 0x70000000 0x00000080
-			>;
-		};
-
-		fb: fb@800002c0 {
-			compatible = "cirrus,ep7312-fb", "cirrus,ep7209-fb";
-			reg = <0x800002c0 0xd44>, <0x60000000 0xc000>;
-			clocks = <&clks CLPS711X_CLK_BUS>;
-			status = "disabled";
-		};
-
-		timer1: timer@80000300 {
-			compatible = "cirrus,ep7312-timer", "cirrus,ep7209-timer";
-			reg = <0x80000300 0x4>;
-			clocks = <&clks CLPS711X_CLK_TIMER1>;
-			interrupts = <8>;
-		};
-
-		timer2: timer@80000340 {
-			compatible = "cirrus,ep7312-timer", "cirrus,ep7209-timer";
-			reg = <0x80000340 0x4>;
-			clocks = <&clks CLPS711X_CLK_TIMER2>;
-			interrupts = <9>;
-		};
-
-		pwm: pwm@80000400 {
-			compatible = "cirrus,ep7312-pwm", "cirrus,ep7209-pwm";
-			reg = <0x80000400 0x4>;
-			clocks = <&clks CLPS711X_CLK_PWM>;
-			#pwm-cells = <1>;
-		};
-
-		uart1: uart@80000480 {
-			compatible = "cirrus,ep7312-uart", "cirrus,ep7209-uart";
-			reg = <0x80000480 0x80>;
-			interrupts = <12 13>;
-			clocks = <&clks CLPS711X_CLK_UART>;
-			syscon = <&syscon1>;
-		};
-
-		spi: spi@80000500 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "cirrus,ep7312-spi", "cirrus,ep7209-spi";
-			reg = <0x80000500 0x4>;
-			interrupts = <15>;
-			clocks = <&clks CLPS711X_CLK_SPI>;
-			status = "disabled";
-		};
-
-		syscon2: syscon@80001100 {
-			compatible = "cirrus,ep7209-syscon2", "syscon";
-			reg = <0x80001100 0x80>;
-		};
-
-		uart2: uart@80001480 {
-			compatible = "cirrus,ep7312-uart", "cirrus,ep7209-uart";
-			reg = <0x80001480 0x80>;
-			interrupts = <28 29>;
-			clocks = <&clks CLPS711X_CLK_UART>;
-			syscon = <&syscon2>;
-		};
-
-		dai: dai@80002000 {
-			#sound-dai-cells = <0>;
-			compatible = "cirrus,ep7312-dai", "cirrus,ep7209-dai";
-			reg = <0x80002000 0x604>;
-			clocks = <&clks CLPS711X_CLK_PLL>;
-			clock-names = "pll";
-			interrupts = <32>;
-		};
-
-		syscon3: syscon@80002200 {
-			compatible = "cirrus,ep7209-syscon3", "syscon";
-			reg = <0x80002200 0x40>;
-		};
-	};
-
-	backlight {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "simple-bus";
-
-		backlight@0 {
-			compatible = "pwm-backlight";
-			reg = <0>;
-			pwms = <&pwm 0>;
-			brightness-levels = <
-				0x0 0x1 0x2 0x3 0x4 0x5 0x6 0x7
-				0x8 0x9 0xa 0xb 0xc 0xd 0xe 0xf
-			>;
-			default-brightness-level = <0x0>;
-			power-supply = <&reg5v0>;
 		};
 	};
 
@@ -319,7 +79,7 @@
 		};
 
 		keypad: input@2 {
-			compatible = "cirrus,ep7312-keypad", "cirrus,ep7209-keypad";
+			compatible = "cirrus,ep7209-keypad";
 			reg = <2>;
 			autorepeat;
 			poll-interval = <67>;
@@ -351,12 +111,6 @@
 				MATRIX_KEY(4,3,0x34)
 			>;
 		};
-	};
-
-	mctrl: mctrl {
-		compatible = "cirrus,ep7312-mctrl-gpio", "cirrus,ep7209-mctrl-gpio";
-		gpio-controller;
-		#gpio-cells = <2>;
 	};
 
 	reg3v3: reg3v3 {
@@ -420,6 +174,23 @@
 		enable-at-boot;
 	};
 
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "DAICS4351";
+		simple-audio-card,format = "left_j";
+		simple-audio-card,bitclock-master = <&audio_master>;
+		simple-audio-card,frame-master = <&audio_master>;
+
+		audio_master: simple-audio-card,cpu {
+			sound-dai = <&dai>;
+			clocks = <&clks CLPS711X_CLK_DUMMY>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&codec>;
+		};
+	};
+
 	watchdog: watchdog {
 		compatible = "linux,wdt-gpio";
 		gpios = <&portb 3 GPIO_ACTIVE_LOW>;
@@ -429,18 +200,12 @@
 	};
 };
 
-&bus {
-	nor: nor@00000000 {
-		compatible = "cfi-flash";
-		reg = <0 0x00000000 0x02000000>;
-		bank-width = <2>;
-		linux,mtd-name = "physmap-flash.0";
-		#address-cells = <1>;
-		#size-cells = <1>;
-status = "disabled";
-	};
+&backlight {
+	power-supply = <&reg5v0>;
+};
 
-	rtc@10000000 {
+&bus {
+	rtc: rtc@10000000 {
 		compatible = "maxim,ds1742";
 		reg = <1 0x00000000 0x800>;
 	};
@@ -537,9 +302,16 @@ status = "disabled";
 	};
 };
 
-&fb {
-	display = <&display>;
+&clks {
+	startup-frequency = <92160000>;
+};
+
+&dai {
 	status = "okay";
+};
+
+&fb {
+	/delete-property/ lcd-supply;
 };
 
 &i2c {
@@ -554,6 +326,10 @@ status = "disabled";
 		reg = <0x68>;
 		#clock-cells = <1>;
 	};
+};
+
+&portd {
+	/delete-node/ lcden;
 };
 
 &spi {

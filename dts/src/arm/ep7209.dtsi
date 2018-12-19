@@ -6,24 +6,31 @@
 
 /dts-v1/;
 
-#include "skeleton.dtsi"
-
 #include <dt-bindings/clock/clps711x-clock.h>
 
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
 	model = "Cirrus Logic EP7209";
 	compatible = "cirrus,ep7209";
+
+	chosen { };
 
 	aliases {
 		gpio0 = &porta;
 		gpio1 = &portb;
 		gpio3 = &portd;
 		gpio4 = &porte;
-		serial0 = &uart1;
-		serial1 = &uart2;
+		serial0 = &serial1;
+		serial1 = &serial2;
 		spi0 = &spi;
 		timer0 = &timer1;
 		timer1 = &timer2;
+	};
+
+	memory {
+		device_type = "memory";
 	};
 
 	cpus {
@@ -48,6 +55,8 @@
 			compatible = "cirrus,ep7209-clk";
 			reg = <0x80000000 0xc000>;
 			startup-frequency = <73728000>;
+			syscon1 = <&syscon1>;
+			syscon2 = <&syscon2>;
 		};
 
 		intc: intc@80000000 {
@@ -86,7 +95,7 @@
 		};
 
 		syscon1: syscon@80000100 {
-			compatible = "cirrus,ep7209-syscon1", "syscon";
+			compatible = "syscon";
 			reg = <0x80000100 0x80>;
 		};
 
@@ -136,7 +145,7 @@
 			#pwm-cells = <1>;
 		};
 
-		uart1: uart@80000480 {
+		serial1: serial@80000480 {
 			compatible = "cirrus,ep7209-uart";
 			reg = <0x80000480 0x80>;
 			interrupts = <12 13>;
@@ -151,15 +160,16 @@
 			reg = <0x80000500 0x4>;
 			interrupts = <15>;
 			clocks = <&clks CLPS711X_CLK_SPI>;
+			syscon = <&syscon3>;
 			status = "disabled";
 		};
 
 		syscon2: syscon@80001100 {
-			compatible = "cirrus,ep7209-syscon2", "syscon";
+			compatible = "syscon";
 			reg = <0x80001100 0x80>;
 		};
 
-		uart2: uart@80001480 {
+		serial2: serial@80001480 {
 			compatible = "cirrus,ep7209-uart";
 			reg = <0x80001480 0x80>;
 			interrupts = <28 29>;
@@ -174,11 +184,12 @@
 			clocks = <&clks CLPS711X_CLK_PLL>;
 			clock-names = "pll";
 			interrupts = <32>;
+			syscon = <&syscon3>;
 			status = "disabled";
 		};
 
 		syscon3: syscon@80002200 {
-			compatible = "cirrus,ep7209-syscon3", "syscon";
+			compatible = "syscon";
 			reg = <0x80002200 0x40>;
 		};
 	};

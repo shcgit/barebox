@@ -15,19 +15,20 @@
 #include <linux/sizes.h>
 #include <dt-bindings/clock/clps711x-clock.h>
 
-#include <mach/clps711x.h>
+#include "clps711x.h"
 
 #define CLPS711X_OSC_FREQ	3686400
 #define CLPS711X_EXT_FREQ	13000000
 
 static struct clk *clks[CLPS711X_CLK_MAX];
+static struct clk_onecell_data clk_data;
 
 static struct clk_div_table tdiv_tbl[] = {
 	{ .val = 0, .div = 256, },
 	{ .val = 1, .div = 1, },
 };
 
-static __init int clps711x_clk_init(void)
+static int clps711x_clk_probe(struct device_d *dev)
 {
 	unsigned int f_cpu, f_bus, f_uart, f_timer_ref, pll;
 	u32 tmp;
@@ -76,19 +77,21 @@ static __init int clps711x_clk_init(void)
 	clks[CLPS711X_CLK_TIMER2] = clk_divider_table("timer2", "timer_ref",
 		IOMEM(SYSCON1), 7, 1, tdiv_tbl, ARRAY_SIZE(tdiv_tbl));
 
-	clkdev_add_physbase(clks[CLPS711X_CLK_UART], UARTDR1, NULL);
-	clkdev_add_physbase(clks[CLPS711X_CLK_UART], UARTDR2, NULL);
-	clkdev_add_physbase(clks[CLPS711X_CLK_TIMER2], TC2D, NULL);
+	clk_data.clks = clks;
+	clk_data.clk_num = CLPS711X_CLK_MAX;
+	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }
-postcore_initcall(clps711x_clk_init);
 
-static __init int clps711x_core_init(void)
-{
-	add_generic_device("clps711x-cs", DEVICE_ID_SINGLE, NULL,
-			   TC2D, SZ_2, IORESOURCE_MEM, NULL);
+static __maybe_unused struct of_device_id clps711x_clk_dt_ids[] = {
+	{ .compatible = "cirrus,ep7209-clk", },
+	{ }
+};
 
-	return 0;
-}
-coredevice_initcall(clps711x_core_init);
+static struct driver_d clps711x_clk_driver = {
+	.probe = clps711x_clk_probe,
+	.name = "clps711x-clk",
+	.of_compatible = DRV_OF_COMPAT(clps711x_clk_dt_ids),
+};
+postcore_platform_driver(clps711x_clk_driver);
