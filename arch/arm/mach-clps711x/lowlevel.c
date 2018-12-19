@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2012 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+// Author: Alexander Shiyan <shc_work@mail.ru>
 
 #include <common.h>
 #include <init.h>
@@ -23,7 +17,7 @@
 # define CLPS711X_CPU_PLL_MULT	40
 #endif
 
-#ifdef CONFIG_MACH_CLEP7212
+#ifdef CONFIG_MACH_CLPS711X_CLEP7212
 # define __dtb_ptr_start	__dtb_ep7211_edb7211_start
 #endif
 

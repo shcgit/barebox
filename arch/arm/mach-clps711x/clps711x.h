@@ -1,17 +1,9 @@
-/*
- *  Hardware definitions for Cirrus Logic CLPS711X
- *
- *  Copyright (C) 2000 Deep Blue Solutions Ltd.
- *  Copyright (C) 2012 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+// Copyright (C) 2000 Deep Blue Solutions Ltd.
+// Copyright (C) 2012-2018 Alexander Shiyan <shc_work@mail.ru>
 
-#ifndef __MACH_CLPS711X_H
-#define __MACH_CLPS711X_H
+#ifndef __CLPS711X_H
+#define __CLPS711X_H
 
 #define CS0_BASE		(0x00000000)
 #define CS1_BASE		(0x10000000)
