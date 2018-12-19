@@ -170,11 +170,6 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 	printf("MC13892 PMIC initialized.\n");
 }
 
-static int ccxmx51_is_compatible(void)
-{
-	return of_machine_is_compatible("digi,connectcore-ccxmx51-som");
-}
-
 static void ccxmx51_disable_device(struct device_node *root, const char *label)
 {
 	struct device_node *np = of_find_node_by_name(root, label);
@@ -205,7 +200,12 @@ static int ccxmx51_board_fixup(struct device_node *root, void *unused)
 	return 0;
 }
 
-static int ccxmx51_sdram_fixup(void)
+static __init int ccxmx51_is_compatible(void)
+{
+	return of_machine_is_compatible("digi,connectcore-ccxmx51-som");
+}
+
+static __init int ccxmx51_sdram_fixup(void)
 {
 	if (!ccxmx51_is_compatible())
 		return 0;
@@ -224,7 +224,7 @@ static int ccxmx51_sdram_fixup(void)
 }
 postcore_initcall(ccxmx51_sdram_fixup);
 
-static int ccxmx51_init(void)
+static __init int ccxmx51_init(void)
 {
 	char manloc = 'N';
 	u8 hwid[6];
