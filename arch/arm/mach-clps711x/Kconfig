@@ -27,12 +27,4 @@ config CLPS711X_RAISE_CPUFREQ
 
 endmenu
 
-config ARCH_TEXT_BASE
-	hex
-	default 0xc0740000
-
-config BAREBOX_MAX_IMAGE_SIZE
-	hex
-	default 0x00080000
-
 endif
