@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0+
 // Author: Alexander Shiyan <shc_work@mail.ru>
 
-#include <common.h>
 #include <driver.h>
+#include <envfs.h>
 #include <init.h>
 #include <of.h>
 #include <restart.h>
@@ -46,6 +46,15 @@ static __init int clps711x_fixup(void)
 	return 0;
 }
 postcore_initcall(clps711x_fixup);
+
+static __init int clps711x_defaultenv_init(void)
+{
+	if (of_machine_is_compatible("cirrus,ep7209"))
+		defaultenv_append_directory(defaultenv_clps711x);
+
+	return 0;
+}
+device_initcall(clps711x_defaultenv_init);
 
 static int __init clps711x_bus_map(void)
 {
@@ -91,6 +100,8 @@ static void clps711x_bus_patch(struct device_node *node,
 		}
 
 		of_set_property(node, "ranges", fixed, rsize, 0);
+
+		free(fixed);
 	}
 }
 

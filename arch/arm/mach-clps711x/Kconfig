@@ -8,6 +8,11 @@ config MACH_CLPS711X_CLEP7212
 	help
 	  Boards based on the Cirrus Logic 7212/7312 CPU.
 
+config MACH_CLPS711X_EDB7211
+	bool "Cirrus Logic EDB7211"
+	help
+	  Boards based on the Cirrus Logic 7212/7312 CPU.
+
 endchoice
 
 menu "CLPS711X specific settings"
