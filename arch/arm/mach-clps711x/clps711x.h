@@ -1,6 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0+
-// Copyright (C) 2000 Deep Blue Solutions Ltd.
-// Copyright (C) 2012-2018 Alexander Shiyan <shc_work@mail.ru>
+/* SPDX-License-Identifier: GPL-2.0+ */
+/*
+ * Copyright (C) 2000 Deep Blue Solutions Ltd.
+ * Copyright (C) 2012-2018 Alexander Shiyan <shc_work@mail.ru>
+ */
 
 #ifndef __CLPS711X_H
 #define __CLPS711X_H

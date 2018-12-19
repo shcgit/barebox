@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0+
-// Author: Alexander Shiyan <shc_work@mail.ru>
+/* Author: Alexander Shiyan <shc_work@mail.ru> */
 
 #include <common.h>
 #include <mach/esdctl.h>

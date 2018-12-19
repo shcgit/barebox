@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0+
-// (C) Copyright 2009-2010 Digi International, Inc.
-// Copyright (C) 2007 Sascha Hauer, Pengutronix
-// (c) 2011 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
-// Modified for barebox by Alexander Shiyan <shc_work@mail.ru>
+/*
+ * (C) Copyright 2009-2010 Digi International, Inc.
+ * Copyright (C) 2007 Sascha Hauer, Pengutronix
+ * (c) 2011 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
+ * Modified for barebox by Alexander Shiyan <shc_work@mail.ru>
+ */
 
 #include <common.h>
 #include <envfs.h>
