@@ -66,6 +66,7 @@ $(obj)/%.pbl: $(pbl-lds) $(barebox-pbl-common) FORCE
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
+	$(Q)$(objtree)/scripts/fix_size -f $@
 
 quiet_cmd_pblx ?= PBLX    $@
       cmd_pblx ?= cat $(obj)/$(patsubst %.pblx,%.pblb,$(2)) > $@; \
