@@ -321,6 +321,8 @@
 };
 
 &ecspi1 {
+	/delete-property/ dmas;
+	/delete-property/ dma-names;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi1 &pinctrl_ecspi1cs>;
 	fsl,spi-num-chipselects = <3>;
@@ -347,6 +349,8 @@
 };
 
 &ecspi2 {
+	/delete-property/ dmas;
+	/delete-property/ dma-names;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi2>;
 	fsl,spi-num-chipselects = <4>;
