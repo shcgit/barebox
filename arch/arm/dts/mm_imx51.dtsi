@@ -64,7 +64,7 @@
 			native-mode = <&timing_di0_0>;
 
 			timing_di0_0: PH320240T {
-				clock-frequency = <6394000>;
+/*				clock-frequency = <6394000>;
 				hactive = <320>;
 				vactive = <240>;
 				hback-porch = <38>;
@@ -76,6 +76,18 @@
 				pixelclk-active = <1>;
 				hsync-active = <0>;
 				vsync-active = <0>;
+				de-active = <1>;
+*/
+				clock-frequency = <60000000>;
+				hactive = <1920>;
+				vactive = <360>;
+				hback-porch = <10>;
+				hfront-porch = <10>;
+				hsync-len = <10>;
+				vback-porch = <5>;
+				vfront-porch = <5>;
+				vsync-len = <5>;
+				pixelclk-active = <1>;
 				de-active = <1>;
 			};
 		};
@@ -822,4 +834,8 @@
 		MX51_PAD_UART3_RXD__UART3_RXD		0x1c5
 		MX51_PAD_UART3_TXD__UART3_TXD		0xc5
 	>;
+};
+
+&wdog1 {
+	timeout-sec = <15>;
 };

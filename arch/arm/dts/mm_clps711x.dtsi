@@ -22,6 +22,25 @@
 		//power-supply = <&reg5v0>;
 	};
 
+	beeper: beeper {
+		compatible = "gpio-beeper";
+		gpios = <&portb 0 GPIO_ACTIVE_HIGH>;
+	};
+
+	clocks {
+		clk3m: clk3m {
+			compatible = "fixed-clock";
+			clock-frequency = <3686400>;
+			#clock-cells = <0>;
+		};
+
+		clk16m: clk16m {
+			compatible = "fixed-clock";
+			clock-frequency = <16000000>;
+			#clock-cells = <0>;
+		};
+	};
+
 	display: display {
 		model = "320x240x4";
 		native-mode = <&timing0>;
@@ -40,20 +59,6 @@
 				vsync-len = <0>;
 				clock-frequency = <6500000>;
 			};
-		};
-	};
-
-	clocks {
-		clk3m: clk3m {
-			compatible = "fixed-clock";
-			clock-frequency = <3686400>;
-			#clock-cells = <0>;
-		};
-
-		clk16m: clk16m {
-			compatible = "fixed-clock";
-			clock-frequency = <16000000>;
-			#clock-cells = <0>;
 		};
 	};
 
@@ -79,81 +84,6 @@
 		};
 	};
 
-	inputs {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "simple-bus";
-
-		beeper: input@0 {
-			compatible = "gpio-beeper";
-			reg = <0>;
-			gpios = <&portb 0 GPIO_ACTIVE_HIGH>;
-		};
-
-		switches: input@1 {
-			compatible = "gpio-keys-polled";
-			reg = <1>;
-			poll-interval = <37>;
-
-			button@0 {
-				label = "SHIFT";
-				linux,code = <SW_LID>;
-				linux,input-type = <EV_SW>;
-				gpios = <&porta 5 GPIO_ACTIVE_HIGH>;
-			};
-
-			button@1 {
-				label = "PWR_L";
-				linux,code = <SW_TABLET_MODE>;
-				linux,input-type = <EV_SW>;
-				gpios = <&mctrl 0 GPIO_ACTIVE_LOW>;
-				debounce-interval = <0>;
-			};
-
-			button@2 {
-				label = "PWR_H";
-				linux,code = <SW_HEADPHONE_INSERT>;
-				linux,input-type = <EV_SW>;
-				gpios = <&mctrl 1 GPIO_ACTIVE_LOW>;
-				debounce-interval = <0>;
-			};
-		};
-
-		keypad: input@2 {
-			compatible = "cirrus,ep7209-keypad";
-			reg = <2>;
-			autorepeat;
-			poll-interval = <67>;
-			row-gpios = <&porta 0 GPIO_ACTIVE_HIGH>,
-				    <&porta 1 GPIO_ACTIVE_HIGH>,
-				    <&porta 2 GPIO_ACTIVE_HIGH>,
-				    <&porta 3 GPIO_ACTIVE_HIGH>,
-				    <&porta 4 GPIO_ACTIVE_HIGH>;
-			linux,keymap = <
-				MATRIX_KEY(0,4,0x35)
-				MATRIX_KEY(0,5,0x3a)
-				MATRIX_KEY(0,6,0x3f)
-				MATRIX_KEY(0,7,0x44)
-				MATRIX_KEY(1,0,0x22)
-				MATRIX_KEY(1,1,0x27)
-				MATRIX_KEY(1,2,0x2c)
-				MATRIX_KEY(1,3,0x31)
-				MATRIX_KEY(2,0,0x23)
-				MATRIX_KEY(2,1,0x28)
-				MATRIX_KEY(2,2,0x2d)
-				MATRIX_KEY(2,3,0x32)
-				MATRIX_KEY(3,0,0x24)
-				MATRIX_KEY(3,1,0x29)
-				MATRIX_KEY(3,2,0x2e)
-				MATRIX_KEY(3,3,0x33)
-				MATRIX_KEY(4,0,0x25)
-				MATRIX_KEY(4,1,0x2a)
-				MATRIX_KEY(4,2,0x2f)
-				MATRIX_KEY(4,3,0x34)
-			>;
-		};
-	};
-
 	reg3v3: reg3v3 {
 		compatible = "regulator-fixed";
 		regulator-name = "3V3";
@@ -166,15 +96,6 @@
 		regulator-name = "5V0";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
-	};
-
-	sc2892rst: reg_sc2892rst {
-		compatible = "regulator-fixed";
-		regulator-name = "RST";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&portb 7 GPIO_ACTIVE_LOW>;
-		startup-delay-us = <1>;
 	};
 
 	reg_ide0: reg_ide0 {
@@ -215,6 +136,15 @@
 		enable-at-boot;
 	};
 
+	sc2892rst: reg_sc2892rst {
+		compatible = "regulator-fixed";
+		regulator-name = "RST";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&portb 7 GPIO_ACTIVE_LOW>;
+		startup-delay-us = <1>;
+	};
+
 	sound {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "DAICS4351";
@@ -229,6 +159,34 @@
 
 		simple-audio-card,codec {
 			sound-dai = <&codec>;
+		};
+	};
+
+	switches: switches {
+		compatible = "gpio-keys-polled";
+		poll-interval = <37>;
+
+		button@0 {
+			label = "SHIFT";
+			linux,code = <SW_LID>;
+			linux,input-type = <EV_SW>;
+			gpios = <&porta 5 GPIO_ACTIVE_HIGH>;
+		};
+
+		button@1 {
+			label = "PWR_L";
+			linux,code = <SW_TABLET_MODE>;
+			linux,input-type = <EV_SW>;
+			gpios = <&mctrl 0 GPIO_ACTIVE_LOW>;
+			debounce-interval = <0>;
+		};
+
+		button@2 {
+			label = "PWR_H";
+			linux,code = <SW_HEADPHONE_INSERT>;
+			linux,input-type = <EV_SW>;
+			gpios = <&mctrl 1 GPIO_ACTIVE_LOW>;
+			debounce-interval = <0>;
 		};
 	};
 
@@ -349,6 +307,39 @@
 
 &fb {
 	display = <&display>;
+	status = "okay";
+};
+
+&keypad {
+	autorepeat;
+	poll-interval = <67>;
+	row-gpios = <&porta 0 GPIO_ACTIVE_HIGH>,
+		    <&porta 1 GPIO_ACTIVE_HIGH>,
+		    <&porta 2 GPIO_ACTIVE_HIGH>,
+		    <&porta 3 GPIO_ACTIVE_HIGH>,
+		    <&porta 4 GPIO_ACTIVE_HIGH>;
+	linux,keymap = <
+		MATRIX_KEY(0,4,0x35)
+		MATRIX_KEY(0,5,0x3a)
+		MATRIX_KEY(0,6,0x3f)
+		MATRIX_KEY(0,7,0x44)
+		MATRIX_KEY(1,0,0x22)
+		MATRIX_KEY(1,1,0x27)
+		MATRIX_KEY(1,2,0x2c)
+		MATRIX_KEY(1,3,0x31)
+		MATRIX_KEY(2,0,0x23)
+		MATRIX_KEY(2,1,0x28)
+		MATRIX_KEY(2,2,0x2d)
+		MATRIX_KEY(2,3,0x32)
+		MATRIX_KEY(3,0,0x24)
+		MATRIX_KEY(3,1,0x29)
+		MATRIX_KEY(3,2,0x2e)
+		MATRIX_KEY(3,3,0x33)
+		MATRIX_KEY(4,0,0x25)
+		MATRIX_KEY(4,1,0x2a)
+		MATRIX_KEY(4,2,0x2f)
+		MATRIX_KEY(4,3,0x34)
+	>;
 	status = "okay";
 };
 
