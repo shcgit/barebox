@@ -117,7 +117,6 @@
 		};
 	};
 
-/*
 	display@di1 {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -127,9 +126,9 @@
 		interface-pix-fmt = "rgb565";
 
 		display-timings {
-			native-mode = <&timing_di1_0>;
+			native-mode = <&timing1_0>;
 
-			timing_di1_0: PD104SL5 {
+			timing1_0: PD104SL5 {
 				clock-frequency = <33250000>;
 				hactive = <800>;
 				vactive = <600>;
@@ -152,7 +151,6 @@
 			};
 		};
 	};
-*/
 
 	gpiokeys: gpiokeys {
 		pinctrl-names = "default";
@@ -515,11 +513,11 @@
 		remote-endpoint = <&tve_in>;
 	};
 };
+*/
 
 &ipu_di1_disp1 {
 	remote-endpoint = <&disp1_in>;
 };
-*/
 
 &kpp {
 	pinctrl-names = "default";
@@ -626,6 +624,11 @@
 	dr_mode = "host"; /* otg */
 	extcon = <&otgid>;
 	status = "okay";
+};
+
+
+&wdog1 {
+	timeout-sec = <10>;
 };
 
 &weim {
@@ -848,8 +851,4 @@
 		MX51_PAD_UART3_RXD__UART3_RXD		0x1c5
 		MX51_PAD_UART3_TXD__UART3_TXD		0xc5
 	>;
-};
-
-&wdog1 {
-	timeout-sec = <10>;
 };
