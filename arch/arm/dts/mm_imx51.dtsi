@@ -61,9 +61,9 @@
 		interface-pix-fmt = "rgb565";
 
 		display-timings {
-			native-mode = <&timing0>;
+			native-mode = <&timing0_0>;
 
-			timing0: PH320240T {
+			timing0_0: PH320240T {
 				clock-frequency = <6394000>;
 				hactive = <320>;
 				vactive = <240>;
@@ -79,7 +79,7 @@
 				de-active = <1>;
 			};
 
-			timing1: PD104SL5 {
+			timing0_1: PD104SL5 {
 				clock-frequency = <33250000>;
 				hactive = <800>;
 				vactive = <600>;
@@ -93,7 +93,7 @@
 				de-active = <1>;
 			};
 
-			timing2: AA192AA01 {
+			timing0_2: AA192AA01 {
 				clock-frequency = <55000000>;
 				hactive = <1920>;
 				vactive = <360>;
@@ -218,28 +218,20 @@
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
 	};
 
-	reg_video3v3: regulator@0 {
+	reg_dummy3v3: reg_dummy3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	reg_video3v3: reg_video3v3 {
 		compatible = "regulator-fixed";
 		regulator-name = "video3v3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		gpio = <&outgpios 1 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-	};
-
-	soc {
-		aips@80000000 {
-			vpu: vpu@83ff4000 {
-				compatible = "fsl,imx51-vpu";
-				reg = <0x83ff4000 0x1000>;
-				interrupts = <9>;
-				clocks = <&clks IMX5_CLK_VPU_REFERENCE_GATE>,
-					 <&clks IMX5_CLK_VPU_GATE>;
-				clock-names = "per", "ahb";
-				resets = <&src 1>;
-				iram = <&iram>;
-			};
-		};
 	};
 
 	sound {
@@ -377,6 +369,7 @@
 &ecspi2 {
 	/delete-property/ dmas;
 	/delete-property/ dma-names;
+
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi2>;
 	fsl,spi-num-chipselects = <4>;
@@ -571,6 +564,7 @@
 
 &pmic {
 	/delete-property/ fsl,mc13xxx-uses-rtc;
+
 	fsl,mc13xxx-uses-touch;
 
 	leds {
@@ -623,6 +617,10 @@
 	};
 };
 */
+
+&usbh1 {
+	vbus-supply = <&reg_dummy3v3>;
+};
 
 &usbotg {
 	dr_mode = "host"; /* otg */
