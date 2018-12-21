@@ -47,6 +47,7 @@ static __init int clps711x_fixup(void)
 }
 postcore_initcall(clps711x_fixup);
 
+#if defined(CONFIG_DEFAULT_ENVIRONMENT)
 static __init int clps711x_defaultenv_init(void)
 {
 	if (of_machine_is_compatible("cirrus,ep7209"))
@@ -55,6 +56,7 @@ static __init int clps711x_defaultenv_init(void)
 	return 0;
 }
 device_initcall(clps711x_defaultenv_init);
+#endif
 
 static int __init clps711x_bus_map(void)
 {
