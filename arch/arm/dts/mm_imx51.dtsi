@@ -28,6 +28,13 @@
 		gpios = <&gpio3 23 GPIO_ACTIVE_HIGH>;
 	};
 
+	capture-subsystem {
+		compatible = "fsl,imx-capture-subsystem";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipu_csi>;
+		ports = <&ipu_csi0>, <&ipu_csi1>;
+	};
+
 	clocks {
 		clk20m: clk20m {
 			compatible = "fixed-clock";
@@ -40,16 +47,6 @@
 			clock-frequency = <54000000>;
 			#clock-cells = <0>;
 		};
-	};
-
-	csi@csi0 {
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu_csi0>;
-	};
-
-	csi@csi1 {
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu_csi1>;
 	};
 
 	display@di0 {
@@ -679,7 +676,7 @@
 			>;
 		};
 
-		pinctrl_ipu_csi0: ipucsi0grp {
+		pinctrl_ipu_csi: ipucsigrp {
 			fsl,pins = <
 				MX51_PAD_CSI1_D12__CSI1_D12		0x80000000
 				MX51_PAD_CSI1_D13__CSI1_D13		0x80000000
@@ -690,11 +687,7 @@
 				MX51_PAD_CSI1_D18__CSI1_D18		0x80000000
 				MX51_PAD_CSI1_D19__CSI1_D19		0x80000000
 				MX51_PAD_CSI1_PIXCLK__CSI1_PIXCLK	0x80000000
-			>;
-		};
 
-		pinctrl_ipu_csi1: ipucsi1grp {
-			fsl,pins = <
 				MX51_PAD_CSI2_D12__CSI2_D12		0x80000000
 				MX51_PAD_CSI2_D13__CSI2_D13		0x80000000
 				MX51_PAD_CSI2_D14__CSI2_D14		0x80000000
