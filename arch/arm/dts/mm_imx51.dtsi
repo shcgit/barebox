@@ -61,10 +61,10 @@
 		interface-pix-fmt = "rgb565";
 
 		display-timings {
-			native-mode = <&timing_di0_0>;
+			native-mode = <&timing0>;
 
-			timing_di0_0: PH320240T {
-/*				clock-frequency = <6394000>;
+			timing0: PH320240T {
+				clock-frequency = <6394000>;
 				hactive = <320>;
 				vactive = <240>;
 				hback-porch = <38>;
@@ -77,16 +77,32 @@
 				hsync-active = <0>;
 				vsync-active = <0>;
 				de-active = <1>;
-*/
-				clock-frequency = <60000000>;
+			};
+
+			timing1: PD104SL5 {
+				clock-frequency = <33250000>;
+				hactive = <800>;
+				vactive = <600>;
+				hback-porch = <30>;
+				hfront-porch = <30>;
+				hsync-len = <60>;
+				vback-porch = <1>;
+				vfront-porch = <1>;
+				vsync-len = <2>;
+				pixelclk-active = <1>;
+				de-active = <1>;
+			};
+
+			timing2: AA192AA01 {
+				clock-frequency = <55000000>;
 				hactive = <1920>;
 				vactive = <360>;
-				hback-porch = <10>;
-				hfront-porch = <10>;
-				hsync-len = <10>;
-				vback-porch = <5>;
-				vfront-porch = <5>;
-				vsync-len = <5>;
+				hback-porch = <210>;
+				hfront-porch = <210>;
+				hsync-len = <210>;
+				vback-porch = <10>;
+				vfront-porch = <10>;
+				vsync-len = <10>;
 				pixelclk-active = <1>;
 				de-active = <1>;
 			};
@@ -211,13 +227,6 @@
 		enable-active-high;
 	};
 
-	usbphy1: usbphy1 {
-		compatible = "usb-nop-xceiv";
-		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
-		clock-names = "main_clk";
-		#phy-cells = <0>;
-	};
-
 	soc {
 		aips@80000000 {
 			vpu: vpu@83ff4000 {
@@ -283,6 +292,13 @@
 				/*system-clock-frequency = <12000000>;*/
 			};
 		};
+	};
+
+	usbphy1: usbphy1 {
+		compatible = "usb-nop-xceiv";
+		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
+		clock-names = "main_clk";
+		#phy-cells = <0>;
 	};
 };
 
@@ -837,5 +853,5 @@
 };
 
 &wdog1 {
-	timeout-sec = <15>;
+	timeout-sec = <10>;
 };
