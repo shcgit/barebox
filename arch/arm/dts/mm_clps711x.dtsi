@@ -19,7 +19,7 @@
 			0x8 0x9 0xa 0xb 0xc 0xd 0xe 0xf
 		>;
 		default-brightness-level = <0x0>;
-		//power-supply = <&reg5v0>;
+		power-supply = <&reg5v0>;
 	};
 
 	beeper: beeper {
@@ -82,13 +82,6 @@
 			reg = <0x68>;
 			#clock-cells = <1>;
 		};
-	};
-
-	reg3v3: reg3v3 {
-		compatible = "regulator-fixed";
-		regulator-name = "3V3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
 	};
 
 	reg5v0: reg5v0 {
@@ -307,6 +300,7 @@
 
 &fb {
 	display = <&display>;
+	lcd-supply = <&reg5v0>;
 	status = "okay";
 };
 
@@ -371,7 +365,7 @@
 		spi-max-frequency = <5000000>;
 		clocks = <&clk16m>;
 		interrupts = <7>;
-		vdd-supply = <&reg3v3>;
-		xceiver-supply = <&reg3v3>;
+		vdd-supply = <&reg5v0>;
+		xceiver-supply = <&reg5v0>;
 	};
 };
