@@ -60,10 +60,7 @@
 				regulator-always-on;
 			};
 
-			swbst_reg: swbst {
-				regulator-boot-on;
-				regulator-always-on;
-			};
+			swbst_reg: swbst { };
 
 			viohi_reg: viohi {
 				regulator-always-on;

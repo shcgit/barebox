@@ -10,7 +10,6 @@
  */
 
 #include <dt-bindings/gpio/gpio.h>
-#include <dt-bindings/interrupt-controller/irq.h>
 
 / {
 	model = "Phytec phyFLEX-i.MX6 Quad";

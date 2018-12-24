@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+/* SPDX-License-Identifier: GPL-2.0+ */
 /*
  * (C) Copyright 2009-2010 Digi International, Inc.
  * Copyright (C) 2007 Sascha Hauer, Pengutronix

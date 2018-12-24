@@ -383,11 +383,6 @@
 				reg = <0x73fa8000 0x4000>;
 			};
 
-			gpr: iomuxc-gpr@73fa8000 {
-				compatible = "fsl,imx51-iomuxc-gpr", "syscon";
-				reg = <0x73fa8000 8>;
-			};
-
 			pwm1: pwm@73fb4000 {
 				#pwm-cells = <2>;
 				compatible = "fsl,imx51-pwm", "fsl,imx27-pwm";
@@ -497,7 +492,6 @@
 				clocks = <&clks IMX5_CLK_SDMA_GATE>,
 					 <&clks IMX5_CLK_SDMA_GATE>;
 				clock-names = "ipg", "ahb";
-				gpr = <&gpr>;
 				#dma-cells = <3>;
 				fsl,sdma-ram-script-name = "imx/sdma/sdma-imx51.bin";
 			};
@@ -576,7 +570,6 @@
 					4 0 0xcc000000 0x02000000
 					5 0 0xce000000 0x02000000
 				>;
-				fsl,weim-cs-gpr = <&gpr>;
 				status = "disabled";
 			};
 
