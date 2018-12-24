@@ -17,3 +17,5 @@
 	model = "Phytec phyFLEX-i.MX6 Quad Carrier-Board";
 	compatible = "phytec,imx6x-pbab01", "phytec,imx6q-pfla02", "fsl,imx6q";
 };
+
+#include "mm_imx6.dtsi"

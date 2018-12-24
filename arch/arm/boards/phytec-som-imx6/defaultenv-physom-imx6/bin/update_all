@@ -1,0 +1,5 @@
+#!/bin/sh
+
+update_boot
+update_kernel
+update_root

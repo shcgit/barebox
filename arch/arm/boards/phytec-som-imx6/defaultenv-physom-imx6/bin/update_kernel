@@ -1,0 +1,8 @@
+#!/bin/sh
+
+mmc2.probe=1
+mount /dev/mmc2.0 fat /mnt
+ubiupdatevol /dev/nand0.system.ubi.kernel /mnt/zImage
+umount /mnt
+
+erase_env

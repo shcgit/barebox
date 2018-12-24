@@ -1,0 +1,11 @@
+#!/bin/sh
+
+mmc2.probe=1
+mount /dev/mmc2.0 fat /mnt
+unprotect /dev/nand0.boot
+erase /dev/nand0.boot
+cp /mnt/barebox-phytec-pbab01-1gib.img /dev/nand0.boot
+protect /dev/nand0.boot
+umount /mnt
+
+erase_env
