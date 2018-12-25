@@ -60,6 +60,10 @@
 	};
 };
 
+&ipu2 {
+	status = "disabled";
+};
+
 &pcie {
 	status = "disabled";
 };
@@ -81,27 +85,6 @@
 };
 
 #if 0
-&eeprom {
-	pagesize = <32>;
-};
-
-&fec {
-	phy-handle = <&ethphy>;
-	phy-reset-duration = <10>;
-	status = "okay";
-
-	mdio {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		ethphy: ethernet-phy@3 {
-			reg = <3>;
-
-			txc-skew-ps = <1680>;
-			rxc-skew-ps = <1860>;
-		};
-	};
-};
 
 &i2c1 {
 	/* WM8753 SCLK Low pulse-width MIN 1.3us */
@@ -128,20 +111,8 @@
 	status = "okay";
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};
-
 &snvs {
 	status = "disabled";
-};
-
-&uart3 {
-	status = "okay";
-};
-
-&uart4 {
-	status = "okay";
 };
 
 &usbotg {
@@ -158,12 +129,6 @@
 	imx6q-phytec-pfla02 {
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
-				/*MX6QDL_PAD_SD4_DAT3__GPIO2_IO11 	0x80000000*/	/* Revision */
-				MX6QDL_PAD_SD4_DAT4__GPIO2_IO12		0x80000000	/* Revision */
-				MX6QDL_PAD_SD4_DAT5__GPIO2_IO13		0x80000000	/* Revision */
-				MX6QDL_PAD_SD4_DAT6__GPIO2_IO14		0x80000000	/* Revision */
-				MX6QDL_PAD_SD4_DAT7__GPIO2_IO15		0x80000000	/* Revision */
-
 				/* FIXME */
 				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x80000000	/* FEC Reset */
 
