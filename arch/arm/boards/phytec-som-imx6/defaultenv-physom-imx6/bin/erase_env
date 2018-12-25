@@ -3,8 +3,8 @@
 global env_erased
 
 if [ -z "${global.env_erased}" ]; then
-	unprotect /dev/nand0.env
-	erase /dev/nand0.env
-	protect /dev/nand0.env
+	unprotect /dev/m25p0.env
+	erase /dev/m25p0.env
+	protect /dev/m25p0.env
 	global.env_erased=true
 fi
