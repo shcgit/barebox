@@ -22,6 +22,37 @@
 		};
 	};
 
+	panel: lvds-panel {
+		compatible = "panel-lvds";
+//		backlight = <&backlight_lvds>;
+//		width-mm = <153>;
+//		height-mm = <86>;
+//		label = "gktw70sdae4se";
+//		data-mapping = "jeida-24";
+//power
+//enable
+//reset
+//data-mirror
+//
+//		panel-timing {
+//			clock-frequency = <32000000>;
+//			hactive = <800>;
+//			vactive = <480>;
+//			hback-porch = <39>;
+//			hfront-porch = <39>;
+//			vback-porch = <29>;
+//			vfront-porch = <13>;
+//			hsync-len = <47>;
+//			vsync-len = <2>;
+//		};
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
+
 	soc {
 		/delete-node/ capture-subsystem;
 
@@ -101,7 +132,16 @@
 	status = "okay";
 
 	lvds-channel@0 {
+//fsl,data-mapping = "jeida"; ? spwg
+//fsl,data-width = <24>;
 		status = "okay";
+
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
 	};
 };
 
@@ -115,6 +155,16 @@
 
 &pcie {
 	status = "disabled";
+};
+
+&usbh1 {
+	status = "disabled";
+};
+
+&usbotg {
+	dr_mode = "host";
+// delete ? disable-over-current;
+// reg_usb_otg_vbus ? GPIO_ACTIVE_LOW
 };
 
 &usdhc2 {
@@ -139,13 +189,6 @@
 	status = "disabled";
 };
 
-&usbotg {
-	status = "okay";
-};
-
-&usbphy2 {
-	status = "disabled";
-};
 ///////////////////////////////////////////////////////////////////////////////
 #endif
 
