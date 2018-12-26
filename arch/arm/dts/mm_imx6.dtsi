@@ -21,6 +21,14 @@
 			status = "disabled";
 		};
 	};
+
+	soc {
+		/delete-node/ capture-subsystem;
+
+		display-subsystem {
+			ports = <&ipu1_di0>;
+		};
+	};
 };
 
 &can1 {
@@ -34,7 +42,7 @@
 	/delete-node/ partition@140000;
 
 	partition@0 {
-		label = "barebox";
+		label = "boot";
 		reg = <0x00000 0x80000>;
 	};
 
@@ -60,8 +68,49 @@
 	};
 };
 
+&i2c1 {
+	/* WM8753 SCLK Low pulse-width MIN 1.3us */
+	clock-frequency = <350000>;
+
+//	wm8753: wm8753@1b {
+//		#sound-dai-cells = <0>;
+//		compatible = "wlf,wm8753";
+//		reg = <0x1b>;
+//	};
+
+//	rtc@68 {
+//		compatible = "maxim,ds3231";
+//		reg = <0x68>;
+//		#clock-cells = <1>;
+//	};
+};
+
+&i2c2 {
+	status = "disabled";
+};
+
+&i2c3 {
+	status = "disabled";
+};
+
 &ipu2 {
 	status = "disabled";
+};
+
+&ldb {
+	status = "okay";
+
+	lvds-channel@0 {
+		status = "okay";
+	};
+};
+
+&mipi_csi {
+	status = "disabled";
+};
+
+&mipi_dsi {
+	status = "okay";
 };
 
 &pcie {
@@ -85,32 +134,7 @@
 };
 
 #if 0
-
-&i2c1 {
-	/* WM8753 SCLK Low pulse-width MIN 1.3us */
-	clock-frequency = <350000>;
-
-//	wm8753: wm8753@1b {
-//		#sound-dai-cells = <0>;
-//		compatible = "wlf,wm8753";
-//		reg = <0x1b>;
-//	};
-
-//	rtc@68 {
-//		compatible = "maxim,ds3231";
-//		reg = <0x68>;
-//		#clock-cells = <1>;
-//	};
-};
-
-&ldb {
-	status = "okay";
-};
-
-&mipi_dsi {
-	status = "okay";
-};
-
+///////////////////////////////////////////////////////////////////////////////
 &snvs {
 	status = "disabled";
 };
@@ -122,31 +146,11 @@
 &usbphy2 {
 	status = "disabled";
 };
-
+///////////////////////////////////////////////////////////////////////////////
 #endif
 
 &iomuxc {
 	imx6q-phytec-pfla02 {
-		pinctrl_hog: hoggrp {
-			fsl,pins = <
-				/* FIXME */
-				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x80000000	/* FEC Reset */
-
-				MX6QDL_PAD_ENET_TXD0__GPIO1_IO30	0x80000000	/* Green LED */
-				MX6QDL_PAD_EIM_EB3__GPIO2_IO31		0x80000000	/* Red LED */
-			>;
-		};
-
-		pinctrl_ecspi3: ecspi3grp {
-			fsl,pins = <
-				MX6QDL_PAD_DISP0_DAT2__ECSPI3_MISO	0x100b1
-				MX6QDL_PAD_DISP0_DAT1__ECSPI3_MOSI	0x100b1
-				MX6QDL_PAD_DISP0_DAT0__ECSPI3_SCLK	0x100b1
-				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24	0x80000000	/* CS0 */
-				MX6QDL_PAD_SD4_DAT1__GPIO2_IO09		0x80000000	/* IRQ */
-			>;
-		};
-
 		pinctrl_uart3: uart3grp {
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D24__UART3_TX_DATA	0x1b0b1

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mmc2.probe=1
-mount /dev/mmc2.0 fat /mnt
+mount /dev/mmc2.0 /mnt
 ubiupdatevol /dev/m25p0.system.ubi.kernel /mnt/zImage
 umount /mnt
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mmc0.probe=1
-mount /dev/mmc0.0 fat /mnt
+mount /dev/mmc0.0 /mnt
 unprotect /dev/nand0.boot
 erase /dev/nand0.boot
 cp /mnt/barebox-imx51-ccxmx51.img /dev/nand0.boot

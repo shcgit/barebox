@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mmc2.probe=1
-mount /dev/mmc2.0 fat /mnt
+mount /dev/mmc2.0 /mnt
 unprotect /dev/m25p0.boot
 erase /dev/m25p0.boot
 cp /mnt/barebox-phytec-pbab01-1gib.img /dev/m25p0.boot
