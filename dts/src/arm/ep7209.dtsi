@@ -95,6 +95,11 @@
 		syscon1: syscon@80000100 {
 			compatible = "syscon";
 			reg = <0x80000100 0x80>;
+
+			keypad: keypad {
+				compatible = "cirrus,ep7209-keypad";
+				status = "disabled";
+			};
 		};
 
 		bus: bus@80000180 {
@@ -193,11 +198,13 @@
 		};
 	};
 
+/*
 	keypad: keypad {
 		compatible = "cirrus,ep7209-keypad";
 		syscon = <&syscon1>;
 		status = "disabled";
 	};
+*/
 
 	mctrl: mctrl {
 		compatible = "cirrus,ep7209-mctrl-gpio";
