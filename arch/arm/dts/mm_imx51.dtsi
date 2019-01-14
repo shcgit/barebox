@@ -285,6 +285,7 @@
 		compatible = "usb-nop-xceiv";
 		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
 		clock-names = "main_clk";
+		reset-gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
 		#phy-cells = <0>;
 	};
 };
@@ -422,13 +423,6 @@
 		gpios = <2 GPIO_ACTIVE_HIGH>;
 		output-high;
 		line-name = "IO ENABLE";
-	};
-
-	usb1rst {
-		gpio-hog;
-		gpios = <8 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "USB1 RESET";
 	};
 };
 
@@ -573,13 +567,13 @@
 			linux,default-trigger = "heartbeat";
 		};
 
-		led-usb {
+		led-mtd {
 			reg = <4>;
 			label = "red:mtd";
 			linux,default-trigger = "mtd";
 		};
 
-		led-none {
+		led-usb {
 			reg = <5>;
 			label = "red:usb";
 			linux,default-trigger = "usb-host";

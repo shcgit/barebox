@@ -3,39 +3,33 @@
 # Beeper ON
 gpio_direction_output 87 1
 
-# USB1 Reset Low
-gpio_direction_output 72 0
-msleep 250
-# USB1 Reset High
-gpio_direction_output 72 1
-
-# Beeper OFF
-gpio_direction_output 87 0
+msleep 240
 
 if [ -e /dev/fb0 ]; then
 	fb0.enable=1
-
-	# Backlight1 PWM set to 75% and Turn ON
-	i2c_write -a 0x2c -b 0 -r 0x00 0xbf
-	i2c_write -a 0x2c -b 0 -r 0x01 0x05
 
 	# Load LOGO
 	if [ -f /env/milas.png ]; then
 		splash -f /dev/fb0 /env/milas.png
 	fi
+
+	# Backlight1 PWM set to 75% and Turn ON
+	i2c_write -a 0x2c -b 0 -r 0x00 0xbf
+	i2c_write -a 0x2c -b 0 -r 0x01 0x05
 fi
 
 if [ -e /dev/fb1 ]; then
 #	fb1.enable=1
 
-	# Backlight2 Enable
-#	gpio_direction_output 140 1
-#	msleep 4
-
-#	TODO
-
 	# Load LOGO
 #	if [ -f /env/milas.png ]; then
 #		splash -f /dev/fb1 /env/milas.png
 #	fi
+
+	# Backlight2 Enable
+#	gpio_direction_output 140 1
+#	msleep 4
 fi
+
+# Beeper OFF
+gpio_direction_output 87 0
