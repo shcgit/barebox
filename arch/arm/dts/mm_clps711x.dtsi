@@ -134,7 +134,7 @@
 		regulator-name = "RST";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		gpio = <&portb 7 GPIO_ACTIVE_LOW>;
+		gpio = <&portb 7 0>;
 		startup-delay-us = <1>;
 	};
 
@@ -193,12 +193,12 @@
 };
 
 &bus {
-	rtc: rtc@10000000 {
+	rtc: rtc@1,0 {
 		compatible = "maxim,ds1742";
 		reg = <1 0x00000000 0x800>;
 	};
 
-	sdagpio: sdagpio@10000804 {
+	sdagpio: sdagpio@1,804 {
 		compatible = "wd,mbl-gpio";
 		reg = <1 0x00000804 0x1>;
 		reg-names = "dat";
@@ -206,7 +206,7 @@
 		#gpio-cells = <2>;
 	};
 
-	sclgpio: sclgpio@10000805 {
+	sclgpio: sclgpio@1,805 {
 		compatible = "wd,mbl-gpio";
 		reg = <1 0x00000805 0x1>;
 		reg-names = "dat";
@@ -214,7 +214,7 @@
 		#gpio-cells = <2>;
 	};
 
-	uart@10100000 {
+	uart@1,100000 {
 		compatible = "nxp,sc2892";
 		reg = <1 0x00100000 0x10>;
 		clocks = <&clk3m>;
@@ -223,14 +223,14 @@
 		vcc-supply = <&sc2892rst>;
 	};
 
-	bgpio@10200000 {
+	bgpio@1,200000 {
 		compatible = "ti,74244";
 		reg = <1 0x00200000 0x1>;
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
 
-	ide@20000000 {
+	ide@2,0 {
 		compatible = "ata-generic";
 		reg = <
 			2 0x00000000 0x20
@@ -239,10 +239,11 @@
 		interrupts = <5>;
 		reg-shift = <2>;
 		pio-mode = <2>;
+		bus-width = <2>;
 		vcc-supply = <&reg_ide0>;
 	};
 
-	ide@20100000 {
+	ide@2,100000 {
 		compatible = "ata-generic";
 		reg = <
 			2 0x00100000 0x20
@@ -251,14 +252,14 @@
 		interrupts = <6>;
 		reg-shift = <2>;
 		pio-mode = <2>;
+		bus-width = <2>;
 		vcc-supply = <&reg_ide1>;
 	};
 
-	nand: nand@30000000 {
+	nand: nand@3,0 {
 		compatible = "gpio-control-nand";
 		reg = <3 0x00000000 0x2>;
 		chip-delay = <25>;
-		gpio-control-nand,bank-width-auto;
 		ale-gpios = <&nand_ctrl 1 GPIO_ACTIVE_HIGH>;
 		cle-gpios = <&nand_ctrl 0 GPIO_ACTIVE_HIGH>;
 		nwp-gpios = <&nand_ctrl 2 GPIO_ACTIVE_LOW>;
@@ -275,14 +276,14 @@
 		};
 	};
 
-	nand_ctrl: bgpio@30008004 {
+	nand_ctrl: bgpio@3,8004 {
 		compatible = "ti,74174";
 		reg = <3 0x00008004 0x1>;
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
 
-	nand_stat: bgpio@30008014 {
+	nand_stat: bgpio@3,8014 {
 		compatible = "ti,74365";
 		reg = <3 0x00008014 0x1>;
 		gpio-controller;

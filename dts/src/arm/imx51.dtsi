@@ -174,7 +174,6 @@
 						 <&clks IMX5_CLK_DUMMY>,
 						 <&clks IMX5_CLK_ESDHC1_PER_GATE>;
 					clock-names = "ipg", "ahb", "per";
-					bus-width = <4>;
 					status = "disabled";
 				};
 
