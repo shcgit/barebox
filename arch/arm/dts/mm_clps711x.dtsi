@@ -239,7 +239,7 @@
 		interrupts = <5>;
 		reg-shift = <2>;
 		pio-mode = <2>;
-		bus-width = <2>;
+		ata-generic,use16bit;
 		vcc-supply = <&reg_ide0>;
 	};
 
@@ -252,7 +252,7 @@
 		interrupts = <6>;
 		reg-shift = <2>;
 		pio-mode = <2>;
-		bus-width = <2>;
+		ata-generic,use16bit;
 		vcc-supply = <&reg_ide1>;
 	};
 
@@ -260,13 +260,13 @@
 		compatible = "gpio-control-nand";
 		reg = <3 0x00000000 0x2>;
 		chip-delay = <25>;
-		ale-gpios = <&nand_ctrl 1 GPIO_ACTIVE_HIGH>;
-		cle-gpios = <&nand_ctrl 0 GPIO_ACTIVE_HIGH>;
-		nwp-gpios = <&nand_ctrl 2 GPIO_ACTIVE_LOW>;
-		nce-gpios = <&nand_ctrl 4 GPIO_ACTIVE_LOW>,
-			    <&nand_ctrl 5 GPIO_ACTIVE_LOW>;
-		rdy-gpios = <&nand_stat 1 GPIO_ACTIVE_LOW>,
-			    <&nand_stat 2 GPIO_ACTIVE_LOW>;
+		ale-gpios = <&nand_ctrl 1 0>;
+		cle-gpios = <&nand_ctrl 0 0>;
+		nwp-gpios = <&nand_ctrl 2 0>;
+		nce-gpios = <&nand_ctrl 4 0>,
+			    <&nand_ctrl 5 0>;
+		rdy-gpios = <&nand_stat 1 0>,
+			    <&nand_stat 2 0>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
