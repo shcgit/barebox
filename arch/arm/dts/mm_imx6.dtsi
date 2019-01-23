@@ -24,7 +24,7 @@
 
 	panel: lvds-panel {
 		compatible = "panel-lvds";
-//		backlight = <&backlight_lvds>;
+//		backlight = <&backlight0>;
 //		width-mm = <153>;
 //		height-mm = <86>;
 //		label = "gktw70sdae4se";

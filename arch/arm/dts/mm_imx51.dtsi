@@ -6,21 +6,15 @@
 	compatible = "milas,informer-imx51",
 		     "digi,connectcore-ccxmx51-som", "fsl,imx51";
 
-	backlight {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "simple-bus";
+/*
+	backlight0 {
+		compatible = "gpio-backlight";
+	};
+*/
 
-/*		backlight@0 {
-			compatible = "gpio-backlight";
-			reg = <0>;
-		};*/
-
-		backlight@1 {
-			compatible = "gpio-backlight";
-			reg = <1>;
-			gpios = <&outgpios 4 GPIO_ACTIVE_HIGH>;
-		};
+	backlight1 {
+		compatible = "gpio-backlight";
+		gpios = <&outgpios 4 GPIO_ACTIVE_HIGH>;
 	};
 
 	beeper: beeper {

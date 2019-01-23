@@ -6,7 +6,7 @@ fi
 
 ubiformat /dev/nand0.system -y
 ubiattach /dev/nand0.system
-ubimkvol -t dynamic /dev/nand0.system.ubi root 29360128
+ubimkvol -t dynamic /dev/nand0.system.ubi root 62914560
 ubimkvol -t dynamic /dev/nand0.system.ubi bbox 0
 
 if [ -e /dev/m25p0.system.ubi ]; then
