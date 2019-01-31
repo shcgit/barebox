@@ -606,7 +606,7 @@
 };
 
 &usbotg {
-	dr_mode = "host"; /* otg */
+	dr_mode = "otg";
 	extcon = <&otgid>;
 	status = "okay";
 };
