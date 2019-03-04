@@ -22,23 +22,10 @@
 		gpios = <&gpio3 23 GPIO_ACTIVE_HIGH>;
 	};
 
-	capture-subsystem {
-		compatible = "fsl,imx-capture-subsystem";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu_csi>;
-		ports = <&ipu_csi0>, <&ipu_csi1>;
-	};
-
 	clocks {
 		clk20m: clk20m {
 			compatible = "fixed-clock";
 			clock-frequency = <20000000>;
-			#clock-cells = <0>;
-		};
-
-		clk54m: clk54m {
-			compatible = "fixed-clock";
-			clock-frequency = <54000000>;
 			#clock-cells = <0>;
 		};
 	};
@@ -207,22 +194,6 @@
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
 	};
 
-	reg_dummy3v3: reg_dummy3v3 {
-		compatible = "regulator-fixed";
-		regulator-name = "3v3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-	};
-
-	reg_video3v3: reg_video3v3 {
-		compatible = "regulator-fixed";
-		regulator-name = "video3v3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&outgpios 1 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-	};
-
 	sound {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -250,37 +221,6 @@
 				system-clock-frequency = <12000000>;
 			};
 		};
-
-		audio@1 {
-			reg = <1>;
-			compatible = "simple-audio-card";
-			simple-audio-card,name = "SSI1TW2837";
-			simple-audio-card,format = "i2s";
-			simple-audio-card,bitclock-master = <&audio1_master>;
-			simple-audio-card,frame-master = <&audio1_master>;
-			/*simple-audio-card,widgets =
-				"Headphone", "Line Out";
-			simple-audio-card,routing =
-				"Line Out", "LOUT1",
-				"Line Out", "ROUT1";*/
-
-			audio1_master: simple-audio-card,cpu {
-				sound-dai = <&ssi2>;
-			};
-
-			simple-audio-card,codec {
-				sound-dai = <&tw2837_audio>;
-				/*system-clock-frequency = <12000000>;*/
-			};
-		};
-	};
-
-	usbphy1: usbphy1 {
-		compatible = "usb-nop-xceiv";
-		clocks = <&clks IMX5_CLK_USB_PHY_GATE>;
-		clock-names = "main_clk";
-		reset-gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
-		#phy-cells = <0>;
 	};
 };
 
@@ -306,26 +246,6 @@
 		fsl,port-config = <
 			IMX_AUDMUX_V2_PTCR_SYN
 			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT1_SSI0)
-		>;
-	};
-
-	audmux-ssi1 {
-		fsl,audmux-port = <MX51_AUDMUX_PORT2_SSI1>;
-		fsl,port-config = <
-			(IMX_AUDMUX_V2_PTCR_TFSDIR |
-			IMX_AUDMUX_V2_PTCR_TFSEL(MX51_AUDMUX_PORT5) |
-			IMX_AUDMUX_V2_PTCR_TCLKDIR |
-			IMX_AUDMUX_V2_PTCR_TCSEL(MX51_AUDMUX_PORT5) |
-			IMX_AUDMUX_V2_PTCR_SYN)
-			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT5)
-		>;
-	};
-
-	audmux-aud5 {
-		fsl,audmux-port = <MX51_AUDMUX_PORT5>;
-		fsl,port-config = <
-			IMX_AUDMUX_V2_PTCR_SYN
-			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT2_SSI1)
 		>;
 	};
 };
@@ -444,26 +364,6 @@
 		reg = <0x2c>;
 	};
 
-	tw2837: tw2837@42 {
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_tw2837>;
-		compatible = "intersil,tw2837";
-		reg = <0x42>;
-		clocks = <&clk54m>;
-		interrupt-parent = <&gpio3>;
-		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
-		vddo-supply = <&reg_video3v3>;
-		reset-gpios = <&outgpios 0 GPIO_ACTIVE_HIGH>;
-
-		tw2837_audio: audio {
-			#sound-dai-cells = <0>;
-			/**/
-		};
-
-		video {
-		};
-	};
-
 	at24@50 {
 		compatible = "at,24c16";
 		reg = <0x50>;
@@ -474,16 +374,6 @@
 		compatible = "maxim,ds3231";
 		reg = <0x68>;
 		#clock-cells = <1>;
-	};
-};
-
-&ipu {
-	ipu_csi0: port@0 {
-		reg = <0>;
-	};
-
-	ipu_csi1: port@1 {
-		reg = <1>;
 	};
 };
 
@@ -584,11 +474,6 @@
 	status = "okay";
 };
 
-&ssi2 {
-	fsl,mode = "i2s-slave";
-	status = "okay";
-};
-
 /*
 &tve {
 	fsl,tve-mode = "tvout";
@@ -602,7 +487,7 @@
 */
 
 &usbh1 {
-	vbus-supply = <&reg_dummy3v3>;
+	status = "disabled";
 };
 
 &usbotg {
@@ -642,8 +527,6 @@
 			fsl,pins = <
 				/* IO Enable */
 				MX51_PAD_DI1_PIN13__GPIO3_2		0x04
-				/* USBH1 Reset */
-				MX51_PAD_DISPB2_SER_RS__GPIO3_8		0x04
 				/* GPIO Beeper */
 				MX51_PAD_NANDF_CS7__GPIO3_23		0x04
 				/* DISP1 GPIO */
@@ -658,33 +541,6 @@
 				MX51_PAD_AUD3_BB_TXD__AUD3_TXD		0x80000000
 				MX51_PAD_AUD3_BB_CK__AUD3_TXC		0x80000000
 				MX51_PAD_AUD3_BB_FS__AUD3_TXFS		0x80000000
-				MX51_PAD_SD1_DATA1__AUD5_RXD		0x80000000
-				MX51_PAD_SD1_CLK__AUD5_RXC		0x80000000
-				MX51_PAD_SD1_CMD__AUD5_RXFS		0x80000000
-			>;
-		};
-
-		pinctrl_ipu_csi: ipucsigrp {
-			fsl,pins = <
-				MX51_PAD_CSI1_D12__CSI1_D12		0x80000000
-				MX51_PAD_CSI1_D13__CSI1_D13		0x80000000
-				MX51_PAD_CSI1_D14__CSI1_D14		0x80000000
-				MX51_PAD_CSI1_D15__CSI1_D15		0x80000000
-				MX51_PAD_CSI1_D16__CSI1_D16		0x80000000
-				MX51_PAD_CSI1_D17__CSI1_D17		0x80000000
-				MX51_PAD_CSI1_D18__CSI1_D18		0x80000000
-				MX51_PAD_CSI1_D19__CSI1_D19		0x80000000
-				MX51_PAD_CSI1_PIXCLK__CSI1_PIXCLK	0x80000000
-
-				MX51_PAD_CSI2_D12__CSI2_D12		0x80000000
-				MX51_PAD_CSI2_D13__CSI2_D13		0x80000000
-				MX51_PAD_CSI2_D14__CSI2_D14		0x80000000
-				MX51_PAD_CSI2_D15__CSI2_D15		0x80000000
-				MX51_PAD_CSI2_D16__CSI2_D16		0x80000000
-				MX51_PAD_CSI2_D17__CSI2_D17		0x80000000
-				MX51_PAD_CSI2_D18__CSI2_D18		0x80000000
-				MX51_PAD_CSI2_D19__CSI2_D19		0x80000000
-				MX51_PAD_CSI2_PIXCLK__CSI2_PIXCLK	0x80000000
 			>;
 		};
 
@@ -783,13 +639,6 @@
 				MX51_PAD_KEY_COL3__KEY_COL3		0xe8
 				MX51_PAD_KEY_COL4__KEY_COL4		0xe8
 				MX51_PAD_KEY_COL5__KEY_COL5		0xe8
-			>;
-		};
-
-		pinctrl_tw2837: tw2837grp {
-			fsl,pins = <
-				MX51_PAD_CSI1_VSYNC__GPIO3_14		0x101 /* IRQ */
-				MX51_PAD_CSI1_HSYNC__GPIO3_15		0x101 /* Unused */
 			>;
 		};
 
