@@ -158,7 +158,7 @@
 };
 
 &usbh1 {
-	status = "disabled";
+//	status = "disabled";
 };
 
 &usbotg {

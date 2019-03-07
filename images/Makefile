@@ -45,7 +45,9 @@
 #
 
 quiet_cmd_objcopy_bin = OBJCOPYB $@
-      cmd_objcopy_bin = $(OBJCOPY) -O binary $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
+      cmd_objcopy_bin = \
+		$(OBJCOPY) -O binary $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@ && \
+		$(objtree)/scripts/fix_size -i -f $@
 
 pbl-lds := $(obj)/pbl.lds
 extra-y += $(pbl-lds)
@@ -66,7 +68,6 @@ $(obj)/%.pbl: $(pbl-lds) $(barebox-pbl-common) FORCE
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
-	$(Q)$(objtree)/scripts/fix_size -f $@
 
 quiet_cmd_pblx ?= PBLX    $@
       cmd_pblx ?= cat $(obj)/$(patsubst %.pblx,%.pblb,$(2)) > $@; \
@@ -115,7 +116,7 @@ include $(srctree)/images/Makefile.tegra
 include $(srctree)/images/Makefile.vexpress
 include $(srctree)/images/Makefile.at91
 
-targets += $(image-y) pbl.lds barebox.x barebox.z
+targets += $(image-y) pbl.lds barebox.x barebox.z piggy.o
 targets += $(patsubst %,%.pblx,$(pblx-y))
 targets += $(patsubst %,%.pblb,$(pblx-y))
 targets += $(patsubst %,%.pbl,$(pblx-y))
