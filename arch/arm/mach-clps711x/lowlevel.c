@@ -24,7 +24,7 @@
 # define __dtb_ptr_start	__dtb_ep7211_edb7211_start
 #endif
 
-void __naked __bare_init barebox_arm_reset_vector(void)
+void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	extern char *__dtb_ptr_start[];
 	void *fdt = __dtb_ptr_start;
