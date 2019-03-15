@@ -1,3 +1,22 @@
 #!/bin/sh
 
-#TODO
+# Beeper ON
+#gpio_direction_output 87 1
+
+msleep 240
+
+if [ -e /dev/fb0 ]; then
+	fb0.enable=1
+
+	# Load LOGO
+	if [ -f /env/milas.png ]; then
+		splash -f /dev/fb0 /env/milas.png
+	fi
+
+	# Backlight1 PWM set to 75% and Turn ON
+	i2c_write -a 0x2c -b 1 -r 0x00 0xbf
+	i2c_write -a 0x2c -b 1 -r 0x01 0x05
+fi
+
+# Beeper OFF
+#gpio_direction_output 87 0

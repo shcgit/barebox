@@ -31,8 +31,6 @@
 	};
 
 	display@di0 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		compatible = "fsl,imx-parallel-display";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ipu_disp0>;
@@ -86,9 +84,7 @@
 			};
 		};
 
-		port@0 {
-			reg = <0>;
-
+		port {
 			disp0_in: endpoint {
 				remote-endpoint = <&ipu_di0_disp1>;
 			};
@@ -96,8 +92,6 @@
 	};
 
 	display@di1 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		compatible = "fsl,imx-parallel-display";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ipu_disp1>;
@@ -121,9 +115,7 @@
 			};
 		};
 
-		port@0 {
-			reg = <0>;
-
+		port {
 			disp1_in: endpoint {
 				remote-endpoint = <&ipu_di1_disp1>;
 			};

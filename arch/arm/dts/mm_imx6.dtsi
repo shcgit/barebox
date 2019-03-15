@@ -22,36 +22,14 @@
 		};
 	};
 
-	panel: lvds-panel {
-		compatible = "panel-lvds";
-//		backlight = <&backlight0>;
-//		width-mm = <153>;
-//		height-mm = <86>;
-//		label = "gktw70sdae4se";
-//		data-mapping = "jeida-24";
-//power
-//enable
-//reset
-//data-mirror
-//
-//		panel-timing {
-//			clock-frequency = <32000000>;
-//			hactive = <800>;
-//			vactive = <480>;
-//			hback-porch = <39>;
-//			hfront-porch = <39>;
-//			vback-porch = <29>;
-//			vfront-porch = <13>;
-//			hsync-len = <47>;
-//			vsync-len = <2>;
-//		};
+	/delete-node/ oscillator;
 
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&lvds0_out>;
-			};
-		};
+	regulators {
+		/delete-node/ regulator@2;
+		/delete-node/ regulator@3;
 	};
+
+	/delete-node/ sound;
 
 	soc {
 		/delete-node/ capture-subsystem;
@@ -60,6 +38,10 @@
 			ports = <&ipu1_di0>;
 		};
 	};
+};
+
+&audmux {
+	status = "disabled";
 };
 
 &can1 {
@@ -99,9 +81,15 @@
 	};
 };
 
-&i2c1 {
+&i2c2 {
+	/delete-property/ clock-frequency;
+	/delete-node/ tlv320@18;
+	/delete-node/ stmpe@41;
+	/delete-node/ rtc@51;
+	/delete-node/ adc@64;
+
 	/* WM8753 SCLK Low pulse-width MIN 1.3us */
-	clock-frequency = <350000>;
+//	clock-frequency = <350000>;
 
 //	wm8753: wm8753@1b {
 //		#sound-dai-cells = <0>;
@@ -116,11 +104,8 @@
 //	};
 };
 
-&i2c2 {
-	status = "disabled";
-};
-
 &i2c3 {
+	/delete-property/ clock-frequency;
 	status = "disabled";
 };
 
@@ -132,26 +117,47 @@
 	status = "okay";
 
 	lvds-channel@0 {
-//fsl,data-mapping = "jeida"; ? spwg
-//fsl,data-width = <24>;
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <18>;
 		status = "okay";
 
-		port@4 {
-			reg = <4>;
-			lvds0_out: endpoint {
-				remote-endpoint = <&panel_in>;
+		display-timings {
+			native-mode = <&timing0>;
+
+			timing0: PH320240T {
+				clock-frequency = <6500000 6500000 10000000>;
+				hactive = <320>;
+				vactive = <240>;
+				hback-porch = <38>;
+				hfront-porch = <20>;
+				hsync-len = <30>;
+				vback-porch = <15>;
+				vfront-porch = <5>;
+				vsync-len = <3>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
 			};
 		};
 	};
 };
 
-&mipi_csi {
-	status = "disabled";
+&led_green {
+	linux,default-trigger = "heartbeat";
 };
 
-&mipi_dsi {
-	status = "okay";
+&led_red {
+	linux,default-trigger = "usb-host";
 };
+
+//&mipi_csi {
+//	status = "disabled";
+//};
+//
+//&mipi_dsi {
+//	status = "okay";
+//};
 
 &pcie {
 	status = "disabled";
