@@ -31,13 +31,17 @@
 
 	/delete-node/ sound;
 
-	soc {
-		/delete-node/ capture-subsystem;
+//	soc {
+//		/delete-node/ capture-subsystem;
+//
+//		display-subsystem {
+//			ports = <&ipu1_di0>;
+//		};
+//	};
+};
 
-		display-subsystem {
-			ports = <&ipu1_di0>;
-		};
-	};
+&asrc {
+	status = "disabled";
 };
 
 &audmux {
@@ -81,6 +85,10 @@
 	};
 };
 
+&hdmi {
+	status = "disabled";
+};
+
 &i2c2 {
 	/delete-property/ clock-frequency;
 	/delete-node/ tlv320@18;
@@ -109,9 +117,9 @@
 	status = "disabled";
 };
 
-&ipu2 {
-	status = "disabled";
-};
+//&ipu2 {
+//	status = "disabled";
+//};
 
 &ldb {
 	status = "okay";
@@ -164,12 +172,22 @@
 	status = "disabled";
 };
 
+&ssi2 {
+	status = "disabled";
+};
+
+&uart3 {
+	status = "disabled";
+};
+
 &usbh1 {
+// need pins review
 //	status = "disabled";
 };
 
 &usbotg {
 	dr_mode = "host";
+// need pins review
 // delete ? disable-over-current;
 // reg_usb_otg_vbus ? GPIO_ACTIVE_LOW
 };
