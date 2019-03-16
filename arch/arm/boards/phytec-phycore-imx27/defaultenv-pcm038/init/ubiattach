@@ -1,0 +1,3 @@
+#!/bin/sh
+
+[ ! -e /dev/nand0.root.ubi ] && ubiattach /dev/nand0.root
