@@ -118,9 +118,9 @@ ifneq ($(pblx-y)$(pblx-),)
 endif
 
 targets += $(image-y) pbl.lds barebox.x barebox.z piggy.o
-targets += $(patsubst %,%.pblb,$(pblx-y))
-targets += $(patsubst %,%.pbl,$(pblx-y))
-targets += $(patsubst %,%.s,$(pblx-y))
+targets += $(patsubst %,%.pblb,$(pblb-y))
+targets += $(patsubst %,%.pbl,$(pblb-y))
+targets += $(patsubst %,%.s,$(pblb-y))
 targets += $(foreach m, $(image-y), $(FILE_$(m)))
 
 # Images with full paths
