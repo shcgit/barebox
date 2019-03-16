@@ -616,15 +616,6 @@
 				status = "disabled";
 			};
 
-			tve: tve@83ff0000 {
-				compatible = "fsl,imx51-tve";
-				reg = <0x83ff0000 0x4000>;
-				interrupts = <92>;
-				clocks = <&clks IMX5_CLK_TVE_GATE>,
-					 <&clks IMX5_CLK_IPU_DI0_SEL>;
-				clock-names = "tve", "di_sel";
-			};
-
 			vpu: vpu@83ff4000 {
 				compatible = "fsl,imx51-vpu", "cnm,codahx4";
 				reg = <0x83ff4000 0x1000>;

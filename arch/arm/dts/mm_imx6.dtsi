@@ -164,9 +164,9 @@
 //};
 //
 
-&mipi_dsi {
-	status = "okay";
-};
+//&mipi_dsi {
+//	status = "okay";
+//};
 
 &pcie {
 	status = "disabled";
@@ -200,6 +200,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	bus-width = <1>;
+	non-removable;
 
 	/delete-property/ cd-gpios;
 	/delete-property/ wp-gpios;
