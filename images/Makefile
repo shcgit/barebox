@@ -54,7 +54,7 @@ $(pbl-lds): $(obj)/../arch/$(ARCH)/lib/pbl.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
 quiet_cmd_elf__ ?= LD      $@
-      cmd_elf__ ?= $(LD) $(LDFLAGS_barebox) --gc-sections -pie			\
+      cmd_elf__ ?= $(LD) $(LDFLAGS_barebox) --gc-sections		\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
 		-T $(pbl-lds)						\
 		--start-group $(barebox-pbl-common) $(obj)/piggy.o --end-group
@@ -94,8 +94,14 @@ board = $(srctree)/arch/$(ARCH)/boards
 objboard = $(objtree)/arch/$(ARCH)/boards
 
 include $(srctree)/images/Makefile.am33xx
+include $(srctree)/images/Makefile.am35xx
+include $(srctree)/images/Makefile.ar231x
+include $(srctree)/images/Makefile.ath79
 include $(srctree)/images/Makefile.bcm283x
+include $(srctree)/images/Makefile.bcm47xx
 include $(srctree)/images/Makefile.imx
+include $(srctree)/images/Makefile.loongson
+include $(srctree)/images/Makefile.malta
 include $(srctree)/images/Makefile.mvebu
 include $(srctree)/images/Makefile.mxs
 include $(srctree)/images/Makefile.omap3
@@ -103,15 +109,19 @@ include $(srctree)/images/Makefile.rockchip
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.tegra
 include $(srctree)/images/Makefile.vexpress
+include $(srctree)/images/Makefile.xburst
 include $(srctree)/images/Makefile.at91
+include $(srctree)/images/Makefile.zynqmp
+
+ifneq ($(pblx-y)$(pblx-),)
+  $(error pblx- has been removed. Please use pblb- instead.)
+endif
 
 targets += $(image-y) pbl.lds barebox.x barebox.z piggy.o
 targets += $(patsubst %,%.pblb,$(pblx-y))
 targets += $(patsubst %,%.pbl,$(pblx-y))
 targets += $(patsubst %,%.s,$(pblx-y))
 targets += $(foreach m, $(image-y), $(FILE_$(m)))
-
-SECONDARY: $(addprefix $(obj)/,$(targets))
 
 # Images with full paths
 image-y-path := $(addprefix $(obj)/,$(image-y))
