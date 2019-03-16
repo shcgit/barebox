@@ -45,11 +45,7 @@
 quiet_cmd_objcopy_bin = OBJCOPYB $@
       cmd_objcopy_bin = \
 		$(OBJCOPY) -O binary $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@ && \
-<<<<<<< HEAD
 		$(objtree)/scripts/fix_size -i -f $@
-=======
-		$(objtree)/scripts/fix_size -f $@
->>>>>>> v2019.01.0
 
 pbl-lds := $(obj)/pbl.lds
 extra-y += $(pbl-lds)
