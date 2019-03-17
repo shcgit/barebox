@@ -1,5 +1,4 @@
 #!/bin/sh
 
 global.bootm.image="/dev/nand0.kernel.bb"
-#global.bootm.oftree="/env/oftree"
-global.linux.bootargs.dyn.root="root=ubi0:root ubi.mtd=nand0.root rootfstype=ubifs"
+global.linux.bootargs.dyn.root="root=/dev/ubiblock0_0 ubi.mtd=8 ubi.block=0,root ro doc_disable"

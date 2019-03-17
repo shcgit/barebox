@@ -1,0 +1,12 @@
+#!/bin/sh
+
+mci0.probe=1
+[ ! -d /disk ] && mkdir /disk
+mount /dev/disk0.0 /disk
+unprotect /dev/nand0.kernel.bb
+erase /dev/nand0.kernel.bb
+cp /disk/zImage /dev/nand0.kernel.bb
+protect /dev/nand0.kernel.bb
+umount /disk
+
+erase_env

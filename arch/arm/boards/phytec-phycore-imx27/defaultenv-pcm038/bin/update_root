@@ -1,0 +1,9 @@
+#!/bin/sh
+
+mci0.probe=1
+[ ! -d /disk ] && mkdir /disk
+mount /dev/disk0.0 /disk
+ubiupdatevol /dev/nand0.root.ubi.root /disk/sysroot.img
+umount /disk
+
+erase_env
