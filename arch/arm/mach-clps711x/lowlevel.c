@@ -24,6 +24,9 @@
 # define __dtb_ptr_start	__dtb_ep7211_edb7211_start
 #endif
 
+/* Avoid "no previous prototype for barebox_arm_reset_vector" warning */
+void __naked __bare_init barebox_arm_reset_vector(void);
+
 void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	extern char *__dtb_ptr_start[];
