@@ -1,4 +1,4 @@
 #!/bin/sh
 
 global.bootm.image="/dev/nand0.kernel.bb"
-global.linux.bootargs.dyn.root="root=/dev/ubiblock0_0 ubi.mtd=8 ubi.block=0,root ro doc_disable"
+global.linux.bootargs.dyn.root="ubi.mtd=8 ubi.block=0,root root=/dev/ubiblock0_0 ro doc_disable"
