@@ -4,7 +4,5 @@ if [ -e /dev/fb0 ]; then
 	fb0.enable=1
 
 	# Load LOGO
-	if [ -f /env/milas.png ]; then
-		splash -f /dev/fb0 /env/milas.png
-	fi
+	[ -e /env/milas.png ] && splash -f /dev/fb0 /env/milas.png
 fi

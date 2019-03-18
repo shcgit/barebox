@@ -1,8 +1,6 @@
 #!/bin/sh
 
-if [ -e /dev/nand0.root.ubi ]; then
-	ubidetach /dev/nand0.root
-fi
+[ -e /dev/nand0.root.ubi ] && ubidetach /dev/nand0.root
 
 ubiformat /dev/nand0.root -y
 ubiattach /dev/nand0.root

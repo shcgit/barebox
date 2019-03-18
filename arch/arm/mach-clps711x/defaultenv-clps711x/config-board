@@ -31,9 +31,7 @@ memset 0x60000000 0x00 0xd000
 mm 0x80000100 0x00001000 0x00001000
 
 # Load LOGO
-if [ -f /env/milas.bin ]; then
-	memcpy -s /env/milas.bin 0 0x60000000
-fi
+[ -e /env/milas.bin ] && memcpy -s /env/milas.bin 0 0x60000000
 
 msleep 220
 
