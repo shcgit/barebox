@@ -1,5 +1,7 @@
 #!/bin/sh
 
+[ -e /dev/nand0.system.ubi ] && ubidetach /dev/nand0.system
+
 mmc2.probe=1
 mount /dev/mmc2.0 /mnt
 ubiupdatevol /dev/nand0.system.ubi.root /mnt/sysroot.img

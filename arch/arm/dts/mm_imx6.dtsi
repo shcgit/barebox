@@ -69,7 +69,7 @@
 	};
 
 	partition@c0000 {
-		label = "system";
+		label = "init";
 		reg = <0xc0000 0>;
 	};
 };
