@@ -1,10 +1,10 @@
 #!/bin/sh
 
-[ -e /dev/m25p0.system.ubi ] && ubidetach /dev/m25p0.system
+[ -e /dev/m25p0.init.ubi ] && ubidetach /dev/m25p0.init
 
-ubiformat /dev/m25p0.system -y
-ubiattach /dev/m25p0.system
-ubimkvol -t dynamic /dev/m25p0.system.ubi kernel 0
+ubiformat /dev/m25p0.init -y
+ubiattach /dev/m25p0.init
+ubimkvol -t dynamic /dev/m25p0.init.ubi kernel 0
 
 [ -e /dev/nand0.system.ubi ] && ubidetach /dev/nand0.system
 

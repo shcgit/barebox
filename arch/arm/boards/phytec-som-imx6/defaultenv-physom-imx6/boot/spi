@@ -1,4 +1,4 @@
 #!/bin/sh
 
 global.bootm.image="/dev/m25p0.init.ubi.kernel"
-global.linux.bootargs.dyn.root="ubi.mtd=init ubi.mtd=system ubi.block=1,system root=/dev/ubiblock1_0 ro"
+global.linux.bootargs.dyn.root="ubi.mtd=init ubi.mtd=system ubi.block=1,root root=/dev/ubiblock1_0 ro"

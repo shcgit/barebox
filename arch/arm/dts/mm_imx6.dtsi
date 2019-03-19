@@ -30,14 +30,6 @@
 	};
 
 	/delete-node/ sound;
-
-//	soc {
-//		/delete-node/ capture-subsystem;
-//
-//		display-subsystem {
-//			ports = <&ipu1_di0>;
-//		};
-//	};
 };
 
 &asrc {
@@ -117,9 +109,9 @@
 	status = "disabled";
 };
 
-//&ipu2 {
-//	status = "disabled";
-//};
+&ipu2 {
+	status = "disabled";
+};
 
 &ldb {
 	status = "okay";
@@ -159,20 +151,19 @@
 	linux,default-trigger = "usb-host";
 };
 
-//&mipi_csi {
-//	status = "disabled";
-//};
-//
-
-//&mipi_dsi {
-//	status = "okay";
-//};
+&mipi_csi {
+	status = "disabled";
+};
 
 &pcie {
 	status = "disabled";
 };
 
 &ssi2 {
+	status = "disabled";
+};
+
+&uart1 {
 	status = "disabled";
 };
 
