@@ -172,15 +172,12 @@
 };
 
 &usbh1 {
-// need pins review
-//	status = "disabled";
+	disable-over-current;
 };
 
 &usbotg {
 	dr_mode = "host";
-// need pins review
-// delete ? disable-over-current;
-// reg_usb_otg_vbus ? GPIO_ACTIVE_LOW
+	disable-over-current;
 };
 
 &usdhc2 {
@@ -200,21 +197,18 @@
 	/delete-node/ partition@e0000;
 };
 
-#if 0
-///////////////////////////////////////////////////////////////////////////////
-&snvs {
-	status = "disabled";
-};
-
-///////////////////////////////////////////////////////////////////////////////
-#endif
-
 &iomuxc {
 	imx6q-phytec-pfla02 {
 		pinctrl_uart3: uart3grp {
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D24__UART3_TX_DATA	0x1b0b1
 				MX6QDL_PAD_EIM_D25__UART3_RX_DATA	0x1b0b1
+			>;
+		};
+
+		pinctrl_usbotg: usbotggrp {
+			fsl,pins = <
+				MX6QDL_PAD_KEY_ROW4__USB_OTG_PWR	0x80000000
 			>;
 		};
 
