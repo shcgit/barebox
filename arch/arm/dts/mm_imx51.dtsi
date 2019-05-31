@@ -179,12 +179,12 @@
 		};
 	};
 
-	otgid: extcon {
+	/* otgid: extcon {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_otgid>;
 		compatible = "linux,extcon-usb-gpio";
 		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
-	};
+	}; */
 
 	sound {
 		#address-cells = <1>;
@@ -462,8 +462,8 @@
 };
 
 &usbotg {
-	dr_mode = "otg";
-	extcon = <&otgid>;
+	dr_mode = "host";
+	/* extcon = <&otgid>; */
 	status = "okay";
 };
 

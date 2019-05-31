@@ -2,6 +2,7 @@
 
 [ -e /dev/nand0.system.ubi ] && ubidetach /dev/nand0.system
 
+imx_nand_bbm -y
 ubiformat /dev/nand0.system -y
 ubiattach /dev/nand0.system
 ubimkvol -t static /dev/nand0.system.ubi kernel 3407872
