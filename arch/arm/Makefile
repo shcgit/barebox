@@ -140,11 +140,18 @@ CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 # Add cleanup flags
 CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += --gc-sections
+LDFLAGS_pbl += --gc-sections
 
 ifdef CONFIG_RELOCATABLE
 LDFLAGS_barebox += -pie
 else
 LDFLAGS_barebox += -static
+endif
+
+ifdef CONFIG_PBL_RELOCATABLE
+LDFLAGS_pbl += -pie
+else
+LDFLAGS_pbl += -static
 endif
 
 KBUILD_BINARY := barebox.bin
