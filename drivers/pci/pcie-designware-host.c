@@ -29,7 +29,7 @@
 
 #include <abort.h>
 
-static struct pci_ops dw_pcie_ops;
+static const struct pci_ops dw_pcie_ops;
 static unsigned long global_io_offset;
 
 static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
@@ -150,15 +150,15 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	}
 
 	if (!pci->dbi_base)
-		pci->dbi_base = (void __force *)pp->cfg.start;
+		pci->dbi_base = IOMEM(pp->cfg.start);
 
 	pp->mem_base = pp->mem.start;
 
 	if (!pp->va_cfg0_base)
-		pp->va_cfg0_base = (void __force *)(u32)pp->cfg0_base;
+		pp->va_cfg0_base = IOMEM((unsigned long)pp->cfg0_base);
 
 	if (!pp->va_cfg1_base)
-		pp->va_cfg1_base = (void __force *)(u32)pp->cfg1_base;
+		pp->va_cfg1_base = IOMEM((unsigned long)pp->cfg1_base);
 
 	ret = of_property_read_u32(np, "num-viewport", &pci->num_viewport);
 	if (ret)
@@ -335,15 +335,9 @@ static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
 	return ret;
 }
 
-static int dw_pcie_res_start(struct pci_bus *bus, resource_size_t res_addr)
-{
-	return res_addr;
-}
-
-static struct pci_ops dw_pcie_ops = {
+static const struct pci_ops dw_pcie_ops = {
 	.read = dw_pcie_rd_conf,
 	.write = dw_pcie_wr_conf,
-	.res_start = dw_pcie_res_start,
 };
 
 static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)
@@ -391,7 +385,7 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
 		pci->iatu_unroll_enabled = dw_pcie_iatu_unroll_enabled(pci);
 		dev_dbg(pci->dev, "iATU unroll: %s\n",
 			pci->iatu_unroll_enabled ? "enabled" : "disabled");
-		
+
 		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX0,
 					  PCIE_ATU_TYPE_MEM, pp->mem_mod_base,
 					  pp->mem_bus_addr, pp->mem_size);
