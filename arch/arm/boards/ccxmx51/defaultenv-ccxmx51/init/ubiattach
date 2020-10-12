@@ -3,8 +3,6 @@
 [ -e /dev/nand0.system.ubi ] || ubiattach /dev/nand0.system
 
 if [ -e /dev/nand0.system.ubi.update ]; then
-#	ubiupdatevol /dev/nand0.system.ubi.root /dev/nand0.system.ubi.update
 	ubirmvol /dev/nand0.system.ubi root
 	ubirename /dev/nand0.system.ubi update root
-#	ubirmvol /dev/nand0.system.ubi update
 fi
