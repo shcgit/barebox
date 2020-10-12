@@ -11,7 +11,6 @@
 / {
 	#address-cells = <1>;
 	#size-cells = <1>;
-
 	model = "Cirrus Logic EP7209";
 	compatible = "cirrus,ep7209";
 
