@@ -245,16 +245,6 @@ config BAREBOX_MAX_BARE_INIT_SIZE
 	  this will allow your bare_init to fit in SRAM as example
 	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 
-config BAREBOX_MAX_PBLX_SIZE
-	depends on PBL_MULTI_IMAGES
-	depends on IMAGE_COMPRESSION
-	prompt "Maximum PBLX size"
-	hex
-	default 0xffffffff
-	help
-	  Define the maximum size of the PBLX image.
-	  The pblx is a self extracting barebox binary.
-
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
 
@@ -1016,11 +1006,21 @@ config DEBUG_INFO
 config DEBUG_LL
 	bool
 	depends on HAS_DEBUG_LL
-	prompt "low level debug messages"
+	prompt "Low level debug messages (read help)"
 	help
-	  Enable this to get low level debug messages during barebox initialization.
-	  This requires SoC specific support. Most SoCs require the debug UART to be
-	  initialized by a debugger or first stage bootloader.
+	  Enable this to get low level debug messages during barebox
+	  initialization. This is helpful if you are debugging code that
+	  executes before the console is initialized.
+
+	  This requires SoC specific support. Most SoCs require the
+	  debug UART to be initialized by a debugger or first stage
+	  bootloader.
+
+	  Note that selecting this option will limit barebox to a single
+	  UART definition, as specified below under "low-level debugging
+	  port". Attempting to boot the resulting image on a different
+	  platform *will not work*, so this option should not be enabled
+	  for builds that are intended to be portable.
 
 choice
 	prompt "Kernel low-level debugging port"
@@ -1159,7 +1159,26 @@ config DEBUG_SOCFPGA_UART1
 	  Say Y here if you want kernel low-level debugging support
 	  on SOCFPGA(Arria 10) based platforms.
 
+config DEBUG_RPI1_UART
+	bool "RaspberryPi 1 PL011 UART"
+	depends on ARCH_BCM283X
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 1 boards.
 
+config DEBUG_RPI2_3_UART
+	bool "RaspberryPi 2/3 PL011 UART"
+	depends on ARCH_BCM283X
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 2 and 3 boards.
+
+config DEBUG_RPI3_MINI_UART
+	bool "RaspberryPi 3 mini UART"
+	depends on ARCH_BCM283X
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 3 board mini UART.
 endchoice
 
 config DEBUG_IMX_UART_PORT
@@ -1229,4 +1248,4 @@ config HAS_DEBUG_LL
 
 config DDR_SPD
 	bool
-	select CRC16
+	select CRC_ITU_T

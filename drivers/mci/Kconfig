@@ -93,6 +93,9 @@ config MCI_IMX_ESDHC_PIO
 	help
 	  mostly useful for debugging. Normally you should use DMA.
 
+config MCI_IMX_ESDHC_PBL
+	bool
+
 config MCI_OMAP_HSMMC
 	bool "OMAP HSMMC"
 	depends on ARCH_OMAP4 || ARCH_OMAP3 || ARCH_AM33XX
@@ -141,7 +144,7 @@ config MCI_SPI
 
 config MMC_SPI_CRC_ON
 	bool "Enable CRC protection for transfers"
-	select CRC16
+	select CRC_ITU_T
 	depends on MCI_SPI
 	help
 	  Enable CRC protection for transfers
