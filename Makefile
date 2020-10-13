@@ -1,5 +1,5 @@
 VERSION = 2019
-PATCHLEVEL = 07
+PATCHLEVEL = 09
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -485,6 +485,9 @@ CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
 
 # disable pointer signed / unsigned warnings in gcc 4.0
 CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+
+# change __FILE__ to the relative path from the srctree
+CFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
 
 # KBUILD_IMAGE: Default barebox image to build
 # Depending on the architecture, this can be either compressed or not.

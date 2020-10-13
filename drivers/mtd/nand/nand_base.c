@@ -43,6 +43,7 @@
 #include <io.h>
 #include <malloc.h>
 #include <module.h>
+#include <of_mtd.h>
 
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_ecclayout nand_oob_8 = {
@@ -3507,6 +3508,32 @@ ident_done:
 }
 
 /**
+ * nand_of_parse_node - parse generic NAND properties
+ * @mtd: MTD device structure
+ * @np: Device node to read information from
+ *
+ * This parses device tree properties generic to NAND controllers and fills in
+ * the various fields in struct nand_chip.
+ */
+void nand_of_parse_node(struct mtd_info *mtd, struct device_node *np)
+{
+	struct nand_chip *chip = mtd->priv;
+	int ecc_strength, ecc_size;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	ecc_strength = of_get_nand_ecc_strength(np);
+	ecc_size = of_get_nand_ecc_step_size(np);
+
+	if (ecc_strength >= 0)
+		chip->ecc.strength = ecc_strength;
+
+	if (ecc_size >= 0)
+		chip->ecc.size = ecc_size;
+}
+
+/**
  * nand_scan_ident - [NAND Interface] Scan for the NAND device
  * @mtd: MTD device structure
  * @maxchips: number of chips to scan for
@@ -3966,6 +3993,10 @@ int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 			   &chip->bbt_type, bbt_type_strings,
 			   ARRAY_SIZE(bbt_type_strings),
 			   mtd);
+
+	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.bytes", &chip->ecc.bytes, "%u");
+	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.strength", &chip->ecc.strength, "%u");
+	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.size", &chip->ecc.size, "%u");
 
 	return ret;
 }
