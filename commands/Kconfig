@@ -233,6 +233,17 @@ config CMD_VERSION
 
 	  barebox 2014.05.0-00142-gb289373 #177 Mon May 12 20:35:55 CEST 2014
 
+config CMD_MMC
+	tristate
+	prompt "mmc command allowing to set enhanced area"
+	depends on MCI
+	help
+	  Configure mmc cards similar to the userspace mmc utility. Compared to
+	  mmc_extcsd it works on a higher abstraction level.
+
+	  Currently only the enh_area subcommand is implemented to configure
+	  the "Enhanced Area" of an mmc device.
+
 config CMD_MMC_EXTCSD
 	tristate
 	prompt "read/write eMMC ext. CSD register"
@@ -2012,6 +2023,13 @@ config CMD_LSMOD
 	help
 	  List loaded barebox modules.
 
+config CMD_OF_DIFF
+	tristate
+	select OFTREE
+	prompt "of_diff"
+	help
+	  Compare two device tree files against each other.
+
 config CMD_OF_DUMP
 	tristate
 	select OFTREE
@@ -2088,6 +2106,18 @@ config CMD_OF_FIXUP_STATUS
 	  Register a fixup to enable or disable a device tree node.
 	  Nodes are enabled on default. Disabled with -d.
 
+config CMD_OF_OVERLAY
+	tristate
+	select OF_OVERLAY
+	prompt "of_overlay"
+	help
+	  of_overlay - register device tree overlay as fixup
+
+	  Usage: of_overlay [-S path] FILE
+
+	  Options:
+		  -S path	load firmware using this search path
+
 config CMD_OFTREE
 	tristate
 	select OFTREE
@@ -2144,7 +2174,7 @@ config CMD_SEED
 
 config CMD_UBSAN
 	tristate "ubsan"
-	depends on UBSAN && COMMAND_SUPPORT
+	depends on UBSAN
 	help
 	  This is a test command for the undefined behavior sanitizer.
 	  It triggers various undefined behavior, and detect it.
