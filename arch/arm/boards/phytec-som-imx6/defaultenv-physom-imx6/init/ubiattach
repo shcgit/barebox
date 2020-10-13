@@ -1,3 +1,10 @@
 #!/bin/sh
 
 [ -e /dev/m25p0.init.ubi ] || ubiattach /dev/m25p0.init
+
+[ -e /dev/nand0.system.ubi ] || ubiattach /dev/nand0.system
+
+if [ -e /dev/nand0.system.ubi.update ]; then
+	ubirmvol /dev/nand0.system.ubi root
+	ubirename /dev/nand0.system.ubi update root
+fi

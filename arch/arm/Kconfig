@@ -115,6 +115,15 @@ config ARCH_IMX
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
 
+config ARCH_LAYERSCAPE
+	bool "NXP Layerscape based"
+	select GPIOLIB
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select COMMON_CLK_OF_PROVIDER
+
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
 	select COMMON_CLK
@@ -200,6 +209,16 @@ config ARCH_S3C64xx
 	select CPU_V6
 	select GENERIC_GPIO
 
+config ARCH_STM32MP1
+	bool "ST stm32mp1xx"
+	select CPU_V7
+	select HAVE_PBL_MULTI_IMAGES
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select HAS_DEBUG_LL
+	select HAVE_CLK
+
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select GPIOLIB
@@ -268,31 +287,33 @@ config ARCH_QEMU
 
 endchoice
 
-source arch/arm/cpu/Kconfig
-source arch/arm/mach-at91/Kconfig
-source arch/arm/mach-bcm283x/Kconfig
-source arch/arm/mach-clps711x/Kconfig
-source arch/arm/mach-davinci/Kconfig
-source arch/arm/mach-digic/Kconfig
-source arch/arm/mach-ep93xx/Kconfig
-source arch/arm/mach-highbank/Kconfig
-source arch/arm/mach-imx/Kconfig
-source arch/arm/mach-mxs/Kconfig
-source arch/arm/mach-mvebu/Kconfig
-source arch/arm/mach-netx/Kconfig
-source arch/arm/mach-nomadik/Kconfig
-source arch/arm/mach-omap/Kconfig
-source arch/arm/mach-pxa/Kconfig
-source arch/arm/mach-rockchip/Kconfig
-source arch/arm/mach-samsung/Kconfig
-source arch/arm/mach-socfpga/Kconfig
-source arch/arm/mach-versatile/Kconfig
-source arch/arm/mach-vexpress/Kconfig
-source arch/arm/mach-tegra/Kconfig
-source arch/arm/mach-uemd/Kconfig
-source arch/arm/mach-zynq/Kconfig
-source arch/arm/mach-qemu/Kconfig
-source arch/arm/mach-zynqmp/Kconfig
+source "arch/arm/cpu/Kconfig"
+source "arch/arm/mach-at91/Kconfig"
+source "arch/arm/mach-bcm283x/Kconfig"
+source "arch/arm/mach-clps711x/Kconfig"
+source "arch/arm/mach-davinci/Kconfig"
+source "arch/arm/mach-digic/Kconfig"
+source "arch/arm/mach-ep93xx/Kconfig"
+source "arch/arm/mach-highbank/Kconfig"
+source "arch/arm/mach-imx/Kconfig"
+source "arch/arm/mach-layerscape/Kconfig"
+source "arch/arm/mach-mxs/Kconfig"
+source "arch/arm/mach-mvebu/Kconfig"
+source "arch/arm/mach-netx/Kconfig"
+source "arch/arm/mach-nomadik/Kconfig"
+source "arch/arm/mach-omap/Kconfig"
+source "arch/arm/mach-pxa/Kconfig"
+source "arch/arm/mach-rockchip/Kconfig"
+source "arch/arm/mach-samsung/Kconfig"
+source "arch/arm/mach-socfpga/Kconfig"
+source "arch/arm/mach-stm32mp1/Kconfig"
+source "arch/arm/mach-versatile/Kconfig"
+source "arch/arm/mach-vexpress/Kconfig"
+source "arch/arm/mach-tegra/Kconfig"
+source "arch/arm/mach-uemd/Kconfig"
+source "arch/arm/mach-zynq/Kconfig"
+source "arch/arm/mach-qemu/Kconfig"
+source "arch/arm/mach-zynqmp/Kconfig"
 
 config ARM_ASM_UNIFIED
 	bool

@@ -630,7 +630,9 @@ config BOOTM_FITIMAGE_PUBKEY
 	default "../fit/pubkey.dtsi"
 	depends on BOOTM_FITIMAGE_SIGNATURE
 	help
-	  Set Path to a dts snippet which holds the public keys for FIT images.
+	  Set Path to a dts snippet which holds the public keys for FIT images. The
+	  snippet can then be included in a device tree with
+	  "#include CONFIG_BOOTM_FITIMAGE_PUBKEY".
 
 config BOOTM_FORCE_SIGNED_IMAGES
 	bool
@@ -762,13 +764,13 @@ config PBL_CONSOLE
 	  must be running at the address it's linked at and bss must
 	  be cleared. On ARM that would be after setup_c().
 
-source common/ratp/Kconfig
+source "common/ratp/Kconfig"
 
 config PARTITION
 	bool
 	prompt "Enable Partitions"
 
-source common/partitions/Kconfig
+source "common/partitions/Kconfig"
 
 config ENV_HANDLING
 	select CRC32
@@ -1235,6 +1237,14 @@ config DEBUG_SOCFPGA_UART_CLOCK
 	depends on ARCH_SOCFPGA
 	help
 	  Choose UART root clock.
+
+config DEBUG_LAYERSCAPE_UART_PORT
+	int "Layerscape UART port selection"
+	depends on ARCH_LAYERSCAPE
+	default 1
+	help
+	  Select the UART port number used for early debugging here. Port
+	  numbers start counting from 1.
 
 config DEBUG_INITCALLS
 	bool "Trace initcalls"

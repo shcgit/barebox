@@ -66,10 +66,10 @@ static int clps711x_clk_probe(struct device_d *dev)
 	clks[CLPS711X_CLK_BUS] = clk_fixed("bus", f_bus);
 	clks[CLPS711X_CLK_UART] = clk_fixed("uart", f_uart);
 	clks[CLPS711X_CLK_TIMERREF] = clk_fixed("timer_ref", f_timer_ref);
-	clks[CLPS711X_CLK_TIMER1] = clk_divider_table("timer1", "timer_ref",
-		IOMEM(SYSCON1), 5, 1, tdiv_tbl, ARRAY_SIZE(tdiv_tbl));
-	clks[CLPS711X_CLK_TIMER2] = clk_divider_table("timer2", "timer_ref",
-		IOMEM(SYSCON1), 7, 1, tdiv_tbl, ARRAY_SIZE(tdiv_tbl));
+	clks[CLPS711X_CLK_TIMER1] = clk_divider_table("timer1", "timer_ref", 0,
+		IOMEM(SYSCON1), 5, 1, tdiv_tbl, 0);
+	clks[CLPS711X_CLK_TIMER2] = clk_divider_table("timer2", "timer_ref", 0,
+		IOMEM(SYSCON1), 7, 1, tdiv_tbl, 0);
 
 	clk_data.clks = clks;
 	clk_data.clk_num = CLPS711X_CLK_MAX;
