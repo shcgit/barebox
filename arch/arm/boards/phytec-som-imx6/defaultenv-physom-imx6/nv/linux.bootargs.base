@@ -1,1 +1,1 @@
-earlyprintk feature-sound feature-network
+feature-sound feature-network earlyprintk

@@ -4,7 +4,6 @@
 *.imximg
 *.imximg.prep
 *.imximg.signed
-*.imx-sram-img
 *.map
 *.src
 *.kwbimg
@@ -20,6 +19,7 @@
 *.mlospi
 *.mxsbs
 *.mxssd
+*.csfbin
 pbl.lds
 barebox.x
 barebox.z

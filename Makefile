@@ -1,5 +1,5 @@
 VERSION = 2019
-PATCHLEVEL = 06
+PATCHLEVEL = 07
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -177,9 +177,9 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-HOST_LFS_CFLAGS := $(shell getconf LFS_CFLAGS)
-HOST_LFS_LDFLAGS := $(shell getconf LFS_LDFLAGS)
-HOST_LFS_LIBS := $(shell getconf LFS_LIBS)
+HOST_LFS_CFLAGS := $(shell getconf LFS_CFLAGS 2>/dev/null)
+HOST_LFS_LDFLAGS := $(shell getconf LFS_LDFLAGS 2>/dev/null)
+HOST_LFS_LIBS := $(shell getconf LFS_LIBS 2>/dev/null)
 
 HOSTCC       = gcc
 HOSTCXX      = g++
@@ -457,9 +457,7 @@ endif # $(dot-config)
 
 include $(srctree)/arch/$(ARCH)/Makefile
 
-ifdef CONFIG_DEBUG_INFO
-CFLAGS		+= -g
-endif
+CFLAGS		+= -ggdb3
 
 # Force gcc to behave correct even for buggy distributions
 CFLAGS          += $(call cc-option, -fno-stack-protector)
@@ -1020,9 +1018,8 @@ PHONY += distclean
 distclean: mrproper
 	@find $(srctree) $(RCS_FIND_IGNORE) \
 		\( -name '*.orig' -o -name '*.rej' -o -name '*~' \
-		-o -name '*.bak' -o -name '#*#' -o -name '.*.orig' \
-		-o -name '.*.rej' -o -size 0 \
-		-o -name '*%' -o -name '.*.cmd' -o -name 'core' \) \
+		-o -name '*.bak' -o -name '#*#' -o -name '*%' \
+		-o -name 'core' \) \
 		-type f -print | xargs rm -f
 
 
