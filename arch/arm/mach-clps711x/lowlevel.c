@@ -1,34 +1,34 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /* Author: Alexander Shiyan <shc_work@mail.ru> */
 
-#include <common.h>
-#include <init.h>
-#include <linux/sizes.h>
-
 #include <asm/io.h>
 #include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
+#include <common.h>
+#include <debug_ll.h>
+#include <init.h>
+#include <linux/kernel.h>
+#include <linux/sizes.h>
+#include <mach/clps711x.h>
 
-#include "clps711x.h"
+#define DEBUG_LL_BAUDRATE	(57600)
 
-#ifdef CONFIG_CLPS711X_RAISE_CPUFREQ
-# define CLPS711X_CPU_PLL_MULT	50
-#else
-# define CLPS711X_CPU_PLL_MULT	40
-#endif
-
-#ifdef CONFIG_MACH_CLPS711X_CLEP7212
-# define __dtb_ptr_start	__dtb_ep7212_clep7212_start
-#endif
-#ifdef CONFIG_MACH_CLPS711X_EDB7211
-# define __dtb_ptr_start	__dtb_ep7211_edb7211_start
-#endif
-
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+static inline void setup_uart(const u32 bus_speed)
 {
-	extern char *__dtb_ptr_start[];
-	void *fdt = __dtb_ptr_start;
-	u32 bus;
+	u32 baud_base = DIV_ROUND_CLOSEST(bus_speed, 10);
+	u32 baud_divisor =
+		DIV_ROUND_CLOSEST(baud_base, DEBUG_LL_BAUDRATE * 16) - 1;
+
+	writel(0, SYSCON1);
+	writel(baud_divisor | UBRLCR_FIFOEN | UBRLCR_WRDLEN8, UBRLCR1);
+	writel(0, STFCLR);
+	writel(SYSCON_UARTEN, SYSCON1);
+
+	putc_ll('>');
+}
+
+static inline void clps711x_start(void *fdt)
+{
+	u32 bus, pll;
 
 	arm_cpu_lowlevel_init();
 
@@ -41,21 +41,26 @@ void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 		writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);
 		asm("nop");
 
-		/* Setup PLL */
-		writel(CLPS711X_CPU_PLL_MULT << 24, PLLW);
-		asm("nop");
+		if (IS_ENABLED(CONFIG_CLPS711X_RAISE_CPUFREQ)) {
+			/* Setup PLL to 92160000 Hz */
+			writel(50 << 24, PLLW);
+			asm("nop");
+		}
 
-		/* Check for old CPUs without PLL */
-		if ((readl(PLLR) >> 24) != CLPS711X_CPU_PLL_MULT)
-			bus = 73728000 / 2;
+		pll = readl(PLLR) >> 24;
+		if (pll)
+			bus = (pll * 3686400) / 4;
 		else
-			bus = CLPS711X_CPU_PLL_MULT * 3686400 / 2;
+			bus = 73728000 / 4;
 	} else {
 		bus = 13000000;
 		/* Setup bus wait state scaling factor to 1  */
 		writel(0, SYSCON3);
 		asm("nop");
 	}
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart(bus);
 
 	/* CLKEN select, SDRAM width=32 */
 	writel(SYSCON2_CLKENSL, SYSCON2);
@@ -67,12 +72,23 @@ void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 	/* Setup Refresh Rate (64ms 8K Blocks) */
 	writel((64 * bus) / (8192 * 1000), SDRFPR);
 
-	/* Disable UART, IrDa, LCD */
-	writel(0, SYSCON1);
 	/* Disable PWM */
 	writew(0, PMPCON);
 	/* Disable LED flasher */
 	writew(0, LEDFLSH);
 
 	barebox_arm_entry(SDRAM0_BASE, SZ_8M, fdt + get_runtime_offset());
+}
+
+extern char __dtb_ep7212_clep7212_start[];
+extern char __dtb_ep7211_edb7211_start[];
+
+ENTRY_FUNCTION(start_ep7212_clep7212, r0, r1, r2)
+{
+	clps711x_start(__dtb_ep7212_clep7212_start);
+}
+
+ENTRY_FUNCTION(start_ep7211_edb7211, r0, r1, r2)
+{
+	clps711x_start(__dtb_ep7211_edb7211_start);
 }

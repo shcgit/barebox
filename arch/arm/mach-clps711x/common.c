@@ -6,11 +6,9 @@
 #include <init.h>
 #include <of.h>
 #include <restart.h>
-
 #include <asm/io.h>
 #include <asm/mmu.h>
-
-#include "clps711x.h"
+#include <mach/clps711x.h>
 
 #define CLPS711X_MAP_ADDR	0x90000000
 

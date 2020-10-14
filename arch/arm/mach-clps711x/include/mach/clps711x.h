@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /*
  * Copyright (C) 2000 Deep Blue Solutions Ltd.
- * Copyright (C) 2012-2018 Alexander Shiyan <shc_work@mail.ru>
+ * Copyright (C) 2012-2020 Alexander Shiyan <shc_work@mail.ru>
  */
 
 #ifndef __CLPS711X_H
@@ -153,6 +153,10 @@
 #define SYSCON2_CLKENSL		(1 << 13)
 #define SYSCON2_BUZFREQ		(1 << 14)
 
+#define SYSCON_UARTEN		(1 << 8)
+#define SYSFLG_UBUSY		(1 << 11)
+#define SYSFLG_UTXFF		(1 << 23)
+
 #define SYNCIO_FRMLEN(x)	(((x) & 0x1f) << 8)
 #define SYNCIO_SMCKEN		(1 << 13)
 #define SYNCIO_TXFRMEN		(1 << 14)
@@ -240,5 +244,15 @@
 #define MEMCFG_WAITSTATE_3_0	(13 << 2)
 #define MEMCFG_WAITSTATE_2_0	(14 << 2)
 #define MEMCFG_WAITSTATE_1_0	(15 << 2)
+
+#define UBRLCR_BREAK		(1 << 12)
+#define UBRLCR_PRTEN		(1 << 13)
+#define UBRLCR_EVENPRT		(1 << 14)
+#define UBRLCR_XSTOP		(1 << 15)
+#define UBRLCR_FIFOEN		(1 << 16)
+#define UBRLCR_WRDLEN5		(0 << 17)
+#define UBRLCR_WRDLEN6		(1 << 17)
+#define UBRLCR_WRDLEN7		(2 << 17)
+#define UBRLCR_WRDLEN8		(3 << 17)
 
 #endif

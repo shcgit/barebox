@@ -8,8 +8,7 @@
 #include <linux/clkdev.h>
 #include <linux/sizes.h>
 #include <dt-bindings/clock/clps711x-clock.h>
-
-#include "clps711x.h"
+#include <mach/clps711x.h>
 
 #define CLPS711X_OSC_FREQ	3686400
 #define CLPS711X_EXT_FREQ	13000000
@@ -45,7 +44,7 @@ static int clps711x_clk_probe(struct device_d *dev)
 			f_bus = 36864000 / 2;
 	}
 
-	f_uart = f_bus / 10;
+	f_uart = DIV_ROUND_CLOSEST(f_bus, 10);
 
 	if (tmp & SYSFLG2_CKMODE) {
 		tmp = readw(SYSCON2);

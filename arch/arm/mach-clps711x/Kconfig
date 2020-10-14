@@ -1,21 +1,5 @@
 if ARCH_CLPS711X
 
-choice
-	prompt "Cirrus Logic EP711x/EP721x/EP731x Board Type"
-
-config MACH_CLPS711X_CLEP7212
-	bool "Cirrus Logic CLEP7212"
-	help
-	  Generic boards based on the Cirrus Logic 7212/7312 CPU.
-
-config MACH_CLPS711X_EDB7211
-	bool "Cirrus Logic EP7211 Development Board"
-	help
-	  ARM/ARM7 Cirrus Logic EP7xxx (EDB7211, EDB7212, EDB7312)
-	  Development Board.
-
-endchoice
-
 menu "CLPS711X specific settings"
 
 config CLPS711X_RAISE_CPUFREQ

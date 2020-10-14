@@ -1,0 +1,6 @@
+pblb-$(CONFIG_ARCH_CLPS711X) += start_ep7212_clep7212
+pblb-$(CONFIG_ARCH_CLPS711X) += start_ep7211_edb7211
+FILE_barebox-ep7212-clep7212.img = start_ep7212_clep7212.pblb
+FILE_barebox-ep7211-edb7211.img = start_ep7211_edb7211.pblb
+image-$(CONFIG_ARCH_CLPS711X) += barebox-ep7212-clep7212.img
+image-$(CONFIG_ARCH_CLPS711X) += barebox-ep7211-edb7211.img
