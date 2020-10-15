@@ -80,6 +80,8 @@ static int imx_soc_from_dt(void)
 		return IMX_CPU_IMX7;
 	if (of_machine_is_compatible("fsl,imx8mq"))
 		return IMX_CPU_IMX8MQ;
+	if (of_machine_is_compatible("fsl,imx8mm"))
+		return IMX_CPU_IMX8MM;
 	if (of_machine_is_compatible("fsl,vf610"))
 		return IMX_CPU_VF610;
 
@@ -120,6 +122,8 @@ static int imx_init(void)
 		ret = imx6_init();
 	else if (cpu_is_mx7())
 		ret = imx7_init();
+	else if (cpu_is_mx8mm())
+		ret = imx8mm_init();
 	else if (cpu_is_mx8mq())
 		ret = imx8mq_init();
 	else if (cpu_is_vf610())
@@ -202,5 +206,5 @@ void imx_set_reset_reason(void __iomem *srsr,
 	reset_source_set_prinst(type, RESET_SOURCE_DEFAULT_PRIORITY, instance);
 
 	pr_info("i.MX reset reason %s (SRSR: 0x%08x)\n",
-		reset_source_name(), reg);
+		reset_source_to_string(type), reg);
 }

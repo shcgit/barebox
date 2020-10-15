@@ -957,6 +957,8 @@ static int fastboot_handle_sparse(struct f_fastboot *f_fb,
 			if (ret)
 				goto out;
 		} else {
+			discard_range(fd, retlen, pos);
+
 			pos = lseek(fd, pos, SEEK_SET);
 			if (pos == -1) {
 				ret = -errno;
@@ -1251,7 +1253,7 @@ static const struct cmd_dispatch_info cmd_oem_dispatch_info[] = {
 	},
 };
 
-static void cb_oem(struct f_fastboot *f_fb, const char *cmd)
+static void __maybe_unused cb_oem(struct f_fastboot *f_fb, const char *cmd)
 {
 	pr_debug("%s: \"%s\"\n", __func__, cmd);
 
@@ -1279,9 +1281,11 @@ static const struct cmd_dispatch_info cmd_dispatch_info[] = {
 	}, {
 		.cmd = "erase:",
 		.cb = cb_erase,
+#if defined(CONFIG_USB_GADGET_FASTBOOT_CMD_OEM)
 	}, {
 		.cmd = "oem ",
 		.cb = cb_oem,
+#endif
 	},
 };
 
