@@ -377,7 +377,6 @@ static int da9063_probe(struct device_d *dev)
 	dev_data = ret < 0 ? NULL : dev_data_tmp;
 
 	priv = xzalloc(sizeof(struct da9063));
-	priv->wd.priority = of_get_watchdog_priority(dev->device_node);
 	priv->wd.set_timeout = da9063_watchdog_set_timeout;
 	priv->wd.hwdev = dev;
 	priv->timeout = DA9063_INITIAL_TIMEOUT;
@@ -402,13 +401,15 @@ static int da9063_probe(struct device_d *dev)
 
 	restart_handler_register(&priv->restart);
 
-	priv->gpio.base = -1;
-	priv->gpio.ngpio = 5;
-	priv->gpio.ops  = &da9063_gpio_ops;
-	priv->gpio.dev = dev;
-	ret = gpiochip_add(&priv->gpio);
-	if (ret)
-		goto on_error;
+	if (IS_ENABLED(CONFIG_GPIOLIB)) {
+		priv->gpio.base = -1;
+		priv->gpio.ngpio = 5;
+		priv->gpio.ops  = &da9063_gpio_ops;
+		priv->gpio.dev = dev;
+		ret = gpiochip_add(&priv->gpio);
+		if (ret)
+			goto on_error;
+	}
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
 		return of_platform_populate(dev->device_node, NULL, dev);

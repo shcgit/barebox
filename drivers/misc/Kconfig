@@ -25,6 +25,7 @@ config DEV_MEM
 
 config UBOOTVAR
 	bool "U-Boot environment storage"
+	depends on OFTREE
 	help
 	  This driver exposes U-Boot environment variable storage as a
 	  single mmap-able device, hiding various low-level details
@@ -34,5 +35,11 @@ config UBOOTVAR
 
 	  While it can be used standalone, it is best when coupled
 	  with corresponding filesystem driver.
+
+config ACPI_TEST
+	bool "ACPI Test driver"
+	depends on ACPI
+	help
+	  This is a simple Test driver to test the ACPI bus.
 
 endmenu
