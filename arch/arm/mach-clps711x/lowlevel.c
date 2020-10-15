@@ -18,7 +18,6 @@ static inline void setup_uart(const u32 bus_speed)
 	u32 baud_divisor =
 		DIV_ROUND_CLOSEST(baud_base, DEBUG_LL_BAUDRATE * 16) - 1;
 
-	writel(0, SYSCON1);
 	writel(baud_divisor | UBRLCR_FIFOEN | UBRLCR_WRDLEN8, UBRLCR1);
 	writel(0, STFCLR);
 	writel(SYSCON_UARTEN, SYSCON1);
@@ -58,6 +57,10 @@ static inline void clps711x_start(void *fdt)
 		writel(0, SYSCON3);
 		asm("nop");
 	}
+
+
+	/* Disable UART, IrDa, LCD */
+	writel(0, SYSCON1);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart(bus);
