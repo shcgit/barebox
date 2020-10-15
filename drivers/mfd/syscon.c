@@ -40,12 +40,11 @@ static const struct regmap_config syscon_regmap_config = {
 
 static struct syscon *of_syscon_register(struct device_node *np, bool check_clk)
 {
-	int ret;
+	struct regmap_config syscon_config = syscon_regmap_config;
 	struct syscon *syscon;
+	u32 reg_io_width;
+	int ret;
 	struct resource res;
-
-	if (!of_device_is_compatible(np, "syscon"))
-		return ERR_PTR(-EINVAL);
 
 	syscon = xzalloc(sizeof(*syscon));
 
@@ -55,12 +54,33 @@ static struct syscon *of_syscon_register(struct device_node *np, bool check_clk)
 	}
 
 	syscon->base = IOMEM(res.start);
-	syscon->np   = np;
+
+	/* Parse the device's DT node for an endianness specification */
+	if (of_property_read_bool(np, "big-endian"))
+		syscon_config.val_format_endian = REGMAP_ENDIAN_BIG;
+	else if (of_property_read_bool(np, "little-endian"))
+		syscon_config.val_format_endian = REGMAP_ENDIAN_LITTLE;
+	else if (of_property_read_bool(np, "native-endian"))
+		syscon_config.val_format_endian = REGMAP_ENDIAN_NATIVE;
+
+	/*
+	 * search for reg-io-width property in DT. If it is not provided,
+	 * default to 4 bytes. regmap_init_mmio will return an error if values
+	 * are invalid so there is no need to check them here.
+	 */
+	ret = of_property_read_u32(np, "reg-io-width", &reg_io_width);
+	if (ret)
+		reg_io_width = 4;
+
+	syscon_config.name = np->full_name;
+	syscon_config.reg_stride = reg_io_width;
+	syscon_config.val_bits = reg_io_width * 8;
+	syscon_config.max_register = resource_size(&res) - reg_io_width;
 
 	list_add_tail(&syscon->list, &syscon_list);
 
-	syscon->regmap = of_regmap_init_mmio_clk(np, NULL, syscon->base,
-					     &syscon_regmap_config);
+	syscon->regmap = regmap_init_mmio_clk(NULL, NULL, syscon->base,
+					      &syscon_config);
 
 	if (check_clk) {
 		struct clk *clk = of_clk_get(np, 0);
@@ -83,7 +103,7 @@ err_map:
 	return ERR_PTR(ret);
 }
 
-static struct syscon *node_to_syscon(struct device_node *np)
+static struct syscon *node_to_syscon(struct device_node *np, bool check_clk)
 {
 	struct syscon *entry, *syscon = NULL;
 
@@ -94,7 +114,7 @@ static struct syscon *node_to_syscon(struct device_node *np)
 		}
 
 	if (!syscon)
-		syscon = of_syscon_register(np, true);
+		syscon = of_syscon_register(np, check_clk);
 
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
@@ -104,10 +124,24 @@ static struct syscon *node_to_syscon(struct device_node *np)
 
 static void __iomem *syscon_node_to_base(struct device_node *np)
 {
-	struct syscon *syscon = node_to_syscon(np);
+	struct syscon *syscon;
+	struct clk *clk;
 
+	if (!of_device_is_compatible(np, "syscon"))
+		return ERR_PTR(-EINVAL);
+
+	syscon = node_to_syscon(np, true);
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
+
+	/* Returning the direct pointer here side steps the regmap
+	 * and any specified clock wouldn't be enabled on access.
+	 * Deal with this by enabling the clock permanently if any
+	 * syscon_node_to_base users exist.
+	 */
+	clk = of_clk_get(np, 0);
+	if (!IS_ERR(clk))
+		clk_enable(clk);
 
 	return syscon->base;
 }
@@ -143,14 +177,29 @@ void __iomem *syscon_base_lookup_by_phandle(struct device_node *np,
 	return syscon_node_to_base(syscon_np);
 }
 
-struct regmap *syscon_node_to_regmap(struct device_node *np)
+static struct regmap *__device_node_to_regmap(struct device_node *np,
+					      bool check_clk)
 {
-	struct syscon *syscon = node_to_syscon(np);
+	struct syscon *syscon;
 
+	syscon = node_to_syscon(np, check_clk);
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
 
 	return syscon->regmap;
+}
+
+struct regmap *device_node_to_regmap(struct device_node *np)
+{
+	return __device_node_to_regmap(np, false);
+}
+
+struct regmap *syscon_node_to_regmap(struct device_node *np)
+{
+	if (!of_device_is_compatible(np, "syscon"))
+		return ERR_PTR(-EINVAL);
+
+	return __device_node_to_regmap(np, true);
 }
 
 struct regmap *syscon_regmap_lookup_by_compatible(const char *s)

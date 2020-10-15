@@ -739,6 +739,38 @@ int of_property_read_u32_index(const struct device_node *np,
 EXPORT_SYMBOL_GPL(of_property_read_u32_index);
 
 /**
+ * of_property_count_elems_of_size - Count the number of elements in a property
+ *
+ * @np:		device node from which the property value is to be read.
+ * @propname:	name of the property to be searched.
+ * @elem_size:	size of the individual element
+ *
+ * Search for a property in a device node and count the number of elements of
+ * size elem_size in it. Returns number of elements on sucess, -EINVAL if the
+ * property does not exist or its length does not match a multiple of elem_size
+ * and -ENODATA if the property does not have a value.
+ */
+int of_property_count_elems_of_size(const struct device_node *np,
+				const char *propname, int elem_size)
+{
+	struct property *prop = of_find_property(np, propname, NULL);
+
+	if (!prop)
+		return -EINVAL;
+	if (!prop->value)
+		return -ENODATA;
+
+	if (prop->length % elem_size != 0) {
+		pr_err("size of %s in node %pOF is not a multiple of %d\n",
+		       propname, np, elem_size);
+		return -EINVAL;
+	}
+
+	return prop->length / elem_size;
+}
+EXPORT_SYMBOL_GPL(of_property_count_elems_of_size);
+
+/**
  * of_property_read_u8_array - Find and read an array of u8 from a property.
  *
  * @np:		device node from which the property value is to be read.
@@ -1681,6 +1713,31 @@ int of_get_available_child_count(const struct device_node *parent)
 EXPORT_SYMBOL(of_get_available_child_count);
 
 /**
+ * of_get_compatible_child - Find compatible child node
+ * @parent:	parent node
+ * @compatible:	compatible string
+ *
+ * Lookup child node whose compatible property contains the given compatible
+ * string.
+ *
+ * Returns a node pointer with refcount incremented, use of_node_put() on it
+ * when done; or NULL if not found.
+ */
+struct device_node *of_get_compatible_child(const struct device_node *parent,
+				const char *compatible)
+{
+	struct device_node *child;
+
+	for_each_child_of_node(parent, child) {
+		if (of_device_is_compatible(child, compatible))
+			return child;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_get_compatible_child);
+
+/**
  *	of_get_child_by_name - Find the child node by name for a given parent
  *	@node:	parent node
  *	@name:	child name to look for.
@@ -2019,6 +2076,8 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 	return 0;
 }
 
+static int mem_bank_num;
+
 int of_add_memory(struct device_node *node, bool dump)
 {
 	const char *device_type;
@@ -2030,14 +2089,13 @@ int of_add_memory(struct device_node *node, bool dump)
 		return -ENXIO;
 
 	while (!of_address_to_resource(node, n, &res)) {
-		if (!resource_size(&res)) {
-			n++;
-			continue;
-		}
-
-		of_add_memory_bank(node, dump, n,
-				res.start, resource_size(&res));
 		n++;
+		if (!resource_size(&res))
+			continue;
+
+		of_add_memory_bank(node, dump, mem_bank_num,
+				res.start, resource_size(&res));
+		mem_bank_num++;
 	}
 
 	return 0;
@@ -2061,9 +2119,23 @@ const struct of_device_id of_default_bus_match_table[] = {
 	}
 };
 
+static void of_probe_memory(void)
+{
+	struct device_node *memory = root_node;
+
+	/* Parse all available node with "memory" device_type */
+	while (1) {
+		memory = of_find_node_by_type(memory, "memory");
+		if (!memory)
+			break;
+
+		of_add_memory(memory, false);
+	}
+}
+
 int of_probe(void)
 {
-	struct device_node *memory, *firmware;
+	struct device_node *firmware;
 
 	if(!root_node)
 		return -ENODEV;
@@ -2074,11 +2146,7 @@ int of_probe(void)
 	if (of_model)
 		barebox_set_model(of_model);
 
-	memory = of_find_node_by_path("/memory");
-	if (!memory)
-		memory = of_find_node_by_type(root_node, "memory");
-	if (memory)
-		of_add_memory(memory, false);
+	of_probe_memory();
 
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)

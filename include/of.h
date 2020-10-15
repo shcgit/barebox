@@ -177,6 +177,8 @@ struct device_node *of_get_next_child(const struct device_node *node,
 	struct device_node *prev);
 extern int of_get_child_count(const struct device_node *parent);
 extern int of_get_available_child_count(const struct device_node *parent);
+extern struct device_node *of_get_compatible_child(const struct device_node *parent,
+					const char *compatible);
 extern struct device_node *of_get_child_by_name(const struct device_node *node,
 					const char *name);
 extern char *of_get_reproducible_name(struct device_node *node);
@@ -186,6 +188,8 @@ extern struct device_node *of_find_node_by_reproducible_name(struct device_node
 extern int of_property_read_u32_index(const struct device_node *np,
 				       const char *propname,
 				       u32 index, u32 *out_value);
+extern int of_property_count_elems_of_size(const struct device_node *np,
+				const char *propname, int elem_size);
 extern int of_property_read_u8_array(const struct device_node *np,
 			const char *propname, u8 *out_values, size_t sz);
 extern int of_property_read_u16_array(const struct device_node *np,
@@ -378,6 +382,12 @@ static inline int of_get_available_child_count(const struct device_node *parent)
 	return -ENOSYS;
 }
 
+static inline struct device_node *of_get_compatible_child(const struct device_node *parent,
+					const char *compatible)
+{
+	return NULL;
+}
+
 static inline struct device_node *of_get_child_by_name(
 			const struct device_node *node, const char *name)
 {
@@ -421,6 +431,12 @@ static inline void of_delete_property(struct property *pp)
 
 static inline int of_property_read_u32_index(const struct device_node *np,
 				const char *propname, u32 index, u32 *out_value)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_count_elems_of_size(const struct device_node *np,
+			const char *propname, int elem_size)
 {
 	return -ENOSYS;
 }

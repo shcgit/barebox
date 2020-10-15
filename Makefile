@@ -1,5 +1,5 @@
 VERSION = 2020
-PATCHLEVEL = 04
+PATCHLEVEL = 05
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -162,6 +162,10 @@ export srctree objtree VPATH
 # make CROSS_COMPILE=ia64-linux-
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is not to prefix executables
+
+ifeq ($(ARCH),arm64)
+ARCH = arm
+endif
 
 ARCH            ?= sandbox
 CROSS_COMPILE   ?=
