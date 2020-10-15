@@ -158,7 +158,7 @@ Bootloader Spec
 
 barebox supports booting according to the bootloader spec:
 
-http://www.freedesktop.org/wiki/Specifications/BootLoaderSpec/
+https://systemd.io/BOOT_LOADER_SPECIFICATION/
 
 It follows another philosophy than the :ref:`boot_entries`. With Boot Entries
 booting is completely configured in the bootloader. Bootloader Spec Entries
@@ -231,10 +231,6 @@ will automatically append a ``root=`` string to the Linux commandline based on t
 device where the entry is found on. This makes it possible to use the same rootfs
 image on different devices without having to specify a different root= option each
 time.
-
-Additionally to the options defined in the original spec, Barebox has the
-``devicetree-overlay`` option. This is a string value that refer to overlays
-that will be applied to the device tree before passing it to Linux.
 
 Network boot
 ------------

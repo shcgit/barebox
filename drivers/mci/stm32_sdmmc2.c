@@ -622,7 +622,7 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 
 	priv->reset_ctl = reset_control_get(dev, NULL);
 	if (IS_ERR(priv->reset_ctl))
-		priv->reset_ctl = NULL;
+		return PTR_ERR(priv->reset_ctl);
 
 	mci->f_min = 400000;
 	/* f_max is taken from kernel v5.3 variant_stm32_sdmmc */
@@ -630,6 +630,11 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 
 	mci_of_parse(&priv->mci);
+
+	if (mci->f_max >= 26000000)
+		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED;
+	if (mci->f_max >= 52000000)
+		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
 
 	return mci_register(&priv->mci);
 
