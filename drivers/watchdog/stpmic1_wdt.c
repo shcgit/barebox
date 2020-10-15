@@ -169,13 +169,15 @@ static int stpmic1_wdt_probe(struct device_d *dev)
 	int ret;
 
 	wdt = xzalloc(sizeof(*wdt));
-	wdt->regmap = dev->parent->priv;
+
+	wdt->regmap = dev_get_regmap(dev->parent, NULL);
+	if (IS_ERR(wdt->regmap))
+		return PTR_ERR(wdt->regmap);
 
 	wdd = &wdt->wdd;
 	wdd->hwdev = dev;
 	wdd->set_timeout = stpmic1_wdt_set_timeout;
 	wdd->timeout_max = PMIC_WDT_MAX_TIMEOUT;
-	wdd->timeout_cur = PMIC_WDT_DEFAULT_TIMEOUT;
 
 	/* have the watchdog reset, not power-off the system */
 	regmap_write_bits(wdt->regmap, MAIN_CR, RREQ_EN, RREQ_EN);
