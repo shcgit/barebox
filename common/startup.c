@@ -43,6 +43,7 @@
 #include <console_countdown.h>
 #include <environment.h>
 #include <linux/ctype.h>
+#include <watchdog.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -155,7 +156,7 @@ static int load_environment(void)
 			envfs_load(default_environment_path, "/env", 0);
 	} else {
 		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-			pr_notice("No support for persistent environment. Using default environment");
+			pr_notice("No support for persistent environment. Using default environment\n");
 	}
 
 	nvvar_load();
@@ -235,13 +236,16 @@ void set_autoboot_state(enum autoboot_state autoboot)
  */
 enum autoboot_state do_autoboot_countdown(void)
 {
-	enum autoboot_state autoboot_state;
+	static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
 	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
 	int ret;
 	struct stat s;
 	bool menu_exists;
 	char *abortkeys = NULL;
 	unsigned char outkey;
+
+	if (autoboot_state != AUTOBOOT_UNKNOWN)
+		return autoboot_state;
 
 	if (global_autoboot_state != AUTOBOOT_COUNTDOWN)
 		return global_autoboot_state;
@@ -281,19 +285,8 @@ enum autoboot_state do_autoboot_countdown(void)
 	return autoboot_state;
 }
 
-static int run_init(void)
+static int register_autoboot_vars(void)
 {
-	DIR *dir;
-	struct dirent *d;
-	const char *initdir = "/env/init";
-	bool env_bin_init_exists;
-	enum autoboot_state autoboot;
-	struct stat s;
-
-	/*
-	 * Register autoboot variables here as they might be altered by
-	 * init scripts.
-	 */
 	globalvar_add_simple_enum("autoboot_abort_key",
 				  &global_autoboot_abort_key,
                                   global_autoboot_abort_keys,
@@ -304,6 +297,19 @@ static int run_init(void)
 				  &global_autoboot_state,
 				  global_autoboot_states,
 				  ARRAY_SIZE(global_autoboot_states));
+
+	return 0;
+}
+postcore_initcall(register_autoboot_vars);
+
+static int run_init(void)
+{
+	DIR *dir;
+	struct dirent *d;
+	const char *initdir = "/env/init";
+	bool env_bin_init_exists;
+	enum autoboot_state autoboot;
+	struct stat s;
 
 	setenv("PATH", "/env/bin");
 
@@ -350,6 +356,9 @@ static int run_init(void)
 
 	if (autoboot == AUTOBOOT_MENU)
 		run_command(MENUFILE);
+
+	if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
+		watchdog_inhibit_all();
 
 	run_shell();
 	run_command(MENUFILE);

@@ -39,7 +39,6 @@ config BLOCK_WRITE
 
 config ELF
 	bool "ELF Support" if COMPILE_TEST
-	depends on MIPS || COMPILE_TEST
 
 config FILETYPE
 	bool
@@ -313,6 +312,13 @@ config MALLOC_DUMMY
 	  memory is never freed. This is suitable for well tested noninteractive
 	  environments only.
 
+config MALLOC_LIBC
+	bool "libc malloc"
+	depends on SANDBOX
+	help
+	  select this option to use the libc malloc implementation in the sandbox.
+	  This is benefecial for testing with external memory integrity tools.
+
 endchoice
 
 config MODULES
@@ -325,6 +331,13 @@ config MODULES
 	  support is quite experimental at the moment. There is no convenient
 	  way to compile modules and the list of exported symbols to actually
 	  make use of modules is short to nonexistent
+
+config HAVE_MOD_ARCH_SPECIFIC
+	bool
+	help
+	  The arch uses struct mod_arch_specific to store data.  Many arches
+	  just need a simple module loader without arch specific data - those
+	  should not enable this.
 
 config KALLSYMS
 	depends on HAS_KALLSYMS
@@ -596,6 +609,14 @@ config BOOTM_AIMAGE
 	depends on BOOTM && ARM
 	help
 	  Support using Android Images.
+
+config BOOTM_ELF
+	bool
+	depends on BOOTM
+	select ELF
+	prompt "elf loading support"
+	help
+	  Add support to load elf file with bootm.
 
 config BOOTM_FITIMAGE
 	bool
@@ -1026,18 +1047,6 @@ config FASTBOOT_SPARSE
 	  images that are bigger than the available memory. If unsure,
 	  say yes here.
 
-config FASTBOOT_BUF
-	bool
-	prompt "Download files to temporary buffer instead of file"
-	help
-	  With this option enabled the fastboot code will download files to a
-	  temporary buffer instead of a temporary file. Normally you want to
-	  use a file as this also works when your memory is fragmented. However,
-	  in some special cases, when the file consumer also better copes with
-	  a buffer, then using a buffer might be better.
-
-	  Say no here unless you know what you are doing.
-
 config FASTBOOT_CMD_OEM
 	bool
 	prompt "Enable OEM commands"
@@ -1188,6 +1197,13 @@ config DEBUG_IMX7D_UART
 	  Say Y here if you want barebox low-level debugging support
 	  on i.MX7D.
 
+config DEBUG_IMX8MP_UART
+	bool "i.MX8MP Debug UART"
+	depends on ARCH_IMX8MP
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on i.MX8MP.
+
 config DEBUG_IMX8MQ_UART
 	bool "i.MX8MQ Debug UART"
 	depends on ARCH_IMX8MQ
@@ -1285,6 +1301,7 @@ config DEBUG_IMX_UART_PORT
 						DEBUG_IMX6Q_UART || \
 						DEBUG_IMX6SL_UART || \
 						DEBUG_IMX7D_UART || \
+						DEBUG_IMX8MP_UART || \
 						DEBUG_IMX8MQ_UART || \
 						DEBUG_VF610_UART
 	default 1

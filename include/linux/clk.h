@@ -1,13 +1,12 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2004 ARM Limited */
+
 /*
  *  linux/include/linux/clk.h
  *
- *  Copyright (C) 2004 ARM Limited.
  *  Written by Deep Blue Solutions Limited.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
  */
+
 #ifndef __LINUX_CLK_H
 #define __LINUX_CLK_H
 
@@ -556,7 +555,7 @@ struct string_list;
 
 int clk_name_complete(struct string_list *sl, char *instr);
 
-char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
+char *of_clk_get_parent_name(const struct device_node *np, int index);
 
 static inline void clk_unregister(struct clk *clk)
 {
