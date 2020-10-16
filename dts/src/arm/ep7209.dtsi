@@ -24,10 +24,6 @@
 		timer1 = &timer2;
 	};
 
-	memory {
-		device_type = "memory";
-	};
-
 	cpus {
 		#address-cells = <0>;
 		#size-cells = <0>;

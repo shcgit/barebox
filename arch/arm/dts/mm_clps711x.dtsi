@@ -6,7 +6,7 @@
 	model = "Mega-Milas Informer EP7312";
 	compatible = "milas,informer-clps711x", "cirrus,ep7209";
 
-	memory {
+	memory@c0000000 {
 		device_type = "memory";
 		reg = <0xc0000000 0x04000000>;
 	};
