@@ -9,4 +9,4 @@ cp /disk/zImage /dev/nand0.kernel.bb
 protect /dev/nand0.kernel.bb
 umount /disk
 
-erase_env
+/env/bin/erase_env

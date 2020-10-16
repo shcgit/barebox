@@ -5,4 +5,4 @@ mount /dev/mmc0.0 /mnt
 ubiupdatevol /dev/nand0.system.ubi.kernel /mnt/zImage
 umount /mnt
 
-erase_env
+/env/bin/erase_env

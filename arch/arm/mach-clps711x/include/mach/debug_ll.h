@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
-/* Author: Alexander Shiyan <shc_work@mail.ru> */
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru>
 
 #ifndef __MACH_DEBUG_LL_H__
 #define __MACH_DEBUG_LL_H__

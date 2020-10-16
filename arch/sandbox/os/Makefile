@@ -9,6 +9,10 @@ KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
 KBUILD_CFLAGS := -Wall
 NOSTDINC_FLAGS :=
 
+ifeq ($(CONFIG_SANDBOX_LINUX_I386),y)
+KBUILD_CFLAGS += -m32
+endif
+
 obj-y = common.o tap.o
 
 CFLAGS_sdl.o = $(shell pkg-config sdl --cflags)

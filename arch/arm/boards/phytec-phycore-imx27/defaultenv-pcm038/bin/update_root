@@ -3,7 +3,7 @@
 mci0.probe=1
 [ ! -d /disk ] && mkdir /disk
 mount /dev/disk0.0 /disk
-ubiupdatevol /dev/nand0.root.ubi.root /disk/sysroot.img
+ubiupdatevol /dev/nand0.root.ubi.root /disk/sysroot4.img
 umount /disk
 
-erase_env
+/env/bin/erase_env

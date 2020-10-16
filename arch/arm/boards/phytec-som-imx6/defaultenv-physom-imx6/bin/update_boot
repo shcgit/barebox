@@ -8,4 +8,4 @@ cp /mnt/barebox-phytec-pbab01-1gib.img /dev/m25p0.boot
 protect /dev/m25p0.boot
 umount /mnt
 
-erase_env
+/env/bin/erase_env

@@ -1,5 +1,5 @@
 #!/bin/sh
 
-update_boot
-update_kernel
-update_root
+/env/bin/update_boot
+/env/bin/update_kernel
+/env/bin/update_root

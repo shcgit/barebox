@@ -2,8 +2,6 @@ KBUILD_DEFCONFIG := generic_defconfig
 
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
-board-$(CONFIG_GENERIC) := generic
-
 KALLSYMS += --symbol-prefix=_
 
 ifeq ($(CROSS_COMPILE),)
@@ -32,6 +30,6 @@ lds-y += arch/kvx/cpu/barebox.lds
 
 cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS) \
-      --start-group $(BAREBOX_OBJS) --end-group \
+      --whole-archive $(BAREBOX_OBJS) --no-whole-archive \
       -L$(LIBGCC_PATH) -lgcc \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)

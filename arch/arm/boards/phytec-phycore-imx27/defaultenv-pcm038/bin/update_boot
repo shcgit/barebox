@@ -6,4 +6,4 @@ mount /dev/disk0.0 /disk
 barebox_update -t nand -y /disk/barebox-phytec-phycore-imx27.img
 umount /disk
 
-erase_env
+/env/bin/erase_env
