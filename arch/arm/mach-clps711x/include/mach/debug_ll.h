@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /* Author: Alexander Shiyan <shc_work@mail.ru> */
 
-#ifndef __INCLUDE_MACH_DEBUG_LL_H__
-#define __INCLUDE_MACH_DEBUG_LL_H__
+#ifndef __MACH_DEBUG_LL_H__
+#define __MACH_DEBUG_LL_H__
 
 #include <asm/io.h>
 #include <mach/clps711x.h>

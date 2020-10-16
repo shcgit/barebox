@@ -4,8 +4,8 @@
  * Copyright (C) 2012-2020 Alexander Shiyan <shc_work@mail.ru>
  */
 
-#ifndef __CLPS711X_H
-#define __CLPS711X_H
+#ifndef __MACH_CLPS711X_H
+#define __MACH_CLPS711X_H
 
 #define CS0_BASE		(0x00000000)
 #define CS1_BASE		(0x10000000)
