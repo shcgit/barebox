@@ -3,9 +3,6 @@
  *
  * Copyright (c) 2011 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation.
@@ -81,6 +78,7 @@ static const struct filetype_str filetype_str[] = {
 				"ubootvar" },
 	[filetype_stm32_image_v1] = { "STM32 image (v1)", "stm32-image-v1" },
 	[filetype_zynq_image] = { "Zynq image", "zynq-image" },
+	[filetype_mxs_sd_image] = { "i.MX23/28 SD card image", "mxs-sd-image" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -341,6 +339,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_layerscape_image;
 	if (buf[0] == 0x01ee0100 && buf[1] == 0xaa55aa55)
 		return filetype_layerscape_qspi_image;
+
+	if (le32_to_cpu(buf[0]) == 0x00112233 && le32_to_cpu(buf[1]) == 0x1)
+		return filetype_mxs_sd_image;
 
 	if (bufsize < 64)
 		return filetype_unknown;

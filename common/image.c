@@ -4,9 +4,6 @@
  * (C) Copyright 2000-2006
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -50,6 +47,7 @@ static table_entry_t arch_name[] = {
 	{ IH_ARCH_MIPS64,	"mips64",	"MIPS 64 Bit",	},
 	{ IH_ARCH_NIOS,		"nios",		"NIOS",		},
 	{ IH_ARCH_NIOS2,	"nios2",	"NIOS II",	},
+	{ IH_ARCH_PPC,		"powerpc",	"PowerPC",	},
 	{ IH_ARCH_PPC,		"ppc",		"PowerPC",	},
 	{ IH_ARCH_S390,		"s390",		"IBM S390",	},
 	{ IH_ARCH_SH,		"sh",		"SuperH",	},
