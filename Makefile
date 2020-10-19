@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2020
-PATCHLEVEL = 09
+PATCHLEVEL = 10
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -448,6 +448,7 @@ export LDFLAGS_barebox
 export LDFLAGS_pbl
 
 export CFLAGS_UBSAN
+export CFLAGS_KASAN CFLAGS_KASAN_NOSANITIZE
 
 # Files to ignore in find ... statements
 
@@ -636,7 +637,10 @@ KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 # change __FILE__ to the relative path from the srctree
 KBUILD_CFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
 
-include $(srctree)/scripts/Makefile.ubsan
+include-y +=scripts/Makefile.ubsan
+include-$(CONFIG_KASAN)         += scripts/Makefile.kasan
+
+include $(addprefix $(srctree)/, $(include-y))
 
 # KBUILD_IMAGE: Default barebox image to build
 # Depending on the architecture, this can be either compressed or not.

@@ -293,6 +293,53 @@ int nvvar_remove(const char *name)
 	return ret;
 }
 
+struct globalvar_deprecated {
+	char *newname;
+	char *oldname;
+	struct list_head list;
+};
+
+static LIST_HEAD(globalvar_deprecated_list);
+
+/*
+ * globalvar_alias_deprecated - add an alias
+ *
+ * @oldname: The old name for the variable
+ * @newname: The new name for the variable
+ *
+ * This function is a helper for globalvars that are renamed from one
+ * release to another. when a variable @oldname is found in the persistent
+ * environment a warning is issued and its value is written to @newname.
+ *
+ * Note that when both @oldname and @newname contain values then the values
+ * existing in @newname are overwritten.
+ */
+void globalvar_alias_deprecated(const char *oldname, const char *newname)
+{
+	struct globalvar_deprecated *gd;
+
+	gd = xzalloc(sizeof(*gd));
+	gd->newname = xstrdup(newname);
+	gd->oldname = xstrdup(oldname);
+	list_add_tail(&gd->list, &globalvar_deprecated_list);
+}
+
+static const char *globalvar_new_name(const char *oldname)
+{
+	struct globalvar_deprecated *gd;
+
+	list_for_each_entry(gd, &globalvar_deprecated_list, list) {
+		if (!strcmp(oldname, gd->oldname)) {
+			pr_warn("nv.%s is deprecated, converting to nv.%s\n", oldname,
+				gd->newname);
+			nv_dirty = 1;
+			return gd->newname;
+		}
+	}
+
+	return oldname;
+}
+
 int nvvar_load(void)
 {
 	char *val;
@@ -308,6 +355,8 @@ int nvvar_load(void)
 		return -ENOENT;
 
 	while ((d = readdir(dir))) {
+		const char *n;
+
 		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 			continue;
 
@@ -316,10 +365,11 @@ int nvvar_load(void)
 		pr_debug("%s: Setting \"%s\" to \"%s\"\n",
 				__func__, d->d_name, val);
 
-		ret = __nvvar_add(d->d_name, val);
+		n = globalvar_new_name(d->d_name);
+		ret = __nvvar_add(n, val);
 		if (ret)
 			pr_err("failed to create nv variable %s: %s\n",
-					d->d_name, strerror(-ret));
+					n, strerror(-ret));
 	}
 
 	closedir(dir);
@@ -397,6 +447,11 @@ void globalvar_set_match(const char *match, const char *val)
 		if (!strncmp(match, param->name, strlen(match)))
 			dev_set_param(&global_device, param->name, val);
 	}
+}
+
+void globalvar_set(const char *name, const char *val)
+{
+	dev_set_param(&global_device, name, val);
 }
 
 static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
@@ -514,7 +569,9 @@ int globalvar_add_simple_int(const char *name, int *value,
 	return 0;
 }
 
-int globalvar_add_simple_bool(const char *name, int *value)
+int globalvar_add_bool(const char *name,
+		       int (*set)(struct param_d *, void *),
+		       int *value, void *priv)
 {
 	struct param_d *p;
 	int ret;
@@ -523,8 +580,8 @@ int globalvar_add_simple_bool(const char *name, int *value)
 	if (ret)
 		return ret;
 
-	p = dev_add_param_bool(&global_device, name, NULL, NULL,
-		value, NULL);
+	p = dev_add_param_bool(&global_device, name, set, NULL,
+		value, priv);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);

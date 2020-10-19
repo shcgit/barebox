@@ -186,7 +186,7 @@ struct image_cfg_element {
 	} type;
 	union {
 		unsigned int version;
-		unsigned int bootfrom;
+		int bootfrom;
 		struct {
 			char *file;
 			unsigned int args[BINARY_MAX_ARGS];
@@ -197,7 +197,7 @@ struct image_cfg_element {
 		unsigned int execaddr;
 		unsigned int nandblksz;
 		unsigned int nandbadblklocation;
-		unsigned int nandeccmode;
+		int nandeccmode;
 		unsigned int nandpagesz;
 		struct ext_hdr_v0_reg regdata;
 	};
@@ -231,7 +231,7 @@ static const char *image_boot_mode_name(unsigned int id)
 	return NULL;
 }
 
-int image_boot_mode_id(const char *boot_mode_name)
+static int image_boot_mode_id(const char *boot_mode_name)
 {
 	int i;
 	for (i = 0; boot_modes[i].name; i++)
@@ -250,7 +250,7 @@ static const char *image_nand_ecc_mode_name(unsigned int id)
 	return NULL;
 }
 
-int image_nand_ecc_mode_id(const char *nand_ecc_mode_name)
+static int image_nand_ecc_mode_id(const char *nand_ecc_mode_name)
 {
 	int i;
 	for (i = 0; nand_ecc_modes[i].name; i++)

@@ -411,6 +411,7 @@ choice
 		select COMMAND_SUPPORT
 		select PARAMETER
 		select STDDEV
+		select CMD_SETENV
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 
@@ -699,7 +700,6 @@ config IMD
 config IMD_TARGET
 	bool "build bareboximd target tool"
 	depends on IMD
-	depends on !SANDBOX
 
 config KERNEL_INSTALL_TARGET
 	bool
@@ -1374,12 +1374,13 @@ config PBL_BREAK
 	  on early pbl init. This option should be used only with JTAG debugger!
 
 source "lib/Kconfig.ubsan"
+source "lib/kasan/Kconfig"
 
-config KASAN
-	bool "KASAN: runtime memory debugger"
-	depends on HAVE_ARCH_KASAN
+config ASAN
+	bool "ASAN: runtime memory debugger"
+	depends on HAVE_ARCH_ASAN
 	help
-	  Enables KASAN (KernelAddressSANitizer) - runtime memory debugger,
+	  Enables ASAN (AddressSANitizer) - runtime memory debugger,
 	  designed to find out-of-bounds accesses and use-after-free bugs.
 
 config COMPILE_TEST
@@ -1404,5 +1405,5 @@ config DDR_SPD
 	bool
 	select CRC_ITU_T
 
-config HAVE_ARCH_KASAN
+config HAVE_ARCH_ASAN
 	bool

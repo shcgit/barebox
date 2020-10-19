@@ -39,8 +39,6 @@
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))
 
-#define ALIGN(x, a)        (((x) + (a) - 1) & ~((a) - 1))
-
 #define FT_APP	0xaa
 #define FT_CSF	0xcc
 #define FT_DCD	0xee
@@ -562,7 +560,7 @@ static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
 	return err;
 }
 
-int do_status(void)
+static int do_status(void)
 {
 	int last_trans;
 	unsigned char tmp[64];

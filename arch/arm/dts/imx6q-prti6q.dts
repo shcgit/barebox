@@ -6,19 +6,13 @@
 /dts-v1/;
 #include <arm/imx6q.dtsi>
 #include "imx6qdl-prti6q.dtsi"
+#include "imx6qdl-prti6q-nor.dtsi"
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/sound/fsl-imx-audmux.h>
 
 / {
 	model = "Protonic PRTI6Q board";
 	compatible = "prt,prti6q", "fsl,imx6q";
-
-	chosen {
-		environment {
-			compatible = "barebox,environment";
-			device-path = &ecspi1, "partname:env";
-		};
-	};
 
 	memory@10000000 {
 		device_type = "memory";
@@ -29,7 +23,7 @@
 		compatible = "pwm-backlight";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight>;
-		pwms = <&pwm1 0 5000000>;
+		pwms = <&pwm1 0 5000000 0>;
 		brightness-levels = <0 16 64 255>;
 		num-interpolated-steps = <16>;
 		default-brightness-level = <16>;
@@ -161,24 +155,8 @@
 		compatible = "jedec,spi-nor";
 		reg = <0>;
 		spi-max-frequency = <20000000>;
-
 		#address-cells = <1>;
 		#size-cells = <1>;
-
-		partition@0 {
-			label = "boot";
-			reg = <0x0 0x100000>;
-		};
-
-		partition@100000 {
-			label = "env";
-			reg = <0x100000 0x10000>;
-		};
-
-		partition@110000 {
-			label = "spare";
-			reg = <0x110000 0x2f0000>;
-		};
 	};
 };
 
@@ -226,7 +204,7 @@
 
 		/* Microchip KSZ9031RNX PHY */
 		rgmii_phy: ethernet-phy@4 {
-			reg = <4>;
+			reg = <0>;
 			interrupts-extended = <&gpio1 28 IRQ_TYPE_LEVEL_LOW>;
 			reset-gpios = <&gpio1 25 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;

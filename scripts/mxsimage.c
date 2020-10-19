@@ -1,10 +1,7 @@
-/*
- * Freescale i.MX23/i.MX28 SB image generator
- *
- * Copyright (C) 2012-2013 Marek Vasut <marex@denx.de>
- *
- * SPDX-License-Identifier:	GPL-2.0+
- */
+// SPDX-License-Identifier: GPL-2.0-or-later WITH LicenseRef-OpenSSL-exception
+// SPDX-FileCopyrightText: 2012-2013 Marek Vasut <marex@denx.de>
+
+/* Freescale i.MX23/i.MX28 SB image generator */
 
 #include <errno.h>
 #include <fcntl.h>
@@ -442,7 +439,7 @@ int EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *ctx)
 }
 #endif
 
-uint32_t pbl_crc32(uint32_t in_crc, const char *buf, uint32_t len)
+static uint32_t pbl_crc32(uint32_t in_crc, const char *buf, uint32_t len)
 {
 	uint32_t crc32_val;
 	int i;

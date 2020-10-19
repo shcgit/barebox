@@ -37,7 +37,7 @@ static int clps711x_dt_fixup(struct device_node *root, void *context)
 static __init int clps711x_fixup(void)
 {
 	if (of_machine_is_compatible("cirrus,ep7209")) {
-		restart_handler_register_fn(clps711x_restart);
+		restart_handler_register_fn("vector", clps711x_restart);
 		of_register_fixup(clps711x_dt_fixup, NULL);
 	}
 

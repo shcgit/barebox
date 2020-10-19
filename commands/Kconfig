@@ -253,6 +253,14 @@ config CMD_POLLER
 	  is_timeout() or one of the various delay functions. The poller command prints
 	  informations about registered pollers.
 
+config CMD_SLICE
+	tristate
+	prompt "slice"
+	help
+	  slices are a way to protect resources from being accessed by pollers. The slice
+	  command can be used to print informations about slices and also to manipulate
+	  them on the command line for debugging purposes.
+
 # end Information commands
 endmenu
 
@@ -717,6 +725,19 @@ config CMD_SAVEENV
 	  omitted, DIRECTORY defaults to /env and ENVFS defaults to
 	  /dev/env0. Note that envfs can only handle files, directories are being
 	  skipped silently.
+
+config CMD_SETENV
+	tristate
+	default y
+	depends on !CONFIG_SHELL_NONE
+	prompt "setenv"
+	help
+	  Set environment variable
+
+	  Usage: setenv NAME [VALUE]
+
+	  Set environment variable NAME to VALUE.
+	  If VALUE is ommitted, then the variable is deleted.
 
 # end Environment commands
 endmenu
