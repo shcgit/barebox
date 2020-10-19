@@ -15,8 +15,7 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
-#include <mach/imx8mp-regs.h>
-#include <mach/imx8mq-regs.h>
+#include <mach/imx8m-regs.h>
 #include <mach/vf610-regs.h>
 
 #include <serial/imx-uart.h>
@@ -49,10 +48,8 @@
 #define IMX_DEBUG_SOC MX6
 #elif defined CONFIG_DEBUG_IMX7D_UART
 #define IMX_DEBUG_SOC MX7
-#elif defined CONFIG_DEBUG_IMX8MP_UART
-#define IMX_DEBUG_SOC MX8MP
-#elif defined CONFIG_DEBUG_IMX8MQ_UART
-#define IMX_DEBUG_SOC MX8MQ
+#elif defined CONFIG_DEBUG_IMX8M_UART
+#define IMX_DEBUG_SOC MX8M
 #elif defined CONFIG_DEBUG_VF610_UART
 #define IMX_DEBUG_SOC VF610
 #else
@@ -105,7 +102,7 @@ static inline void imx8m_uart_setup_ll(void)
 {
 	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
 					 CONFIG_DEBUG_IMX_UART_PORT));
-	imx8mq_uart_setup(base);
+	imx8m_uart_setup(base);
 }
 
 static inline void PUTC_LL(int c)

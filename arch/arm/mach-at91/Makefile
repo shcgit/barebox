@@ -9,6 +9,7 @@ endif
 obj-$(CONFIG_CMD_AT91_BOOT_TEST) += boot_test_cmd.o
 
 obj-$(CONFIG_AT91_BOOTSTRAP)	+= bootstrap.o
+obj-$(CONFIG_BOOTM) += bootm-barebox.o
 
 obj-y += at91sam9_reset.o
 obj-y += at91sam9g45_reset.o

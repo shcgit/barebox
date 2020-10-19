@@ -28,11 +28,14 @@ extern char __dtb_imx8mm_evk_start[];
 
 static void setup_uart(void)
 {
+	void __iomem *uart = IOMEM(MX8M_UART2_BASE_ADDR);
+
 	imx8m_early_setup_uart_clock();
 
 	imx8mm_setup_pad(IMX8MM_PAD_UART2_TXD_UART2_TX | UART_PAD_CTRL);
+	imx8m_uart_setup(uart);
 
-	imx8m_uart_setup_ll();
+	pbl_set_putc(imx_uart_putc, uart);
 
 	putc_ll('>');
 }
@@ -157,8 +160,7 @@ static void start_atf(void)
  */
 static __noreturn noinline void nxp_imx8mm_evk_start(void)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		setup_uart();
+	setup_uart();
 
 	start_atf();
 
