@@ -1,1 +1,1 @@
-ubi.mtd=nand-gpio feature-sound earlyprintk
+ubi.mtd=nand-gpio feature-sound
