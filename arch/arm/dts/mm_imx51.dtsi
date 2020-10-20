@@ -1,4 +1,5 @@
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
 #include <dt-bindings/sound/fsl-imx-audmux.h>
 
 / {
@@ -431,13 +432,14 @@
 		led-live {
 			reg = <3>;
 			label = "red:live";
-			linux,default-trigger = "heartbeat";
+			linux,default-trigger = LED_FUNCTION_HEARTBEAT;
+			panic-indicator;
 		};
 
 		led-mtd {
 			reg = <4>;
 			label = "red:mtd";
-			linux,default-trigger = "mtd";
+			linux,default-trigger = LED_FUNCTION_MTD;
 		};
 
 		led-usb {
