@@ -410,7 +410,7 @@
 };
 
 &nfc {
-	/delete-node/ partition@400000;
+	/delete-node/ partition@4c0000;
 
 	partition@c0000 {
 		label = "system";

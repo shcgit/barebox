@@ -10,7 +10,7 @@ ubimkvol -t dynamic /dev/m25p0.init.ubi kernel 0
 
 ubiformat /dev/nand0.system -y
 ubiattach /dev/nand0.system
-ubimkvol -t dynamic /dev/nand0.system.ubi root 62914560
-ubimkvol -t dynamic /dev/nand0.system.ubi update 62914560
+ubimkvol -t dynamic /dev/nand0.system.ubi root 67108864
+ubimkvol -t dynamic /dev/nand0.system.ubi update 67108864
 ubimkvol -t dynamic /dev/nand0.system.ubi bbox 0
 ubirmvol /dev/nand0.system.ubi update
