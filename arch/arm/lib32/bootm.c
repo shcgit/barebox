@@ -114,11 +114,12 @@ static int get_kernel_addresses(size_t image_size,
 		kaddr = mem_start + image_decomp_size;
 
 		/*
-		 * Make sure we do not place the image past the end of the
+		 * Make sure we do not place the image outside of the
 		 * available memory.
 		 */
-//		if (kaddr + image_size + spacing >= mem_end)
-//			kaddr = mem_end - image_size - spacing;
+		if (((kaddr + image_size + spacing) > mem_end) &&
+		    ((mem_end - image_size - spacing) >= mem_start))
+			kaddr = mem_end - image_size - spacing;
 
 		*load_address = PAGE_ALIGN_DOWN(kaddr);
 

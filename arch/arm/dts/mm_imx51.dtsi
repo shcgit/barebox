@@ -183,8 +183,8 @@
 	/* otgid: extcon {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_otgid>;
-		compatible = "linux,extcon-usb-gpio";
-		id-gpio = <&gpio4 19 GPIO_ACTIVE_HIGH>;
+		compatible = "gpio-usb-b-connector", "usb-b-connector";
+		id-gpios = <&gpio4 19 GPIO_ACTIVE_HIGH>;
 	}; */
 
 	sound {
