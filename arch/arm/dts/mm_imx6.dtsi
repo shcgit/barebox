@@ -145,6 +145,7 @@
 
 &led_green {
 	linux,default-trigger = "heartbeat";
+	panic-indicator;
 };
 
 &led_red {
