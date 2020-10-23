@@ -433,6 +433,9 @@
 			reg = <3>;
 			label = "red:live";
 			linux,default-trigger = LED_FUNCTION_HEARTBEAT;
+			function = LED_FUNCTION_HEARTBEAT;
+			color = <LED_COLOR_ID_RED>;
+			default-state = "off";
 			panic-indicator;
 		};
 
@@ -440,12 +443,18 @@
 			reg = <4>;
 			label = "red:mtd";
 			linux,default-trigger = LED_FUNCTION_MTD;
+			function = LED_FUNCTION_MTD;
+			color = <LED_COLOR_ID_RED>;
+			default-state = "off";
 		};
 
 		led-usb {
 			reg = <5>;
 			label = "red:usb";
 			linux,default-trigger = "usb-host";
+			function = LED_FUNCTION_USB;
+			color = <LED_COLOR_ID_RED>;
+			default-state = "off";
 		};
 	};
 

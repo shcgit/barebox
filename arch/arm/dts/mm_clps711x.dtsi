@@ -64,8 +64,8 @@
 
 	i2c: i2c0 {
 		compatible = "i2c-gpio";
-		sda-gpios = <&sdagpio 0 GPIO_ACTIVE_HIGH>;
-		scl-gpios = <&sclgpio 0 GPIO_ACTIVE_HIGH>;
+		gpios = <&sdagpio 0 GPIO_ACTIVE_HIGH>,
+			<&sclgpio 0 GPIO_ACTIVE_HIGH>;
 		i2c-gpio,sda-open-drain;
 		i2c-gpio,scl-open-drain;
 		#address-cells = <1>;

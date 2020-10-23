@@ -1,3 +1,5 @@
+#include <dt-bindings/leds/common.h>
+
 / {
 	model = "Mega-Milas Informer i.MX6";
 	compatible = "milas,informer-imx6",
@@ -144,12 +146,18 @@
 };
 
 &led_green {
-	linux,default-trigger = "heartbeat";
+	linux,default-trigger = LED_FUNCTION_HEARTBEAT;
+	function = LED_FUNCTION_HEARTBEAT;
+	color = <LED_COLOR_ID_GREEN>;
+	default-state = "off";
 	panic-indicator;
 };
 
 &led_red {
 	linux,default-trigger = "usb-host";
+	function = LED_FUNCTION_USB;
+	color = <LED_COLOR_ID_RED>;
+	default-state = "off";
 };
 
 &mipi_csi {
