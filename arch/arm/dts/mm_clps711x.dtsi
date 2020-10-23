@@ -75,6 +75,7 @@
 			compatible = "at,24c16";
 			reg = <0x50>;
 			pagesize = <256>;
+			vcc-supply = <&reg5v0>;
 		};
 
 		rtc@68 {
@@ -89,6 +90,8 @@
 		regulator-name = "5V0";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		regulator-boot-on;
 	};
 
 	reg_ide0: reg_ide0 {
