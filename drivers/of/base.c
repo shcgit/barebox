@@ -23,6 +23,7 @@
 #include <memory.h>
 #include <linux/sizes.h>
 #include <of_graph.h>
+#include <string.h>
 #include <linux/ctype.h>
 #include <linux/amba/bus.h>
 #include <linux/err.h>
@@ -893,6 +894,43 @@ int of_property_read_u64(const struct device_node *np, const char *propname,
 EXPORT_SYMBOL_GPL(of_property_read_u64);
 
 /**
+ * of_property_read_u64_array - Find and read an array of 64 bit integers
+ * from a property.
+ *
+ * @np:		device node from which the property value is to be read.
+ * @propname:	name of the property to be searched.
+ * @out_value:	pointer to return value, modified only if return value is 0.
+ * @sz:		number of array elements to read
+ *
+ * Search for a property in a device node and read 64-bit value(s) from
+ * it. Returns 0 on success, -EINVAL if the property does not exist,
+ * -ENODATA if property does not have a value, and -EOVERFLOW if the
+ * property data isn't large enough.
+ *
+ * The out_value is modified only if a valid u64 value can be decoded.
+ */
+int of_property_read_variable_u64_array(const struct device_node *np,
+			       const char *propname, u64 *out_values,
+			       size_t sz)
+{
+	size_t count;
+	const __be32 *val = of_find_property_value_of_size(np, propname,
+						(sz * sizeof(*out_values)));
+
+	if (IS_ERR(val))
+		return PTR_ERR(val);
+
+	count = sz;
+	while (count--) {
+		*out_values++ = of_read_number(val, 2);
+		val += 2;
+	}
+
+	return sz;
+}
+EXPORT_SYMBOL_GPL(of_property_read_variable_u64_array);
+
+/**
  * of_property_read_string - Find and read a string from a property
  * @np:		device node from which the property value is to be read.
  * @propname:	name of the property to be searched.
@@ -1180,6 +1218,53 @@ int of_property_write_u64_array(struct device_node *np,
 	}
 
 	return 0;
+}
+
+/**
+ * of_property_write_strings - Write strings to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @...:	pointers to strings to write
+ *
+ * Search for a property in a device node and write a string to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created, -EINVAL if no strings specified.
+ */
+int of_property_write_strings(struct device_node *np,
+			      const char *propname, ...)
+{
+	const char *val;
+	char *buf = NULL, *next;
+	size_t len = 0;
+	va_list ap;
+	int ret = 0;
+
+	va_start(ap, propname);
+	for (val = va_arg(ap, char *); val; val = va_arg(ap, char *))
+		len += strlen(val) + 1;
+	va_end(ap);
+
+	if (!len)
+		return -EINVAL;
+
+	buf = malloc(len);
+	if (!buf)
+		return -ENOMEM;
+
+	next = buf;
+
+	va_start(ap, propname);
+	for (val = va_arg(ap, char *); val; val = va_arg(ap, char *))
+		next = stpcpy(next, val) + 1;
+	va_end(ap);
+
+	ret = of_set_property(np, propname, buf, len, 1);
+	free(buf);
+	return ret;
 }
 
 /**
@@ -1565,6 +1650,34 @@ int of_set_root_node(struct device_node *node)
 	of_alias_scan();
 
 	return 0;
+}
+
+void barebox_register_of(struct device_node *root)
+{
+	if (root_node)
+		return;
+
+	of_fix_tree(root);
+	of_set_root_node(root);
+
+	if (IS_ENABLED(CONFIG_OFDEVICE))
+		of_probe();
+}
+
+void barebox_register_fdt(const void *dtb)
+{
+	struct device_node *root;
+
+	if (root_node)
+		return;
+
+	root = of_unflatten_dtb(dtb);
+	if (IS_ERR(root)) {
+		pr_err("Cannot unflatten dtb: %pe\n", root);
+		return;
+	}
+
+	barebox_register_of(root);
 }
 
 /**

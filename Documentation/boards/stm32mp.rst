@@ -5,7 +5,7 @@ The STM32MP is a line of 32-bit ARM SoCs. They reuse peripherals of the
 STM32 line of microcontrollers and can have a STM32 MCU embedded as co-processor
 as well.
 
-The boot process of the STM32MP SoC is a two step process.
+The boot process of the STM32MP1 SoC is a two step process.
 The first stage boot loader (FSBL) is loaded by the ROM code into the built-in
 SYSRAM and executed. The FSBL sets up the SDRAM, install a secure monitor and
 then the second stage boot loader (SSBL) is loaded into DRAM.
@@ -29,7 +29,7 @@ The resulting images will be placed under ``images/``:
 
 ::
 
-  barebox-stm32mp157c-dk2.img
+  barebox-stm32mp15xx-dkx.img # both DK1 and DK2
   barebox-stm32mp157c-lxa-mc1.img
   barebox-stm32mp157c-seeed-odyssey.img
 
