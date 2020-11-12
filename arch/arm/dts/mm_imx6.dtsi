@@ -47,35 +47,40 @@
 };
 
 &flash {
-	/delete-node/ partition@0;
-	/delete-node/ partition@100000;
-	/delete-node/ partition@120000;
-	/delete-node/ partition@140000;
+	/delete-node/ partitions;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-	partition@0 {
-		label = "boot";
-		reg = <0x00000 0x80000>;
-	};
+		partition@0 {
+			label = "boot";
+			reg = <0x00000 0x80000>;
+		};
 
-	partition@80000 {
-		label = "env";
-		reg = <0x80000 0x40000>;
-	};
+		partition@80000 {
+			label = "env";
+			reg = <0x80000 0x40000>;
+		};
 
-	partition@c0000 {
-		label = "init";
-		reg = <0xc0000 0>;
+		partition@c0000 {
+			label = "init";
+			reg = <0xc0000 0>;
+		};
 	};
 };
 
 &gpmi {
-	/delete-node/ partition@0;
-	/delete-node/ partition@400000;
-	/delete-node/ partition@500000;
+	/delete-node/ partitions;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-	partition@0 {
-		label = "system";
-		reg = <0 0>;
+		partition@0 {
+			label = "system";
+			reg = <0 0>;
+		};
 	};
 };
 
