@@ -104,6 +104,11 @@
 };
 
 &ldb {
+	/* Fix incorrect LVDS clock due err009219 patches */
+	assigned-clocks = <&clks IMX6QDL_CLK_PLL5_VIDEO>;
+        assigned-clock-parents = <0>;
+        assigned-clock-rates = <716800000>;
+
 	status = "okay";
 
 	lvds-channel@0 {
