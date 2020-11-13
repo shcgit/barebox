@@ -47,9 +47,10 @@
 };
 
 &clks {
-	assigned-clocks = <&clks IMX6QDL_CLK_LDB_DI0_SEL>;
-	assigned-clock-parents = <&clks IMX6QDL_CLK_PLL5_VIDEO_DIV>;
-	//assigned-clock-rates = <19200000>;
+	assigned-clocks = <&clks IMX6QDL_CLK_LDB_DI0_SEL>,
+			  <&clks IMX6QDL_CLK_LDB_DI1_SEL>;
+	assigned-clock-parents = <&clks IMX6QDL_CLK_PLL5_VIDEO_DIV>,
+				 <&clks IMX6QDL_CLK_PLL5_VIDEO_DIV>;
 };
 
 &gpmi {
@@ -123,7 +124,6 @@
 				vback-porch = <15>;
 				vfront-porch = <5>;
 				vsync-len = <1 3 5>;
-				/*pixelclk-active = <1>;*/
 				hsync-active = <0>;
 				vsync-active = <0>;
 				de-active = <1>;
