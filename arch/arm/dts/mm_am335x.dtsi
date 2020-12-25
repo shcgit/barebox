@@ -1,0 +1,227 @@
+/ {
+	model = "Mega-Milas Spider AM335x";
+	compatible = "milas,spider-am335x", "myir,myd-am335x", "myir,myc-am335x", "ti,am33xx";
+
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &env_nand;
+		};
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&ehrpwm0 0 100000 0>;
+		brightness-levels = <0 255>;
+		num-interpolated-steps = <16>;
+		default-brightness-level = <0>;
+	};
+
+	beeper: beeper {
+		compatible = "gpio-beeper";
+		gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
+	};
+
+	clk24m: clk24m {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+
+		#clock-cells = <0>;
+	};
+
+	panel: lcd_panel {
+		compatible = "ti,tilcdc,panel";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&lcdc_pins_default>;
+		pinctrl-1 = <&lcdc_pins_sleep>;
+		backlight = <&backlight>;
+		status = "okay";
+
+		panel-info {
+			ac-bias = <255>;
+			ac-bias-intrpt = <0>;
+			bpp = <16>;
+			dma-burst-sz = <16>;
+			fdd = <0x80>;
+			sync-edge = <0>;
+			sync-ctrl = <1>;
+			raster-order = <0>;
+			fifo-th = <0>;
+		};
+
+		display-timings {
+			native-mode = <&timing0>;
+
+			timing0: G104XVN01_0 {
+				clock-frequency = <50000000 65000000 81000000>;
+				hactive = <1024>;
+				vactive = <768>;
+				hback-porch = <320>;
+				hfront-porch = <24>;
+				hsync-len = <136>;
+				vback-porch = <38>;
+				vfront-porch = <3>;
+				vsync-len = <6>;
+				de-active = <1>;
+			};
+		};
+	};
+
+	vdd_1v8: vdd_1v8_reg {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd-1v8";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vdd_3v3>;
+	};
+};
+
+/delete-node/ &{/clk12m};
+/delete-node/ &{/gpio_buttons};
+
+&cpsw_emac1 {
+	/delete-property/ phy-handle;
+	/delete-property/ phy-mode;
+};
+
+&davinci_mdio {
+	/delete-node/ phy1;
+};
+
+&dcan1 {
+	status = "disabled";
+};
+
+&i2c0 {
+	sgtl5000: sgtl5000@a {
+		compatible = "fsl,sgtl5000";
+		reg =<0xa>;
+		clocks = <&clk24m>;
+		micbias-resistor-k-ohms = <0>;
+		VDDA-supply = <&vdd_3v3>;
+		VDDIO-supply = <&vdd_3v3>;
+		VDDD-supply = <&vdd_1v8>;
+
+		#sound-dai-cells = <0>;
+	};
+
+	pca9534: pca9534@20 {
+		compatible = "nxp,pca9534";
+		reg = <0x20>;
+		gpio-controller;
+
+		#gpio-cells = <2>;
+	};
+};
+
+&i2c1 {
+	status = "disabled";
+	/delete-node/ sgtl5000@a;
+	/delete-node/ tda9988@70;
+};
+
+&lcdc {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-1;
+
+	port {
+		/delete-node/ endpoint@0;
+	};
+};
+
+&led_mod {
+	function = LED_FUNCTION_HEARTBEAT;
+	linux,default-trigger = LED_FUNCTION_HEARTBEAT;
+};
+
+&led1 {
+	gpios = <&pca9534 6 GPIO_ACTIVE_LOW>;
+	function = LED_FUNCTION_MTD;
+	linux,default-trigger = LED_FUNCTION_MTD;
+};
+
+&led2 {
+	gpios = <&pca9534 7 GPIO_ACTIVE_LOW>;
+	function = LED_FUNCTION_USB;
+	linux,default-trigger = "usb-host";
+};
+
+&leds {
+	pinctrl-0 = <&led_mod_pins>;
+};
+
+&mac {
+	pinctrl-0 = <&eth_slave1_pins_default>;
+	pinctrl-1 = <&eth_slave1_pins_sleep>;
+	slaves = <1>;
+};
+
+&master_codec {
+	sound-dai = <&sgtl5000>;
+};
+
+&mmc1 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&mm_mmc1_pins_default>;
+	pinctrl-1 = <&mm_mmc1_pins_sleep>;
+	bus-width = <1>;
+	/delete-property/ cd-gpios;
+};
+
+&nand0 {
+	env_nand: partition@a0000 {
+		label = "env";
+		reg = <0xa0000 0x40000>;
+	};
+
+	partition@e0000 {
+		label = "system";
+		reg = <0xe0000 0>;
+	};
+};
+
+&sound {
+	simple-audio-card,name = "MCASP0SGTL5000";
+	/delete-node/ simple-audio-card,codec@2;
+};
+
+&tscadc {
+	status = "disabled";
+};
+	
+&uart1 {
+	/delete-property/ linux,rs485-enabled-at-boot-time;
+};
+
+&uart2 {
+	status = "disabled";
+};
+
+&usb0 {
+	dr_mode = "host";
+};
+
+&wdt2 {
+	timeout-sec = <10>;
+};
+
+&am33xx_pinmux {
+	mm_mmc1_pins_default: pinmux_mm_mmc1_pins_default {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_dat0 */
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_clk */
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_cmd */
+		>;
+	};
+
+	mm_mmc1_pins_sleep: pinmux_mm_mmc1_pins_sleep {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLDOWN, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT_PULLDOWN, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT_PULLDOWN, MUX_MODE0)
+		>;
+	};
+};

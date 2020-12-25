@@ -1,0 +1,10 @@
+#!/bin/sh
+
+global env_erased
+
+if [ -z "${global.env_erased}" ]; then
+	unprotect /dev/nand0.env
+	erase /dev/nand0.env
+	protect /dev/nand0.env
+	global.env_erased=true
+fi
