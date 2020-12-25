@@ -90,6 +90,10 @@
 	/delete-node/ phy1;
 };
 
+&dcan0 {
+	status = "disabled";
+};
+
 &dcan1 {
 	status = "disabled";
 };
