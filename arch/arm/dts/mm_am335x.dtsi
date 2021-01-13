@@ -76,6 +76,15 @@
 		regulator-boot-on;
 		vin-supply = <&vdd_3v3>;
 	};
+
+	vdd_sgtl: vdd_sgtl_reg {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd-sgtl";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&vdd_3v3>;
+		gpio = <&gpio3 16 GPIO_ACTIVE_LOW>;
+	};
 };
 
 /delete-node/ &{/clk12m};
@@ -100,12 +109,15 @@
 
 &i2c0 {
 	sgtl5000: sgtl5000@a {
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&mm_sgtl_pins_default>;
+		pinctrl-1 = <&mm_sgtl_pins_sleep>;
 		compatible = "fsl,sgtl5000";
 		reg =<0xa>;
 		clocks = <&clk24m>;
 		micbias-resistor-k-ohms = <0>;
 		VDDA-supply = <&vdd_3v3>;
-		VDDIO-supply = <&vdd_3v3>;
+		VDDIO-supply = <&vdd_sgtl>;
 		VDDD-supply = <&vdd_1v8>;
 
 		#sound-dai-cells = <0>;
@@ -213,6 +225,18 @@
 };
 
 &am33xx_pinmux {
+	mm_sgtl_pins_default: pinmux_mm_sgtl_pins_default {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)		/* mcasp0_axr0_mux0 */
+		>;
+	};
+
+	mm_sgtl_pins_sleep: pinmux_mm_sgtl_pins_sleep {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT_PULLDOWN, MUX_MODE7)
+		>;
+	};
+
 	mm_mmc1_pins_default: pinmux_mm_mmc1_pins_default {
 		pinctrl-single,pins = <
 			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_dat0 */
