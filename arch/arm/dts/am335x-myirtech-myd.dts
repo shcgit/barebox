@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /* SPDX-FileCopyrightText: Alexander Shiyan, <shc_work@mail.ru> */
-// Based on code by myd_c335x.dts, MYiRtech.com
-// Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+/* Based on code by myd_c335x.dts, MYiRtech.com */
+/* Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/ */
 
 /dts-v1/;
 
-#include "am335x-myirtech-myc-am335x.dtsi"
+#include "am335x-myirtech-myc.dtsi"
 
 #include <dt-bindings/display/tda998x.h>
 #include <dt-bindings/input/input.h>
