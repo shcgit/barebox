@@ -1,7 +1,12 @@
 #!/bin/sh
 
+# Turn USBH1 off
+gpio_direction_output 0 0
+# Turn USBOTG off
+gpio_direction_output 111 0
+
 # Beeper ON
-#gpio_direction_output 87 1
+gpio_direction_output 234 1
 
 msleep 240
 
@@ -22,4 +27,10 @@ if [ -e /dev/fb0 ]; then
 fi
 
 # Beeper OFF
-#gpio_direction_output 87 0
+gpio_direction_output 234 0
+
+msleep 500
+# Turn USBH1 on
+gpio_direction_output 0 1
+# Turn USBOTG on
+gpio_direction_output 111 1

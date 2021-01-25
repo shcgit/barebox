@@ -32,13 +32,15 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		button1: button1 {
+		button1: button@0 {
+			reg = <0>;
 			label = "button1";
 			linux,code = <BTN_1>;
 			gpios = <&gpio3 0 GPIO_ACTIVE_LOW>;
 		};
 
-		button2: button2 {
+		button2: button@1 {
+			reg = <1>;
 			label = "button2";
 			linux,code = <BTN_2>;
 			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
@@ -176,7 +178,7 @@
 
 &leds {
 	pinctrl-0 = <&led_mod_pins &leds_pins>;
-		
+
 	led1: led1 {
 		label = "base:user1";
 		gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;

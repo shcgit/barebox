@@ -45,7 +45,7 @@
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
 		pinctrl-0 = <&led_mod_pins>;
-		
+
 		led_mod: led_mod {
 			label = "module:user";
 			gpios = <&gpio3 18 GPIO_ACTIVE_LOW>;
@@ -127,7 +127,7 @@
 	scl-gpios = <&gpio3 6 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	sda-gpios = <&gpio3 5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	status = "okay";
-	
+
 	eeprom: eeprom@50 {
 		compatible = "atmel,24c32";
 		reg = <0x50>;

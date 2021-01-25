@@ -419,8 +419,6 @@
 &pmic {
 	/delete-property/ fsl,mc13xxx-uses-rtc;
 
-	fsl,mc13xxx-uses-touch;
-
 	leds {
 		#address-cells = <1>;
 		#size-cells = <0>;
