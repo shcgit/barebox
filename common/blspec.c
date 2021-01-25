@@ -1,15 +1,4 @@
-/*
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
 #define pr_fmt(fmt)  "blspec: " fmt
 
 #include <environment.h>
@@ -649,7 +638,8 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
 		}
 
-		entry->entry.title = xstrdup(blspec_entry_var_get(entry, "title"));
+		entry->entry.title = xasprintf("%s (%s)", blspec_entry_var_get(entry, "title"),
+					       configname);
 		entry->entry.description = basprintf("blspec entry, device: %s hwdevice: %s",
 						    devname ? devname : "none",
 						    hwdevname ? hwdevname : "none");

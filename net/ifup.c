@@ -1,18 +1,8 @@
-/*
- * ifup.c - bring up network interfaces
- *
- * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more detaiifup.
- *
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+
+/* ifup.c - bring up network interfaces */
+
 #define pr_fmt(fmt)  "ifup: " fmt
 
 #include <environment.h>
@@ -96,7 +86,7 @@ static int source_env_network(struct eth_device *edev)
 	env_push_context();
 
 	for (i = 0; i < ARRAY_SIZE(vars); i++)
-		setenv(vars[i], "");
+		unsetenv(vars[i]);
 
 	cmd = basprintf("source /env/network/%s", edev->devname);
 	ret = run_command(cmd);

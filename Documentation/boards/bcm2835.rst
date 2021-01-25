@@ -11,9 +11,9 @@ Raspberry Pi
 
   3. Use ``make rpi_defconfig; make`` to build barebox. This will create the following images:
 
-     - ``images/barebox-raspberry-pi-1.img`` for the BCM2835/ARM1176JZF-S (Raspberry Pi 1)
+     - ``images/barebox-raspberry-pi-1.img`` for the BCM2835/ARM1176JZF-S (Raspberry Pi 1, Raspberry Pi Zero)
      - ``images/barebox-raspberry-pi-2.img`` for the BCM2836/CORTEX-A7 (Raspberry Pi 2)
-     - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3, Raspberry Pi Zero)
+     - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3)
 
      Copy the respective image for your model to your SD card and name it
      ``barebox.img``.
@@ -22,6 +22,13 @@ Raspberry Pi
 
          kernel=barebox.img
          enable_uart=1
+
+     If you want to use the mini-uart instead of the PL011, you may need to additionally set::
+
+         uart_2ndstage=1
+
+     This is required on boards, like the Raspberry Pi Zero W, that use the mini-uart as the
+     primary UART. It is needed on boards like the CM3 as well if the mini-uart is to be used.
 
      (For more information, refer to the `documentation for config.txt`_.)
 

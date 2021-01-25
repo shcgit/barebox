@@ -1,15 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2017 Oleksij Rempel <o.rempel@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 #define pr_fmt(fmt) "usbgadget: " fmt
 
@@ -102,12 +93,18 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 
 static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 {
+	static bool started;
 	bool fastboot_bbu = get_fastboot_bbu();
+	int err;
 
-	if (!IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART) || !autostart)
+	if (!IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART) || !autostart || started)
 		return 0;
 
-	return usbgadget_register(true, NULL, true, NULL, acm, fastboot_bbu);
+	err = usbgadget_register(true, NULL, true, NULL, acm, fastboot_bbu);
+	if (!err)
+		started = true;
+
+	return err;
 }
 
 static int usbgadget_globalvars_init(void)

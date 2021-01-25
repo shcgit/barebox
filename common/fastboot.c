@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * (C) Copyright 2008 - 2009
  * Windriver, <www.windriver.com>
@@ -14,8 +15,6 @@
  * Copyright 2020 Edmund Henniges <eh@emlix.com>
  * Copyright 2020 Daniel Glöckner <dg@emlix.com>
  * Split off of generic parts
- *
- * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #define pr_fmt(fmt) "fastboot: " fmt
@@ -566,7 +565,7 @@ static int fastboot_handle_sparse(struct fastboot *fb,
 	}
 
 	while (1) {
-		int retlen;
+		size_t retlen;
 		loff_t pos;
 
 		ret = sparse_image_read(sparse, buf, &pos, bufsiz, &retlen);
@@ -823,13 +822,11 @@ static void cb_oem_setenv(struct fastboot *fb, const char *cmd)
 
 	pr_debug("%s: \"%s\"\n", __func__, cmd);
 
-	value = strchr(var, '=');
+	value = parse_assignment(var);
 	if (!value) {
 		ret = -EINVAL;
 		goto out;
 	}
-
-	*value++ = 0;
 
 	ret = setenv(var, value);
 	if (ret)

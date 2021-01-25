@@ -254,6 +254,8 @@ extern int of_count_phandle_with_args(const struct device_node *np,
 
 extern void of_alias_scan(void);
 extern int of_alias_get_id(struct device_node *np, const char *stem);
+extern int of_alias_get_id_from(struct device_node *root, struct device_node *np,
+				const char *stem);
 extern const char *of_alias_get(struct device_node *np);
 extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
@@ -275,6 +277,7 @@ extern struct device_d *of_device_enable_and_register_by_alias(
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
+int of_fixup_partitions(struct device_node *np, struct cdev *cdev);
 int of_partitions_register_fixup(struct cdev *cdev);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
@@ -301,6 +304,11 @@ static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
 {
 	return -EINVAL;
+}
+
+static inline int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
+{
+	return -ENOSYS;
 }
 
 static inline int of_partitions_register_fixup(struct cdev *cdev)
@@ -399,6 +407,17 @@ static inline struct device_node *of_get_compatible_child(const struct device_no
 
 static inline struct device_node *of_get_child_by_name(
 			const struct device_node *node, const char *name)
+{
+	return NULL;
+}
+
+static inline char *of_get_reproducible_name(struct device_node *node)
+{
+	return NULL;
+}
+
+static inline struct device_node *
+of_find_node_by_reproducible_name(struct device_node *from, const char *name)
 {
 	return NULL;
 }
@@ -673,6 +692,12 @@ static inline void of_alias_scan(void)
 }
 
 static inline int of_alias_get_id(struct device_node *np, const char *stem)
+{
+	return -ENOSYS;
+}
+
+static inline int of_alias_get_id_from(struct device_node *root, struct device_node *np,
+				       const char *stem)
 {
 	return -ENOSYS;
 }
@@ -981,6 +1006,7 @@ int of_device_enable(struct device_node *node);
 int of_device_enable_path(const char *path);
 int of_device_disable(struct device_node *node);
 int of_device_disable_path(const char *path);
+int of_device_disable_by_alias(const char *alias);
 
 phandle of_get_tree_max_phandle(struct device_node *root);
 phandle of_node_create_phandle(struct device_node *node);

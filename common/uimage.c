@@ -1,18 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * uimage.c - uimage handling code
  *
  * Copyright (c) 2011 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * partly based on U-Boot uImage code
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 #include <common.h>
 #include <image.h>
@@ -27,6 +19,7 @@
 #include <rtc.h>
 #include <filetype.h>
 #include <memory.h>
+#include <zero_page.h>
 
 static inline int uimage_is_multi_image(struct uimage_handle *handle)
 {
@@ -359,7 +352,10 @@ static int uimage_sdram_flush(void *buf, unsigned int len)
 		}
 	}
 
-	memcpy(uimage_buf + uimage_size, buf, len);
+	if (zero_page_contains((unsigned long)uimage_buf + uimage_size))
+		zero_page_memcpy(uimage_buf + uimage_size, buf, len);
+	else
+		memcpy(uimage_buf + uimage_size, buf, len);
 
 	uimage_size += len;
 
@@ -388,7 +384,20 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr)
 			goto out;
 		}
 
-		now = read_full(fd, (void *)(res->start + ofs), BUFSIZ);
+		if (zero_page_contains(res->start + ofs)) {
+			void *tmp = malloc(BUFSIZ);
+			if (!tmp)
+				now = -ENOMEM;
+			else
+				now = read_full(fd, tmp, BUFSIZ);
+
+			if (now > 0)
+				zero_page_memcpy((void *)(res->start + ofs), tmp, now);
+			free(tmp);
+		} else {
+			now = read_full(fd, (void *)(res->start + ofs), BUFSIZ);
+		}
+
 		if (now < 0) {
 			release_sdram_region(res);
 			res = NULL;

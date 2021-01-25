@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
-VERSION = 2020
-PATCHLEVEL = 11
+VERSION = 2021
+PATCHLEVEL = 01
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -618,6 +618,9 @@ KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 KBUILD_CFLAGS += $(call cc-disable-warning, trampolines)
 
 KBUILD_CFLAGS += $(call cc-option, -fno-delete-null-pointer-checks,)
+
+# disable invalid "can't wrap" optimizations for signed / pointers
+KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 
 KBUILD_CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
 

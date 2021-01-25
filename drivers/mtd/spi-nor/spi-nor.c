@@ -470,6 +470,9 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 	uint32_t rem;
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOSYS;
+
 	dev_dbg(nor->dev, "at 0x%llx, len %lld\n", (long long)instr->addr,
 			(long long)instr->len);
 
@@ -540,14 +543,10 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
 
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
-
 	return ret;
 
 erase_err:
 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
-	instr->state = MTD_ERASE_FAILED;
 	return ret;
 }
 
@@ -932,6 +931,9 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
 	size_t actual;
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOSYS;
+
 	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
 
 	ret = spi_nor_lock_and_prep(nor, SPI_NOR_OPS_WRITE);
@@ -1003,6 +1005,9 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 	size_t page_offset, page_remain, i;
 	size_t retval;
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOSYS;
 
 	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
 
@@ -1441,20 +1446,20 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
 	mtd->writesize = 1;
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->size = params.size;
-	mtd->erase = spi_nor_erase;
-	mtd->read = spi_nor_read;
+	mtd->_erase = spi_nor_erase;
+	mtd->_read = spi_nor_read;
 
 	/* nor protection support for STmicro chips */
 	if (JEDEC_MFR(info) == CFI_MFR_ST) {
-		mtd->lock = spi_nor_lock;
-		mtd->unlock = spi_nor_unlock;
+		mtd->_lock = spi_nor_lock;
+		mtd->_unlock = spi_nor_unlock;
 	}
 
 	/* sst nor chips use AAI word program */
 	if (info->flags & SST_WRITE)
-		mtd->write = sst_write;
+		mtd->_write = sst_write;
 	else
-		mtd->write = spi_nor_write;
+		mtd->_write = spi_nor_write;
 
 	if (info->flags & USE_FSR)
 		nor->flags |= SNOR_F_USE_FSR;

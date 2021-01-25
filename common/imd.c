@@ -1,16 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * (C) Copyright 2014 Sascha Hauer, Pengutronix
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 #ifdef __BAREBOX__
 #include <common.h>
@@ -416,7 +406,7 @@ int imd_verify_crc32(void *buf, size_t size)
 			       *p, crc);
 			return -EILSEQ;
 		} else if (*p != crc && !imd_crc32_is_valid(*flags)) {
-			printf("CRC: is invalid, but the checksum tag is not enabled\n");
+			debug("CRC: is invalid, but the checksum tag is not enabled\n");
 			return -EINVAL;
 		} else {
 			printf("CRC: valid\n");
@@ -489,10 +479,15 @@ int imd_command(int argc, char *argv[])
 		goto out;
 	}
 
-	if (checksum)
-		imd_write_crc32(buf, imd_start, filename, size);
-	if (verify)
-		imd_verify_crc32(buf, size);
+	if (checksum) {
+		ret = imd_write_crc32(buf, imd_start, filename, size);
+		goto out;
+	}
+
+	if (verify) {
+		ret = imd_verify_crc32(buf, size);
+		goto out;
+	}
 
 	if (type == IMD_TYPE_INVALID) {
 		imd_for_each(imd_start, imd) {

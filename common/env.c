@@ -1,17 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * env.c - environment variables storage
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 /**
@@ -251,14 +242,20 @@ static int dev_setenv(const char *name, const char *val)
 	return -ENODEV;
 }
 
+/**
+ * setenv - set environment variables
+ * @_name - Variable name
+ * @value - the value to set, empty string not handled specially
+ *
+ * Returns 0 for success and a negative error code otherwise
+ * Use unsetenv() to unset.
+ */
+
 int setenv(const char *_name, const char *value)
 {
 	char *name = strdup(_name);
 	int ret = 0;
 	struct list_head *list;
-
-	if (value && !*value)
-		value = NULL;
 
 	if (strchr(name, '.')) {
 		ret = dev_setenv(name, value);
