@@ -101,6 +101,14 @@
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&audio_master>;
 		simple-audio-card,frame-master = <&audio_master>;
+		simple-audio-card,widgets =
+			"Microphone", "Mic Jack",
+			"Headphone", "Headphone Jack";
+		simple-audio-card,routing =
+			"Headphone Jack", "HPLOUT",
+			"Headphone Jack", "HPROUT",
+			"MIC2R", "Mic Jack",
+			"Mic Jack", "Mic Bias";
 
 		simple-audio-card,cpu {
 			sound-dai = <&ssi2>;
