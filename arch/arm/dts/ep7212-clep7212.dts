@@ -13,7 +13,7 @@
 	};
 
 	chosen {
-		stdout-path = &serial1;
+		stdout-path = &uart1;
 
 		environment {
 			compatible = "barebox,environment";

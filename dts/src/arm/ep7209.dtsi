@@ -17,8 +17,8 @@
 		gpio1 = &portb;
 		gpio3 = &portd;
 		gpio4 = &porte;
-		serial0 = &serial1;
-		serial1 = &serial2;
+		serial0 = &uart1;
+		serial1 = &uart2;
 		spi0 = &spi;
 		timer0 = &timer1;
 		timer1 = &timer2;
@@ -135,7 +135,7 @@
 			#pwm-cells = <1>;
 		};
 
-		serial1: serial@80000480 {
+		uart1: serial@80000480 {
 			compatible = "cirrus,ep7209-uart";
 			reg = <0x80000480 0x80>;
 			interrupts = <12 13>;
@@ -159,7 +159,7 @@
 			reg = <0x80001100 0x80>;
 		};
 
-		serial2: serial@80001480 {
+		uart2: serial@80001480 {
 			compatible = "cirrus,ep7209-uart";
 			reg = <0x80001480 0x80>;
 			interrupts = <28 29>;

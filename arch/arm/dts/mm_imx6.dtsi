@@ -24,7 +24,7 @@
 		};
 	};
 
-	backlight: backlight {
+	backlight {
 		compatible = "pwm-backlight";
 		pwms = <&pwm1 0 100000>;
 		brightness-levels = <0 255>;
@@ -32,14 +32,14 @@
 		default-brightness-level = <0>;
 	};
 
-	beeper: beeper {
+	beeper {
 		compatible = "gpio-beeper";
 		gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
 	};
 
-	clk12m: clk12m {
+	clk12m288: clk12m288 {
 		compatible = "fixed-clock";
-		clock-frequency = <12000000>;
+		clock-frequency = <12288000>;
 		
 		#clock-cells = <0>;
 	};
@@ -95,12 +95,13 @@
 
 	/delete-node/ sound;
 
-	sound-pcm {
+	/*sound-pcm {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "SSI2AIC3104";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&audio_master>;
 		simple-audio-card,frame-master = <&audio_master>;
+		simple-audio-card,mclk-fs = <256>;
 		simple-audio-card,widgets =
 			"Microphone", "Mic Jack",
 			"Headphone", "Headphone Jack";
@@ -110,27 +111,130 @@
 			"MIC2R", "Mic Jack",
 			"Mic Jack", "Mic Bias";
 
-		simple-audio-card,cpu {
+		audio_master: simple-audio-card,cpu {
 			sound-dai = <&ssi2>;
+			dai-tdm-slot-num = <8>;
+			dai-tdm-slot-width = <24>;
 		};
 
-		audio_master: simple-audio-card,codec {
+		simple-audio-card,codec {
 			sound-dai = <&tlv320aic3104>;
+			dai-tdm-slot-num = <8>;
+			dai-tdm-slot-width = <24>;
+			dai-tdm-slot-tx-mask = <0 0 0 0 0 0 1 1>;
+			dai-tdm-slot-rx-mask = <0 0 0 0 0 0 1 1>;
 		};
+	};*/
+//gst-launch-1.0 alsasrc device=hw:1 ! audioconvert ! audio/x-raw,channels=1 ! audioresample ! opusenc ! queue ! rtpgstpay config-interval=1 ! udpsink host=239.0.0.2 port=4383
+	sound-pcm {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "SSI2PCM3168A";
+//		simple-audio-card,format = "left_j";
+//		simple-audio-card,bitclock-master = <&pcm_master>;
+//		simple-audio-card,frame-master = <&pcm_master>;
+		//simple-audio-card,mclk-fs = <256>;
+		simple-audio-card,widgets =
+			"Speaker", "Channel1out",
+			"Speaker", "Channel2out",
+			"Speaker", "Channel3out",
+			"Speaker", "Channel4out",
+			"Microphone", "Channel1in",
+			"Microphone", "Channel2in",
+			"Microphone", "Channel3in",
+			"Microphone", "Channel4in";
+		simple-audio-card,routing =
+			"Channel1out", "AOUT1L",
+			"Channel2out", "AOUT1R",
+			"Channel3out", "AOUT2L",
+			"Channel4out", "AOUT2R",
+			"Channel1in", "AIN1L",
+			"Channel2in", "AIN1R",
+			"Channel3in", "AIN2L",
+			"Channel4in", "AIN2R";
+
+		simple-audio-card,dai-link@0 {
+			format = "left_j";
+			bitclock-master = <&pcm_master>;
+			frame-master = <&pcm_master>;
+
+			cpu {
+				sound-dai = <&ssi2>;
+				dai-tdm-slot-num = <8>;
+				dai-tdm-slot-width = <24>;
+				dai-tdm-slot-rx-mask = <1 1 1 1 0 0 0 0>;
+				dai-tdm-slot-tx-mask = <1 1 1 1 0 0 0 0>;
+			};
+
+			pcm_master: codec {
+				sound-dai = <&pcm3168a 0>;
+				dai-tdm-slot-num = <8>;
+				dai-tdm-slot-width = <32>;
+				//dai-tdm-slot-tx-mask = <1 1 1 1 0 0 0 0>;
+			};
+		};
+
+//			codec@1 {
+//				sound-dai = <&pcm3168a 1>;
+//				dai-tdm-slot-num = <8>;
+//				dai-tdm-slot-width = <32>;
+//				//dai-tdm-slot-rx-mask = <1 1 1 1 0 0 0 0>;
+//			};
+
+//		audio_master: simple-audio-card,cpu {
+//			sound-dai = <&ssi2>;
+//			dai-tdm-slot-num = <8>;
+//			dai-tdm-slot-width = <24>;
+//			dai-tdm-slot-tx-mask = <1 1 1 1 0 0 0 0>;
+//		};
+//
+//		simple-audio-card,codec@0 {
+//			sound-dai = <&pcm3168a 0>;
+//			dai-tdm-slot-num = <8>;
+//			dai-tdm-slot-width = <24>;
+//			//dai-tdm-slot-tx-mask = <1 1 1 1 0 0 0 0>;
+//		};
+
+		//simple-audio-card,codec@1 {
+		//	sound-dai = <&pcm3168a 1>;
+			//dai-tdm-slot-num = <6>;
+			//dai-tdm-slot-width = <24>;
+		//};
 	};
 
-	sound-spdif {
+	/*sound-spdif {
 		compatible = "fsl,imx-audio-spdif";
 		model = "IMX6SPDIF";
 		spdif-controller = <&spdif>;
 		spdif-in;
 		spdif-out;
-	};
+	};*/
 };
 
 &asrc {
 	status = "disabled";
 };
+
+/*&audmux {
+	ssi2 {
+		fsl,audmux-port = <1>;
+		fsl,port-config = <
+			IMX_AUDMUX_V2_PTCR_SYN
+			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT5)
+		>;
+	};
+
+	pins5 {
+		fsl,audmux-port = <MX51_AUDMUX_PORT5>;
+		fsl,port-config = <
+			(IMX_AUDMUX_V2_PTCR_SYN |
+			IMX_AUDMUX_V2_PTCR_TFSDIR |
+			IMX_AUDMUX_V2_PTCR_TFSEL(1) |
+			IMX_AUDMUX_V2_PTCR_TCLKDIR |
+			IMX_AUDMUX_V2_PTCR_TCSEL(1))
+			IMX_AUDMUX_V2_PDCR_RXDSEL(1)
+		>;
+	};
+};*/
 
 &can1 {
 	status = "disabled";
@@ -167,7 +271,8 @@
 };
 
 &i2c2 {
-	clock-frequency = <400000>;
+	//TEMP slowdown !!!!!!
+	clock-frequency = <100000>;
 
 	/delete-node/ tlv320@18;
 	/delete-node/ stmpe@41;
@@ -177,7 +282,7 @@
 	tlv320aic3104: codec@18 {
 		compatible = "ti,tlv320aic3104";
 		reg = <0x18>;
-		clocks = <&clk12m>;
+		clocks = <&clk12m288>;
 		ai3x-micbias-vg = <1>;
 		ai3x-ocmv = <1>;
 		IOVDD-supply = <&vdd_3v3>;
@@ -194,6 +299,21 @@
 		gpio-controller;
 		
 		#gpio-cells = <2>;
+	};
+
+	pcm3168a: codec@44 {
+		compatible = "ti,pcm3168a";
+		reg = <0x44>;
+		clocks = <&clk12m288>;
+		clock-names = "scki";
+		VDD1-supply = <&vdd_3v3>;
+		VDD2-supply = <&vdd_3v3>;
+		VCCAD1-supply = <&vdd_5v0>;
+		VCCAD2-supply = <&vdd_5v0>;
+		VCCDA1-supply = <&vdd_5v0>;
+		VCCDA2-supply = <&vdd_5v0>;
+
+		#sound-dai-cells = <1>;
 	};
 };
 
@@ -360,6 +480,15 @@
 
 &iomuxc {
 	imx6q-phytec-pfla02 {
+		/*pinctrl_audmux: audmuxgrp {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT16__AUD5_TXC	0x110b0
+				MX6QDL_PAD_DISP0_DAT17__AUD5_TXD	0x110b0
+				MX6QDL_PAD_DISP0_DAT18__AUD5_TXFS	0x110b0
+				MX6QDL_PAD_DISP0_DAT19__AUD5_RXD	0x130b0
+			>;
+		};*/
+
 		pinctrl_pwm1: pwm1grp {
 			fsl,pins = <
 				MX6QDL_PAD_DISP0_DAT8__PWM1_OUT		0x1b0b1
