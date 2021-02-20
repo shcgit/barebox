@@ -37,6 +37,19 @@
 		gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
 	};
 
+/*BUG TEST
+	gpiokeys {
+		compatible = "gpio-keys";
+
+		button@0 {
+			label = "TEST";
+			linux,code = <0x101>;
+			linux,input-type = <EV_SW>;
+			gpios = <&gpio1 27 GPIO_ACTIVE_LOW>;
+		};
+	};
+*/
+
 	clk12m288: clk12m288 {
 		compatible = "fixed-clock";
 		clock-frequency = <12288000>;

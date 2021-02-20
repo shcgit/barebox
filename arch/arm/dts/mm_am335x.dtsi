@@ -17,7 +17,7 @@
 		default-brightness-level = <0>;
 	};
 
-	beeper: beeper {
+	beeper {
 		compatible = "gpio-beeper";
 		gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
 	};
@@ -29,7 +29,7 @@
 		#clock-cells = <0>;
 	};
 
-	panel: lcd_panel {
+	panel {
 		compatible = "ti,tilcdc,panel";
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&lcdc_pins_default>;

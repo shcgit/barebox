@@ -12,7 +12,7 @@
 		gpios = <&outgpios 4 GPIO_ACTIVE_HIGH>;
 	};
 
-	beeper: beeper {
+	beeper {
 		compatible = "gpio-beeper";
 		gpios = <&gpio3 23 GPIO_ACTIVE_HIGH>;
 	};
@@ -113,7 +113,7 @@
 		};
 	};
 
-	gpiokeys: gpiokeys {
+	gpiokeys {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpiokeys>;
 		compatible = "gpio-keys";

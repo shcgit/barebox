@@ -11,7 +11,7 @@
 		reg = <0xc0000000 0x04000000>;
 	};
 
-	backlight0: backlight0 {
+	backlight {
 		compatible = "pwm-backlight";
 		pwms = <&pwm 0>;
 		brightness-levels = <
@@ -22,7 +22,7 @@
 		power-supply = <&reg5v0>;
 	};
 
-	beeper: beeper {
+	beeper {
 		compatible = "gpio-beeper";
 		gpios = <&portb 0 GPIO_ACTIVE_HIGH>;
 	};
@@ -41,7 +41,7 @@
 		};
 	};
 
-	display: display {
+	display {
 		model = "320x240x4";
 		native-mode = <&timing0>;
 		bits-per-pixel = <4>;
@@ -62,7 +62,7 @@
 		};
 	};
 
-	i2c: i2c0 {
+	i2c0 {
 		compatible = "i2c-gpio";
 		gpios = <&sdagpio 0 GPIO_ACTIVE_HIGH>,
 			<&sclgpio 0 GPIO_ACTIVE_HIGH>;
@@ -158,7 +158,7 @@
 		};
 	};
 
-	switches: switches {
+	switches {
 		compatible = "gpio-keys-polled";
 		poll-interval = <37>;
 
@@ -186,7 +186,7 @@
 		};
 	};
 
-	watchdog: watchdog {
+	watchdog {
 		compatible = "linux,wdt-gpio";
 		gpios = <&portb 3 GPIO_ACTIVE_LOW>;
 		hw_algo = "toggle";
@@ -196,7 +196,7 @@
 };
 
 &bus {
-	rtc: rtc@1,0 {
+	rtc@1,0 {
 		compatible = "maxim,ds1742";
 		reg = <1 0x00000000 0x800>;
 	};
@@ -259,7 +259,7 @@
 		vcc-supply = <&reg_ide1>;
 	};
 
-	nand: nand@3,0 {
+	nand@3,0 {
 		compatible = "gpio-control-nand";
 		reg = <3 0x00000000 0x2>;
 		chip-delay = <25>;
