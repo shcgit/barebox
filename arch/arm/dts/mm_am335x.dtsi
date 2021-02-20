@@ -207,7 +207,7 @@
 &tscadc {
 	status = "disabled";
 };
-	
+
 &uart1 {
 	/delete-property/ linux,rs485-enabled-at-boot-time;
 };
