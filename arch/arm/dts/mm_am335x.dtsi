@@ -61,13 +61,6 @@
 			linux,input-type = <EV_KEY>;
 			gpios = <&input 3 GPIO_ACTIVE_LOW>;
 		};
-
-		button@4 {
-			label = "BTN4";
-			linux,code = <KEY_4>;
-			linux,input-type = <EV_KEY>;
-			gpios = <&input 4 GPIO_ACTIVE_LOW>;
-		};
 	};
 
 	panel {
