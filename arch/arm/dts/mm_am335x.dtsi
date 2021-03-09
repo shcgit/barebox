@@ -1,3 +1,5 @@
+#include <dt-bindings/sound/tlv320aic31xx-micbias.h>
+
 / {
 	model = "Mega-Milas Spider AM335x";
 	compatible = "milas,spider-am335x", "myir,myd-am335x", "myir,myc-am335x", "ti,am33xx";
@@ -19,7 +21,7 @@
 
 	beeper {
 		compatible = "gpio-beeper";
-		gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
+		gpios = <&hwrev 5 GPIO_ACTIVE_HIGH>;
 	};
 
 	clk24m: clk24m {
@@ -27,6 +29,45 @@
 		clock-frequency = <24000000>;
 
 		#clock-cells = <0>;
+	};
+
+	gpiokeys {
+		compatible = "gpio-keys";
+
+		button@0 {
+			label = "BTN0";
+			linux,code = <KEY_0>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 0 GPIO_ACTIVE_LOW>;
+		};
+
+		button@1 {
+			label = "BTN1";
+			linux,code = <KEY_1>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 1 GPIO_ACTIVE_LOW>;
+		};
+
+		button@2 {
+			label = "BTN2";
+			linux,code = <KEY_2>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 2 GPIO_ACTIVE_LOW>;
+		};
+
+		button@3 {
+			label = "BTN3";
+			linux,code = <KEY_3>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 3 GPIO_ACTIVE_LOW>;
+		};
+
+		button@4 {
+			label = "BTN4";
+			linux,code = <KEY_4>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 4 GPIO_ACTIVE_LOW>;
+		};
 	};
 
 	panel {
@@ -67,6 +108,29 @@
 		};
 	};
 
+	sound1 {
+		compatible = "simple-audio-card";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,bitclock-master = <&master_codec1>;
+		simple-audio-card,frame-master = <&master_codec1>;
+		simple-audio-card,name = "MCASP0AIC3100";
+		simple-audio-card,widgets =
+			"Microphone", "Microphone Jack",
+			"Speaker", "Speaker";
+		simple-audio-card,routing =
+			"MIC1LP", "Microphone Jack",
+			"MIC1LP", "MICBIAS",
+			"Speaker", "SPK";
+
+		simple-audio-card,cpu {
+			sound-dai = <&mcasp0>;
+		};
+
+		master_codec1: simple-audio-card,codec {
+			sound-dai = <&tlv320aic3100>;
+		};
+	};
+
 	vdd_1v8: vdd_1v8_reg {
 		compatible = "regulator-fixed";
 		regulator-name = "vdd-1v8";
@@ -79,6 +143,9 @@
 
 	vdd_sgtl: vdd_sgtl_reg {
 		compatible = "regulator-fixed";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&mm_sgtl_pins_default>;
+		pinctrl-1 = <&mm_sgtl_pins_sleep>;
 		regulator-name = "vdd-sgtl";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
@@ -108,10 +175,7 @@
 };
 
 &i2c0 {
-	sgtl5000: sgtl5000@a {
-		pinctrl-names = "default", "sleep";
-		pinctrl-0 = <&mm_sgtl_pins_default>;
-		pinctrl-1 = <&mm_sgtl_pins_sleep>;
+	sgtl5000: codec@a {
 		compatible = "fsl,sgtl5000";
 		reg =<0xa>;
 		clocks = <&clk24m>;
@@ -123,12 +187,41 @@
 		#sound-dai-cells = <0>;
 	};
 
-	pca9534: pca9534@20 {
+	tlv320aic3100: codec@18 {
+		compatible = "ti,tlv320aic3100";
+		reg = <0x18>;
+		clocks = <&clk24m>;
+		ai31xx-micbias-vg = <MICBIAS_2_5V>;
+		HPVDD-supply = <&vdd_3v3>;
+		SPRVDD-supply = <&vdd_5v0>;
+		SPLVDD-supply = <&vdd_5v0>;
+		AVDD-supply = <&vdd_3v3>;
+		IOVDD-supply = <&vdd_3v3>;
+		DVDD-supply = <&vdd_1v8>;
+
+		#sound-dai-cells = <0>;
+	};
+
+	hwrev: gpio@20 {
 		compatible = "nxp,pca9534";
 		reg = <0x20>;
 		gpio-controller;
 
 		#gpio-cells = <2>;
+	};
+
+	input: gpio@21 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&mm_pca9534_pins>;
+		compatible = "nxp,pca9534";
+		reg = <0x21>;
+		gpio-controller;
+		interrupt-parent = <&gpio0>;
+		interrupts = <29 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-controller;
+
+		#gpio-cells = <2>;
+		#interrupt-cells = <2>;
 	};
 };
 
@@ -154,13 +247,13 @@
 };
 
 &led1 {
-	gpios = <&pca9534 6 GPIO_ACTIVE_LOW>;
+	gpios = <&hwrev 6 GPIO_ACTIVE_LOW>;
 	function = LED_FUNCTION_MTD;
 	linux,default-trigger = LED_FUNCTION_MTD;
 };
 
 &led2 {
-	gpios = <&pca9534 7 GPIO_ACTIVE_LOW>;
+	gpios = <&hwrev 7 GPIO_ACTIVE_LOW>;
 	function = LED_FUNCTION_USB;
 	linux,default-trigger = "usb-host";
 };
@@ -210,6 +303,7 @@
 
 &uart1 {
 	/delete-property/ linux,rs485-enabled-at-boot-time;
+	status = "disabled";
 };
 
 &uart2 {
@@ -225,18 +319,6 @@
 };
 
 &am33xx_pinmux {
-	mm_sgtl_pins_default: pinmux_mm_sgtl_pins_default {
-		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)		/* mcasp0_axr0_mux0 */
-		>;
-	};
-
-	mm_sgtl_pins_sleep: pinmux_mm_sgtl_pins_sleep {
-		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT_PULLDOWN, MUX_MODE7)
-		>;
-	};
-
 	mm_mmc1_pins_default: pinmux_mm_mmc1_pins_default {
 		pinctrl-single,pins = <
 			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_dat0 */
@@ -250,6 +332,24 @@
 			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLDOWN, MUX_MODE0)
 			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT_PULLDOWN, MUX_MODE0)
 			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT_PULLDOWN, MUX_MODE0)
+		>;
+	};
+
+	mm_sgtl_pins_default: pinmux_mm_sgtl_pins_default {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)		/* mcasp0_axr0_mux0 */
+		>;
+	};
+
+	mm_sgtl_pins_sleep: pinmux_mm_sgtl_pins_sleep {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT_PULLDOWN, MUX_MODE7)
+		>;
+	};
+
+	mm_pca9534_pins: pinmux_pca9534_pins {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_RMII1_REF_CLK, PIN_INPUT, MUX_MODE7)			/* gpio0[29] */
 		>;
 	};
 };

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Beeper ON
+gpio_direction_output 133 1
+
+msleep 240
+
+# Beeper OFF
+gpio_direction_output 133 0

@@ -34,7 +34,7 @@
 
 	beeper {
 		compatible = "gpio-beeper";
-		gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
+		gpios = <&hwrev 5 GPIO_ACTIVE_HIGH>;
 	};
 
 /*BUG TEST
@@ -61,7 +61,7 @@
 
 	leds {
 		led_brd {
-			gpios = <&pca9534 6 GPIO_ACTIVE_LOW>;
+			gpios = <&hwrev 6 GPIO_ACTIVE_LOW>;
 			function = LED_FUNCTION_MTD;
 			color = <LED_COLOR_ID_RED>;
 			linux,default-trigger = LED_FUNCTION_MTD;
@@ -306,7 +306,7 @@
 		#sound-dai-cells = <0>;
 	};
 
-	pca9534: gpio@20 {
+	hwrev: gpio@20 {
 		compatible = "nxp,pca9534";
 		reg = <0x20>;
 		gpio-controller;
