@@ -1,8 +1,9 @@
 #include <dt-bindings/sound/tlv320aic31xx-micbias.h>
 
 / {
-	model = "Mega-Milas Spider AM335x";
-	compatible = "milas,spider-am335x", "myir,myd-am335x", "myir,myc-am335x", "ti,am33xx";
+	model = "Mega-Milas Informer/Spider AM335x";
+	compatible = "milas,informer-am335x", "milas,spider-am335x",
+		     "myir,myd-am335x", "myir,myc-am335x", "ti,am33xx";
 
 	chosen {
 		environment {
@@ -159,14 +160,6 @@
 	/delete-node/ phy1;
 };
 
-&dcan0 {
-	status = "disabled";
-};
-
-&dcan1 {
-	status = "disabled";
-};
-
 &i2c0 {
 	sgtl5000: codec@a {
 		compatible = "fsl,sgtl5000";
@@ -209,8 +202,8 @@
 		compatible = "nxp,pca9534";
 		reg = <0x21>;
 		gpio-controller;
-		interrupt-parent = <&gpio0>;
-		interrupts = <29 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-parent = <&gpio2>;
+		interrupts = <26 IRQ_TYPE_EDGE_FALLING>;
 		interrupt-controller;
 
 		#gpio-cells = <2>;
@@ -290,17 +283,28 @@
 	/delete-node/ simple-audio-card,codec@2;
 };
 
+&spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mm_spi1_pins>;
+	status = "okay";
+};
+
 &tscadc {
 	status = "disabled";
 };
 
 &uart1 {
 	/delete-property/ linux,rs485-enabled-at-boot-time;
-	status = "disabled";
 };
 
 &uart2 {
 	status = "disabled";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mm_uart3_pins>;
+	status = "okay";
 };
 
 &usb0 {
@@ -314,9 +318,9 @@
 &am33xx_pinmux {
 	mm_mmc1_pins_default: pinmux_mm_mmc1_pins_default {
 		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_dat0 */
-			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_clk */
-			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT_PULLUP, MUX_MODE0)		/* mmc0_cmd */
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLUP, MUX_MODE0)	/* mmc0_dat0 */
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT_PULLUP, MUX_MODE0)	/* mmc0_clk */
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT_PULLUP, MUX_MODE0)	/* mmc0_cmd */
 		>;
 	};
 
@@ -328,9 +332,15 @@
 		>;
 	};
 
+	mm_pca9534_pins: pinmux_pca9534_pins {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT3, PIN_INPUT_PULLUP, MUX_MODE7)	/* gpio2[26] */
+		>;
+	};
+
 	mm_sgtl_pins_default: pinmux_mm_sgtl_pins_default {
 		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)		/* mcasp0_axr0_mux0 */
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)	/* mcasp0_axr0_mux0 */
 		>;
 	};
 
@@ -340,9 +350,19 @@
 		>;
 	};
 
-	mm_pca9534_pins: pinmux_pca9534_pins {
+	mm_spi1_pins: pinmux_spi1_pins {
 		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_RMII1_REF_CLK, PIN_INPUT, MUX_MODE7)			/* gpio0[29] */
+			AM33XX_PADCONF(AM335X_PIN_RMII1_REF_CLK, PIN_OUTPUT, MUX_MODE2)		/* spi1_cs0_mux1 */
+			AM33XX_PADCONF(AM335X_PIN_MII1_COL, PIN_OUTPUT, MUX_MODE2)		/* spi1_sclk_mux1 */
+			AM33XX_PADCONF(AM335X_PIN_MII1_RX_ER, PIN_OUTPUT, MUX_MODE2)		/* spi1_d1_mux1 */
+			AM33XX_PADCONF(AM335X_PIN_MII1_CRS, PIN_INPUT_PULLDOWN, MUX_MODE2)	/* spi1_d0_mux1 */
+		>;
+	};
+
+	mm_uart3_pins: pinmux_uart3_pins {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_ECAP0_IN_PWM0_OUT, PIN_OUTPUT, MUX_MODE1)	/* uart3_txd_mux1 */
+			AM33XX_PADCONF(AM335X_PIN_SPI0_CS1, PIN_INPUT, MUX_MODE1)		/* uart3_rxd_mux1 */
 		>;
 	};
 };

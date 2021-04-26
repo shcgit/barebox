@@ -178,31 +178,24 @@
 	}; */
 
 	sound {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "simple-bus";
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "SSI0WM8753";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,bitclock-master = <&audio0_master>;
+		simple-audio-card,frame-master = <&audio0_master>;
+		simple-audio-card,widgets =
+			"Headphone", "Line Out";
+		simple-audio-card,routing =
+			"Line Out", "LOUT1",
+			"Line Out", "ROUT1";
 
-		audio@0 {
-			reg = <0>;
-			compatible = "simple-audio-card";
-			simple-audio-card,name = "SSI0WM8753";
-			simple-audio-card,format = "i2s";
-			simple-audio-card,bitclock-master = <&audio0_master>;
-			simple-audio-card,frame-master = <&audio0_master>;
-			simple-audio-card,widgets =
-				"Headphone", "Line Out";
-			simple-audio-card,routing =
-				"Line Out", "LOUT1",
-				"Line Out", "ROUT1";
+		simple-audio-card,cpu {
+			sound-dai = <&ssi1>;
+		};
 
-			simple-audio-card,cpu {
-				sound-dai = <&ssi1>;
-			};
-
-			audio0_master: simple-audio-card,codec {
-				sound-dai = <&wm8753>;
-				system-clock-frequency = <12000000>;
-			};
+		audio0_master: simple-audio-card,codec {
+			sound-dai = <&wm8753>;
+			system-clock-frequency = <12000000>;
 		};
 	};
 };
