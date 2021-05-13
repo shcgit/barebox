@@ -89,7 +89,7 @@ image-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-ey21.img
 # ----------------------- i.MX51 based boards ---------------------------
 pblb-$(CONFIG_MACH_CCMX51) += start_ccxmx51_x16 start_ccxmx51_x32
 CFG_start_ccxmx51_x16.pblb.imximg = $(board)/ccxmx51/flash-header-x16.imxcfg
-CFG_start_ccxmx51_x32.pblb.imximg = $(board)/ccxmx51/flash-header.imxcfg
+CFG_start_ccxmx51_x32.pblb.imximg = $(board)/ccxmx51/flash-header-x32.imxcfg
 FILE_barebox-imx51-ccxmx51-x16.img = start_ccxmx51_x16.pblb.imximg
 FILE_barebox-imx51-ccxmx51-x32.img = start_ccxmx51_x32.pblb.imximg
 image-$(CONFIG_MACH_CCMX51) += barebox-imx51-ccxmx51-x16.img barebox-imx51-ccxmx51-x32.img
