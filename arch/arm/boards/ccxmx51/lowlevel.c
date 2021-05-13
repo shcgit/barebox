@@ -33,11 +33,10 @@ static inline void setup_uart(void)
 	putc_ll('>');
 }
 
-extern char __dtb_imx51_ccxmx51_start[];
-
-ENTRY_FUNCTION(start_ccxmx51, r0, r1, r2)
+static inline void start_ccxmx51(void)
 {
 	void *fdt;
+	extern char __dtb_imx51_ccxmx51_start[];
 
 	imx5_cpu_lowlevel_init();
 
@@ -49,4 +48,14 @@ ENTRY_FUNCTION(start_ccxmx51, r0, r1, r2)
 	fdt = __dtb_imx51_ccxmx51_start + get_runtime_offset();
 
 	barebox_arm_entry(MX51_CSD0_BASE_ADDR, SZ_128M, fdt);
+}
+
+ENTRY_FUNCTION(start_ccxmx51_x16, r0, r1, r2)
+{
+	start_ccxmx51();
+}
+
+ENTRY_FUNCTION(start_ccxmx51_x32, r0, r1, r2)
+{
+	start_ccxmx51();
 }
