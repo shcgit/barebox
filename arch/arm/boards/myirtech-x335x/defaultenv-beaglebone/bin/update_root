@@ -2,7 +2,8 @@
 
 mmc0.probe=1
 mount /dev/mmc0.0 /mnt
-ubiupdatevol /dev/nand0.system.ubi.root /mnt/sysroot5.img
+[ -f /mnt/sysroot4.img ] && ubiupdatevol /dev/nand0.system.ubi.root /mnt/sysroot4.img
+[ -f /mnt/sysroot5.img ] && ubiupdatevol /dev/nand0.system.ubi.root /mnt/sysroot5.img
 umount /mnt
 
 /env/bin/erase_env
