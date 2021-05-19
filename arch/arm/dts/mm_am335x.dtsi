@@ -118,7 +118,7 @@
 		};
 	};
 
-	sound1 {
+	sound1: sound1 {
 		compatible = "simple-audio-card";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&master_codec1>;
@@ -365,7 +365,7 @@
 
 	mm_sgtl_pins_default: pinmux_mm_sgtl_pins_default {
 		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)	/* mcasp0_axr0_mux0 */
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_OUTPUT_PULLUP, MUX_MODE7)	/* gpio3[16] */
 		>;
 	};
 

@@ -1,9 +1,10 @@
 #!/bin/sh
 
 # Beeper ON
-gpio_direction_output 133 1
+i2c_write -a 0x20 -r 0x03 0x1f
+i2c_write -a 0x20 -r 0x01 0x3f
 
 msleep 240
 
 # Beeper OFF
-gpio_direction_output 133 0
+i2c_write -a 0x20 -r 0x01 0xcf
