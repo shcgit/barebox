@@ -250,12 +250,14 @@
 
 &led1 {
 	gpios = <&hwrev 6 GPIO_ACTIVE_LOW>;
+	color = <LED_COLOR_ID_RED>;
 	function = LED_FUNCTION_MTD;
 	linux,default-trigger = LED_FUNCTION_MTD;
 };
 
 &led2 {
 	gpios = <&hwrev 7 GPIO_ACTIVE_LOW>;
+	color = <LED_COLOR_ID_RED>;
 	function = LED_FUNCTION_USB;
 	linux,default-trigger = "usb-host";
 };
