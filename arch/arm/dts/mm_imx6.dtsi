@@ -94,7 +94,7 @@
 			vin-supply = <&vdd_5v0>;
 		};
 
-		/*vdd_1v8: reg@7 {
+		vdd_1v8: reg@7 {
 			compatible = "regulator-fixed";
 			reg = <7>;
 			regulator-name = "vdd-1v8";
@@ -103,7 +103,7 @@
 			regulator-always-on;
 			regulator-boot-on;
 			vin-supply = <&vdd_3v3>;
-		};*/
+		};
 	};
 
 	/delete-node/ sound;
