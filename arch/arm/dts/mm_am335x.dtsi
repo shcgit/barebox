@@ -129,7 +129,7 @@
 			"Speaker", "Speaker";
 		simple-audio-card,routing =
 			"MIC1LP", "Microphone Jack",
-			"MIC1LP", "MICBIAS",
+			"Microphone Jack", "MICBIAS",
 			"Speaker", "SPK";
 
 		simple-audio-card,cpu {
@@ -151,7 +151,7 @@
 		vin-supply = <&vdd_3v3>;
 	};
 
-	vdd_sgtl: vdd_sgtl_reg {
+	vdd_3v3mute: vdd_3v3mute_reg {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&mm_sgtl_pins_default>;
@@ -183,7 +183,7 @@
 		clocks = <&clk24m>;
 		micbias-resistor-k-ohms = <0>;
 		VDDA-supply = <&vdd_3v3>;
-		VDDIO-supply = <&vdd_sgtl>;
+		VDDIO-supply = <&vdd_3v3mute>;
 		VDDD-supply = <&vdd_1v8>;
 
 		#sound-dai-cells = <0>;
@@ -198,7 +198,7 @@
 		SPRVDD-supply = <&vdd_5v0>;
 		SPLVDD-supply = <&vdd_5v0>;
 		AVDD-supply = <&vdd_3v3>;
-		IOVDD-supply = <&vdd_3v3>;
+		IOVDD-supply = <&vdd_3v3mute>;
 		DVDD-supply = <&vdd_1v8>;
 
 		#sound-dai-cells = <0>;

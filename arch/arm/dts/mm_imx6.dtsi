@@ -108,13 +108,12 @@
 
 	/delete-node/ sound;
 
-	/*sound-pcm0 {
+	sound-pcm0 {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "SSI2AIC3104";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&sound0_master>;
 		simple-audio-card,frame-master = <&sound0_master>;
-//		simple-audio-card,mclk-fs = <256>;
 		simple-audio-card,widgets =
 			"Microphone", "Mic Jack",
 			"Headphone", "Headphone Jack";
@@ -131,7 +130,7 @@
 		sound0_master: simple-audio-card,codec {
 			sound-dai = <&tlv320aic3104>;
 		};
-	};*/
+	};
 
 //gst-launch-1.0 alsasrc ! audio/x-raw,channels=4,fmt=S24LE ! audioconvert ! opusenc ! queue ! rtpgstpay config-interval=1 ! udpsink host=239.0.0.2 port=4380
 	/*sound-pcm0 {
@@ -196,7 +195,7 @@
 	status = "disabled";
 };
 
-/*&audmux {
+&audmux {
 	ssi2 {
 		fsl,audmux-port = <1>;
 		fsl,port-config = <
@@ -216,7 +215,7 @@
 			IMX_AUDMUX_V2_PDCR_RXDSEL(1)
 		>;
 	};
-};*/
+};
 
 &can1 {
 	status = "disabled";
@@ -270,14 +269,6 @@
 	/delete-node/ stmpe@41;
 	/delete-node/ rtc@51;
 	/delete-node/ adc@64;
-
-	/*ad1937: codec@4 {
-		compatible = "adi,ad1937";
-		reg = <0x4>;
-		clocks = <&clk12m288>;
-
-		#sound-dai-cells = <0>;
-	};*/
 
 	tlv320aic3104: codec@18 {
 		compatible = "ti,tlv320aic3104";
@@ -493,14 +484,14 @@
 
 &iomuxc {
 	imx6q-phytec-pfla02 {
-		/*pinctrl_audmux: audmuxgrp {
+		pinctrl_audmux: audmuxgrp {
 			fsl,pins = <
 				MX6QDL_PAD_DISP0_DAT16__AUD5_TXC	0x110b0
 				MX6QDL_PAD_DISP0_DAT17__AUD5_TXD	0x110b0
 				MX6QDL_PAD_DISP0_DAT18__AUD5_TXFS	0x110b0
 				MX6QDL_PAD_DISP0_DAT19__AUD5_RXD	0x130b0
 			>;
-		};*/
+		};
 
 		pinctrl_esai: esaigrp {
 			fsl,pins = <
