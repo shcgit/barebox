@@ -120,7 +120,7 @@
 		simple-audio-card,routing =
 			"Headphone Jack", "HPLOUT",
 			"Headphone Jack", "HPROUT",
-			"MIC2R", "Mic Jack",
+			"MIC2L", "Mic Jack",
 			"Mic Jack", "Mic Bias";
 
 		simple-audio-card,cpu {
@@ -133,24 +133,6 @@
 	};
 
 //gst-launch-1.0 alsasrc ! audio/x-raw,channels=4,fmt=S24LE ! audioconvert ! opusenc ! queue ! rtpgstpay config-interval=1 ! udpsink host=239.0.0.2 port=4380
-	/*sound-pcm0 {
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "ESAIAD1937";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,bitclock-master = <&sound0_master>;
-		simple-audio-card,frame-master = <&sound0_master>;
-
-		simple-audio-card,cpu {
-			sound-dai = <&esai>;
-			dai-tdm-slot-num = <4>;
-			dai-tdm-slot-width = <32>;
-		};
-
-		sound0_master: simple-audio-card,codec {
-			sound-dai = <&ad1937>;
-			dai-tdm-slot-num = <4>;
-		};
-	};*/
 
 	sound-pcm1 {
 		compatible = "simple-audio-card";
@@ -193,28 +175,6 @@
 
 &asrc {
 	status = "disabled";
-};
-
-&audmux {
-	ssi2 {
-		fsl,audmux-port = <1>;
-		fsl,port-config = <
-			IMX_AUDMUX_V2_PTCR_SYN
-			IMX_AUDMUX_V2_PDCR_RXDSEL(MX51_AUDMUX_PORT5)
-		>;
-	};
-
-	pins5 {
-		fsl,audmux-port = <MX51_AUDMUX_PORT5>;
-		fsl,port-config = <
-			(IMX_AUDMUX_V2_PTCR_SYN |
-			IMX_AUDMUX_V2_PTCR_TFSDIR |
-			IMX_AUDMUX_V2_PTCR_TFSEL(1) |
-			IMX_AUDMUX_V2_PTCR_TCLKDIR |
-			IMX_AUDMUX_V2_PTCR_TCSEL(1))
-			IMX_AUDMUX_V2_PDCR_RXDSEL(1)
-		>;
-	};
 };
 
 &can1 {
@@ -484,15 +444,6 @@
 
 &iomuxc {
 	imx6q-phytec-pfla02 {
-		pinctrl_audmux: audmuxgrp {
-			fsl,pins = <
-				MX6QDL_PAD_DISP0_DAT16__AUD5_TXC	0x110b0
-				MX6QDL_PAD_DISP0_DAT17__AUD5_TXD	0x110b0
-				MX6QDL_PAD_DISP0_DAT18__AUD5_TXFS	0x110b0
-				MX6QDL_PAD_DISP0_DAT19__AUD5_RXD	0x130b0
-			>;
-		};
-
 		pinctrl_esai: esaigrp {
 			fsl,pins = <
 				MX6QDL_PAD_GPIO_2__ESAI_TX_FS		0x130b0
