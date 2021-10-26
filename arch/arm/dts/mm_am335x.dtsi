@@ -56,13 +56,6 @@
 			gpios = <&input 2 GPIO_ACTIVE_LOW>;
 		};
 
-		button@3 {
-			label = "BTN3";
-			linux,code = <0x0103>;
-			linux,input-type = <EV_KEY>;
-			gpios = <&input 3 GPIO_ACTIVE_LOW>;
-		};
-
 		button@6 {
 			label = "PF_LOW";
 			linux,code = <SW_TABLET_MODE>;
@@ -219,7 +212,7 @@
 		reg = <0x21>;
 		gpio-controller;
 		interrupt-parent = <&gpio2>;
-		interrupts = <26 IRQ_TYPE_EDGE_FALLING>;
+		interrupts = <26 IRQ_TYPE_EDGE_BOTH>;
 		interrupt-controller;
 
 		#gpio-cells = <2>;
