@@ -460,6 +460,10 @@
 	status = "okay";
 };
 
+&snvs_rtc {
+	status = "disabled";
+};
+
 &som_flash {
 	/delete-node/ partitions;
 

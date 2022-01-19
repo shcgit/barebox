@@ -32,6 +32,13 @@
 		#clock-cells = <0>;
 	};
 
+	clk32k: clk32k {
+		compatible = "fixed-clock";
+		clock-frequency = <32768>;
+
+		#clock-cells = <0>;
+	};
+
 	gpiokeys {
 		compatible = "gpio-keys";
 
@@ -287,6 +294,11 @@
 		label = "system";
 		reg = <0xe0000 0>;
 	};
+};
+
+&rtc {
+	clocks = <&clk32k>;
+	clock-names = "ext-clk";
 };
 
 &sound {
