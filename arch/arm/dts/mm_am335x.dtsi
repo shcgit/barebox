@@ -42,6 +42,8 @@
 	gpiokeys {
 		compatible = "gpio-keys";
 
+		/* DOOR1 (SmallIA) */
+		/* Call (TalkBox) */
 		button@0 {
 			label = "BTN0";
 			linux,code = <0x0100>;
@@ -49,6 +51,7 @@
 			gpios = <&input 0 GPIO_ACTIVE_LOW>;
 		};
 
+		/* DOOR2 (SmallIA) */
 		button@1 {
 			label = "BTN1";
 			linux,code = <0x0101>;
@@ -56,11 +59,30 @@
 			gpios = <&input 1 GPIO_ACTIVE_LOW>;
 		};
 
+		/* DOOR3 (SmallIA) */
 		button@2 {
 			label = "BTN2";
 			linux,code = <0x0102>;
 			linux,input-type = <EV_KEY>;
 			gpios = <&input 2 GPIO_ACTIVE_LOW>;
+		};
+
+		/* REPEAT (SmallIA) */
+		button@3 {
+			label = "BTN3";
+			linux,code = <0x0103>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 3 GPIO_ACTIVE_LOW>;
+		};
+
+		/* 4 - LED output (TalkBox), SOUND_WORLD (Informer) */
+
+		/* SHIFT/REVERSE (Informer) */
+		button@5 {
+			label = "SHIFT";
+			linux,code = <SW_LID>;
+			linux,input-type = <EV_SW>;
+			gpios = <&input 5 GPIO_ACTIVE_LOW>;
 		};
 
 		button@6 {
@@ -225,6 +247,45 @@
 		#gpio-cells = <2>;
 		#interrupt-cells = <2>;
 	};
+
+/*
+	keypad: keypad@34 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&mm_tca8418_pins>;
+		compatible = "ti,tca8418";
+		reg = <0x34>;
+		interrupt-parent = <&gpio2>;
+		interrupts = <26 IRQ_TYPE_EDGE_FALLING>;
+		keypad,num-rows = <4>;
+		keypad,num-columns = <6>;
+		linux,keymap = <
+			MATRIX_KEY(0,0,0x0100)
+			MATRIX_KEY(0,1,0x0101)
+			MATRIX_KEY(0,2,0x0102)
+			MATRIX_KEY(0,3,0x0103)
+			MATRIX_KEY(0,4,0x0104)
+			MATRIX_KEY(0,5,0x0105)
+			MATRIX_KEY(1,0,0x0110)
+			MATRIX_KEY(1,1,0x0111)
+			MATRIX_KEY(1,2,0x0112)
+			MATRIX_KEY(1,3,0x0113)
+			MATRIX_KEY(1,4,0x0114)
+			MATRIX_KEY(1,5,0x0115)
+			MATRIX_KEY(2,0,0x0120)
+			MATRIX_KEY(2,1,0x0121)
+			MATRIX_KEY(2,2,0x0122)
+			MATRIX_KEY(2,3,0x0123)
+			MATRIX_KEY(2,4,0x0124)
+			MATRIX_KEY(2,5,0x0125)
+			MATRIX_KEY(3,0,0x0130)
+			MATRIX_KEY(3,1,0x0131)
+			MATRIX_KEY(3,2,0x0132)
+			MATRIX_KEY(3,3,0x0133)
+			MATRIX_KEY(3,4,0x0134)
+			MATRIX_KEY(3,5,0x0135)
+		>;
+	}
+*/
 };
 
 &i2c1 {
@@ -319,6 +380,20 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
+
+/*
+	max14830@1 {
+		compatible = "maxim,max14830";
+		reg = <1>;
+		spi-max-frequency = <16000000>;
+		clocks = <&clk24m>;
+		clock-names = "osc";
+		interrupt-parent = <&gpio3>;
+		interrupts = <7 IRQ_TYPE_EDGE_FALLING>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+*/
 };
 
 &tscadc {
