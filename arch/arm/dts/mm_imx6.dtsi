@@ -392,9 +392,7 @@
 		status = "okay";
 
 		display-timings {
-			native-mode = <&timing0>;
-
-			timing0: G104XVN01_0 {
+			timing0: G104XVN01 {
 				clock-frequency = <50000000 65000000 81000000>;
 				hactive = <1024>;
 				vactive = <768>;
@@ -404,21 +402,6 @@
 				vback-porch = <38>;
 				vfront-porch = <3>;
 				vsync-len = <6>;
-				de-active = <1>;
-			};
-
-			timing1: PH320240T {
-				clock-frequency = <6400000>;
-				hactive = <320>;
-				vactive = <240>;
-				hback-porch = <38>;
-				hfront-porch = <20>;
-				hsync-len = <30>;
-				vback-porch = <15>;
-				vfront-porch = <5>;
-				vsync-len = <1 3 5>;
-				hsync-active = <0>;
-				vsync-active = <0>;
 				de-active = <1>;
 			};
 		};

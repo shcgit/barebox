@@ -90,8 +90,6 @@
 		interface-pix-fmt = "rgb565";
 
 		display-timings {
-			native-mode = <&timing1_0>;
-
 			timing1_0: PD104SL5 {
 				clock-frequency = <33250000>;
 				hactive = <800>;

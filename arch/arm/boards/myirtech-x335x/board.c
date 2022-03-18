@@ -31,6 +31,13 @@ static struct omap_barebox_part myir_barebox_part = {
 	.nand_size = SZ_512K,
 };
 
+static void myir_set_timing(struct device_node *root, const char *timingpath)
+{
+	struct device_node *display = of_find_node_by_path_from(root, timingpath);
+	if (display)
+		of_set_property_to_child_phandle(display, "native-mode");
+}
+
 static void myir_disable_device(struct device_node *root, const char *label)
 {
 	struct device_node *np = of_find_node_by_name(root, label);
@@ -53,6 +60,7 @@ static int myir_probe_i2c(struct i2c_adapter *adapter, int addr)
 
 #define SGTL5000_ADDR	0x0a
 #define AIC3100_ADDR	0x18
+#define ISL97671_ADDR	0x2c
 
 static int myir_board_fixup(struct device_node *root, void *unused)
 {
@@ -64,6 +72,9 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 		myir_disable_device(root, "sound");
 	else if (myir_probe_i2c(adapter, AIC3100_ADDR))
 		myir_disable_device(root, "sound1");
+
+	if (!myir_probe_i2c(adapter, ISL97671_ADDR))
+		myir_set_timing(root, "/panel/display-timings/PH320240T");
 
 	return 0;
 }
