@@ -39,7 +39,7 @@
 		#clock-cells = <0>;
 	};
 
-	gpiokeys {
+	gpio-keys {
 		compatible = "gpio-keys";
 
 		/* DOOR1 (SmallIA) */
@@ -102,11 +102,63 @@
 		};
 	};
 
+	matrix-keypad {
+		compatible = "gpio-matrix-keypad";
+		pinctrl-names = "default";
+		pinctrl-0 = <&mm_keypad_pins_default>;
+		debounce-delay-ms = <5>;
+		col-scan-delay-us = <2>;
+		gpio-activelow;
+		wakeup-source;
+
+		row-gpios = <
+			&gpio1 16 GPIO_ACTIVE_LOW
+			&gpio1 17 GPIO_ACTIVE_LOW
+			&gpio1 18 GPIO_ACTIVE_LOW
+			&gpio1 19 GPIO_ACTIVE_LOW
+		>;
+
+		col-gpios = <
+			&gpio1 20 GPIO_ACTIVE_LOW
+			&gpio1 21 GPIO_ACTIVE_LOW
+			&gpio1 22 GPIO_ACTIVE_LOW
+			&gpio1 23 GPIO_ACTIVE_LOW
+			&gpio1 24 GPIO_ACTIVE_LOW
+			&gpio1 25 GPIO_ACTIVE_LOW
+		>;
+
+		linux,keymap = <
+			MATRIX_KEY(0,0,0x0200)
+			MATRIX_KEY(0,1,0x0201)
+			MATRIX_KEY(0,2,0x0202)
+			MATRIX_KEY(0,3,0x0203)
+			MATRIX_KEY(0,4,0x0204)
+			MATRIX_KEY(0,5,0x0205)
+			MATRIX_KEY(1,0,0x0210)
+			MATRIX_KEY(1,1,0x0211)
+			MATRIX_KEY(1,2,0x0212)
+			MATRIX_KEY(1,3,0x0213)
+			MATRIX_KEY(1,4,0x0214)
+			MATRIX_KEY(1,5,0x0215)
+			MATRIX_KEY(2,0,0x0220)
+			MATRIX_KEY(2,1,0x0221)
+			MATRIX_KEY(2,2,0x0222)
+			MATRIX_KEY(2,3,0x0223)
+			MATRIX_KEY(2,4,0x0224)
+			MATRIX_KEY(2,5,0x0225)
+			MATRIX_KEY(3,0,0x0230)
+			MATRIX_KEY(3,1,0x0231)
+			MATRIX_KEY(3,2,0x0232)
+			MATRIX_KEY(3,3,0x0233)
+			MATRIX_KEY(3,4,0x0234)
+			MATRIX_KEY(3,5,0x0235)
+		>;
+	};
+
 	panel {
 		compatible = "ti,tilcdc,panel";
-		pinctrl-names = "default", "sleep";
+		pinctrl-names = "default";
 		pinctrl-0 = <&lcdc_pins_default>;
-		pinctrl-1 = <&lcdc_pins_sleep>;
 		backlight = <&backlight>;
 		status = "okay";
 
@@ -120,6 +172,7 @@
 			sync-ctrl = <1>;
 			raster-order = <0>;
 			fifo-th = <0>;
+			invert-pxl-clk;
 		};
 
 		display-timings {
@@ -190,9 +243,8 @@
 
 	vdd_3v3mute: vdd_3v3mute_reg {
 		compatible = "regulator-fixed";
-		pinctrl-names = "default", "sleep";
+		pinctrl-names = "default";
 		pinctrl-0 = <&mm_sgtl_pins_default>;
-		pinctrl-1 = <&mm_sgtl_pins_sleep>;
 		regulator-name = "vdd-sgtl";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
@@ -267,43 +319,6 @@
 		compatible = "intersil,isl97671a";
 		reg = <0x2c>;
 	};
-
-	keypad: keypad@34 {
-		pinctrl-names = "default";
-		pinctrl-0 = <&mm_tca8418_pins_default>;
-		compatible = "ti,tca8418";
-		reg = <0x34>;
-		interrupt-parent = <&intc>;
-		interrupts = <7>; /* nNMI */
-		keypad,num-rows = <4>;
-		keypad,num-columns = <6>;
-		linux,keymap = <
-			MATRIX_KEY(0,0,0x0200)
-			MATRIX_KEY(0,1,0x0201)
-			MATRIX_KEY(0,2,0x0202)
-			MATRIX_KEY(0,3,0x0203)
-			MATRIX_KEY(0,4,0x0204)
-			MATRIX_KEY(0,5,0x0205)
-			MATRIX_KEY(1,0,0x0210)
-			MATRIX_KEY(1,1,0x0211)
-			MATRIX_KEY(1,2,0x0212)
-			MATRIX_KEY(1,3,0x0213)
-			MATRIX_KEY(1,4,0x0214)
-			MATRIX_KEY(1,5,0x0215)
-			MATRIX_KEY(2,0,0x0220)
-			MATRIX_KEY(2,1,0x0221)
-			MATRIX_KEY(2,2,0x0222)
-			MATRIX_KEY(2,3,0x0223)
-			MATRIX_KEY(2,4,0x0224)
-			MATRIX_KEY(2,5,0x0225)
-			MATRIX_KEY(3,0,0x0230)
-			MATRIX_KEY(3,1,0x0231)
-			MATRIX_KEY(3,2,0x0232)
-			MATRIX_KEY(3,3,0x0233)
-			MATRIX_KEY(3,4,0x0234)
-			MATRIX_KEY(3,5,0x0235)
-		>;
-	};
 };
 
 &i2c1 {
@@ -356,9 +371,8 @@
 };
 
 &mmc1 {
-	pinctrl-names = "default", "sleep";
+	pinctrl-names = "default";
 	pinctrl-0 = <&mm_mmc1_pins_default>;
-	pinctrl-1 = <&mm_mmc1_pins_sleep>;
 	bus-width = <1>;
 	/delete-property/ cd-gpios;
 };
@@ -407,8 +421,8 @@
 		spi-max-frequency = <16000000>;
 		clocks = <&clk24m>;
 		clock-names = "osc";
-		interrupt-parent = <&gpio0>;
-		interrupts = <27 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <31 IRQ_TYPE_EDGE_FALLING>;
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
@@ -441,9 +455,24 @@
 };
 
 &am33xx_pinmux {
+	mm_keypad_pins_default: pinmux_mm_keypad_pins_default {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A0, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[16] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A1, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[17] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A2, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[18] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A3, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[19] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A4, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[20] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A5, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[21] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A6, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[22] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A7, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[23] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A8, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[24] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_A9, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[25] */
+		>;
+	};
+
 	mm_max14830_pins_default: pinmux_mm_max14830_pins_default {
 		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_GPMC_AD11, PIN_INPUT_PULLUP, MUX_MODE7)	/*  gpio0[27] */
+			AM33XX_PADCONF(AM335X_PIN_GPMC_CSN2, PIN_INPUT_PULLUP, MUX_MODE7)	/*  gpio1[31] */
 		>;
 	};
 
@@ -455,15 +484,7 @@
 		>;
 	};
 
-	mm_mmc1_pins_sleep: pinmux_mm_mmc1_pins_sleep {
-		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT_PULLDOWN, MUX_MODE0)
-			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT_PULLDOWN, MUX_MODE0)
-			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT_PULLDOWN, MUX_MODE0)
-		>;
-	};
-
-	mm_pca9534_pins: pinmux_pca9534_pins {
+	mm_pca9534_pins: pinmux_mm_pca9534_pins {
 		pinctrl-single,pins = <
 			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT3, PIN_INPUT_PULLUP, MUX_MODE7)	/* gpio2[26] */
 		>;
@@ -475,12 +496,6 @@
 		>;
 	};
 
-	mm_sgtl_pins_sleep: pinmux_mm_sgtl_pins_sleep {
-		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT_PULLDOWN, MUX_MODE7)
-		>;
-	};
-
 	mm_spi1_pins: pinmux_spi1_pins {
 		pinctrl-single,pins = <
 			AM33XX_PADCONF(AM335X_PIN_RMII1_REF_CLK, PIN_OUTPUT, MUX_MODE2)		/* spi1_cs0_mux1 */
@@ -488,12 +503,6 @@
 			AM33XX_PADCONF(AM335X_PIN_MII1_COL, PIN_INPUT_PULLUP, MUX_MODE2)	/* spi1_sclk_mux1 */
 			AM33XX_PADCONF(AM335X_PIN_MII1_RX_ER, PIN_OUTPUT, MUX_MODE2)		/* spi1_d1_mux1 */
 			AM33XX_PADCONF(AM335X_PIN_MII1_CRS, PIN_INPUT, MUX_MODE2)		/* spi1_d0_mux1 */
-		>;
-	};
-
-	mm_tca8418_pins_default: pinmux_mm_tca8418_pins_default {
-		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_NNMI, PIN_INPUT_PULLUP, MUX_MODE0)		/*  nNMI */
 		>;
 	};
 

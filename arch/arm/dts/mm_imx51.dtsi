@@ -111,7 +111,7 @@
 		};
 	};
 
-	gpiokeys {
+	gpio-keys {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpiokeys>;
 		compatible = "gpio-keys";

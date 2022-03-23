@@ -43,21 +43,20 @@
 
 	display {
 		model = "320x240x4";
-		native-mode = <&timing0>;
 		bits-per-pixel = <4>;
 		ac-prescale = <17>;
 
 		display-timings {
 			timing0: 320x240 {
+				clock-frequency = <6500000>;
 				hactive = <320>;
+				vactive = <240>;
 				hback-porch = <0>;
 				hfront-porch = <0>;
 				hsync-len = <0>;
-				vactive = <240>;
 				vback-porch = <0>;
 				vfront-porch = <0>;
 				vsync-len = <0>;
-				clock-frequency = <6500000>;
 			};
 		};
 	};

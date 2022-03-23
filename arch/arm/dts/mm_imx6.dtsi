@@ -37,7 +37,7 @@
 		gpios = <&hwrev 5 GPIO_ACTIVE_HIGH>;
 	};
 
-	gpiokeys {
+	gpio-keys {
 		compatible = "gpio-keys";
 
 		button@0 {
