@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2021
-PATCHLEVEL = 02
+PATCHLEVEL = 03
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -408,13 +408,21 @@ LDFLAGS_MODULE  = -T common/module.lds
 # even be read-only.
 export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_versions
 
+# Use USERINCLUDE when you must reference the UAPI directories only.
+USERINCLUDE    := \
+		-I$(srctree)/arch/$(SRCARCH)/include/uapi \
+		-I$(objtree)/arch/$(SRCARCH)/include/generated/uapi \
+		-I$(srctree)/include/uapi \
+		-I$(objtree)/include/generated/uapi \
+                -include $(srctree)/include/linux/kconfig.h
+
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
 LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
                    $(if $(building_out_of_srctree), -I$(srctree)/include) \
 		   -I$(srctree)/arch/$(SRCARCH)/include \
 		   -I$(objtree)/arch/$(SRCARCH)/include \
-                   -include $(srctree)/include/linux/kconfig.h
+		   $(USERINCLUDE)
 
 KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
@@ -541,7 +549,7 @@ endif
 # in addition to whatever we do anyway.
 # Just "make" or "make all" shall build modules as well
 
-ifneq ($(filter all _all modules,$(MAKECMDGOALS)),)
+ifneq ($(filter all _all modules %compile_commands.json,$(MAKECMDGOALS)),)
   KBUILD_MODULES := 1
 endif
 
@@ -1104,7 +1112,7 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
-		.tmp_kallsyms* barebox.ldr \
+		.tmp_kallsyms* barebox.ldr compile_commands.json \
 		scripts/bareboxenv-target barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
 		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart \
@@ -1161,6 +1169,18 @@ distclean: mrproper
 		-o -name '*.bak' -o -name '#*#' -o -name '*%' \
 		-o -name 'core' \) \
 		-type f -print | xargs rm -f
+
+# Clang Tooling
+# ---------------------------------------------------------------------------
+
+quiet_cmd_gen_compile_commands = GEN     $@
+      cmd_gen_compile_commands = $(PYTHON3) $< -a $(AR) -o $@ $(filter-out $<, $(real-prereqs))
+
+compile_commands.json: scripts/clang-tools/gen_compile_commands.py \
+	$(BAREBOX_OBJS) $(if $(CONFIG_PBL_IMAGE),$(BAREBOX_PBL_OBJS),) FORCE
+	$(call if_changed,gen_compile_commands)
+
+PHONY += compile_commands.json
 
 # Brief documentation of the typical targets used
 # ---------------------------------------------------------------------------

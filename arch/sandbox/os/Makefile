@@ -4,7 +4,7 @@ machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
 KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
-KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
+KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE) -D_FILE_OFFSET_BITS=64
 
 KBUILD_CFLAGS := -Wall
 
@@ -17,8 +17,8 @@ endif
 obj-y = common.o tap.o
 obj-$(CONFIG_MALLOC_LIBC) += libc_malloc.o
 
-CFLAGS_sdl.o = $(shell pkg-config sdl --cflags)
-obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o
+CFLAGS_sdl.o = $(shell pkg-config sdl2 --cflags)
+obj-$(CONFIG_SDL) += sdl.o
 
 CFLAGS_ftdi.o = $(shell pkg-config libftdi1 --cflags)
 obj-$(CONFIG_GPIO_LIBFTDI1) += ftdi.o
