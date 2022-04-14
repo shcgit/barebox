@@ -58,6 +58,9 @@ static int of_overlay_apply(struct device_node *target,
 		if (of_prop_cmp(prop->name, "name") == 0)
 			continue;
 
+		if (of_prop_cmp(prop->name, "phandle") == 0)
+			target->phandle = be32_to_cpup(prop->value);
+
 		err = of_set_property(target, prop->name, prop->value,
 				      prop->length, true);
 		if (err)
@@ -215,7 +218,7 @@ int of_process_overlay(struct device_node *root,
 
 		target = find_target(root, fragment);
 		if (!target)
-			pr_debug("cannot find target for fragment",
+			pr_debug("cannot find target for fragment %s\n",
 				 fragment->name);
 
 		err = process(target, ovl, data);
