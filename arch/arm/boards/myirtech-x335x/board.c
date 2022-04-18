@@ -26,10 +26,7 @@
 #include <mach/am33xx-generic.h>
 #include <i2c/i2c.h>
 
-static struct omap_barebox_part myir_barebox_part = {
-	.nand_offset = SZ_128K,
-	.nand_size = SZ_512K,
-};
+#ifdef CONFIG_I2C
 
 static void myir_set_timing(struct device_node *root, const char *timingpath)
 {
@@ -90,6 +87,13 @@ static __init int myir_i2c_fixup(void)
 	return 0;
 }
 postcore_initcall(myir_i2c_fixup);
+
+#endif /* CONFIG_I2C */
+
+static struct omap_barebox_part myir_barebox_part = {
+	.nand_offset = SZ_128K,
+	.nand_size = SZ_512K,
+};
 
 static __init int myir_devices_init(void)
 {

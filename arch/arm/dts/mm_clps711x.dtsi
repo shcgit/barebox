@@ -41,7 +41,7 @@
 		};
 	};
 
-	display {
+	display: display {
 		model = "320x240x4";
 		bits-per-pixel = <4>;
 		ac-prescale = <17>;
