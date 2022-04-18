@@ -126,7 +126,7 @@ int pr_print(int level, const char *fmt, ...)
 		return 0;
 
 	va_start(args, fmt);
-	i = vsprintf(printbuffer, fmt, args);
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
 	pr_puts(level, printbuffer);
@@ -139,18 +139,19 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 	va_list args;
 	int ret = 0;
 	char printbuffer[CFG_PBSIZE];
+	size_t size = sizeof(printbuffer);
 
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
 		return 0;
 
 	if (dev->driver && dev->driver->name)
-		ret += sprintf(printbuffer, "%s ", dev->driver->name);
+		ret += snprintf(printbuffer, size, "%s ", dev->driver->name);
 
-	ret += sprintf(printbuffer + ret, "%s: ", dev_name(dev));
+	ret += snprintf(printbuffer + ret, size - ret, "%s: ", dev_name(dev));
 
 	va_start(args, format);
 
-	ret += vsprintf(printbuffer + ret, format, args);
+	ret += vsnprintf(printbuffer + ret, size - ret, format, args);
 
 	va_end(args);
 
@@ -181,6 +182,26 @@ static int console_common_init(void)
 	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
 }
 device_initcall(console_common_init);
+
+int log_writefile(const char *filepath)
+{
+	int ret = 0, nbytes = 0, fd = -1;
+	struct log_entry *log;
+
+	fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC);
+	if (fd < 0)
+		return -errno;
+
+	list_for_each_entry(log, &barebox_logbuf, list) {
+		ret = dputs(fd, log->msg);
+		if (ret < 0)
+			break;
+		nbytes += ret;
+	}
+
+	close(fd);
+	return ret < 0 ? ret : nbytes;
+}
 
 void log_print(unsigned flags, unsigned levels)
 {
@@ -235,7 +256,7 @@ int printf(const char *fmt, ...)
 	 * For this to work, printbuffer must be larger than
 	 * anything we ever want to print.
 	 */
-	i = vsprintf (printbuffer, fmt, args);
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
 	/* Print the string */
@@ -254,7 +275,7 @@ int vprintf(const char *fmt, va_list args)
 	 * For this to work, printbuffer must be larger than
 	 * anything we ever want to print.
 	 */
-	i = vsprintf(printbuffer, fmt, args);
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 
 	/* Print the string */
 	puts(printbuffer);
@@ -342,7 +363,7 @@ int dprintf(int file, const char *fmt, ...)
 	 * For this to work, printbuffer must be larger than
 	 * anything we ever want to print.
 	 */
-	vsprintf(printbuffer, fmt, args);
+	vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
 	/* Print the string */

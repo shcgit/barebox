@@ -91,9 +91,6 @@ config EFI_GUID
 config EFI_DEVICEPATH
 	bool
 
-config FILE_LIST
-	bool
-
 config ARCH_DMA_ADDR_T_64BIT
 	bool
 
@@ -117,7 +114,6 @@ config USBGADGET_START
 	bool
 	depends on CMD_USBGADGET || USB_GADGET_AUTOSTART
 	select ENVIRONMENT_VARIABLES
-	select FILE_LIST
 	default y
 
 config BOOT
@@ -704,8 +700,40 @@ config FLEXIBLE_BOOTARGS
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
 
+config MMCBLKDEV_ROOTARG
+	bool
+	prompt "Support 'root=mmcblkXpN' cmdline appending"
+	depends on FLEXIBLE_BOOTARGS
+	depends on MCI
+	depends on OFTREE
+	help
+	  Enable this option to append 'root=mmcblkXpN' to the cmdline instead
+	  of 'root=PARTUUID=XYZ'. Don't enable this option if your used linux
+	  kernel doesn't contain commit [1]. The first linux kernel release
+	  containing that commit is v5.10-rc1.
+
+	  The appending only happen if barebox 'linux.bootargs.bootm.appendroot'
+	  variable is set or the used blspec entry contains 'linux-appendroot'.
+
+	  Note: It is crucial that the kernel device tree and the barebox device
+	  tree uses the same mmc aliases.
+
+	  [1] fa2d0aa96941 ("mmc: core: Allow setting slot index via device tree
+	      alias")
+
 config BAREBOX_UPDATE
 	bool "In-system barebox update infrastructure"
+
+config SYSTEM_PARTITIONS
+	bool "Generic system partitions support"
+	depends on GLOBALVAR
+	help
+	  System partitions are a generic way for boards to specify the
+	  partitions that should be exported for flashing.
+	  Board drivers that set this directly will select this option
+	  automatically.
+	  Say y here if this should be configurable over the
+	  global.system.partitions device parameter as well.
 
 config IMD
 	select CRC32
@@ -1342,6 +1370,15 @@ config DEBUG_RPI3_MINI_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 3 board mini UART.
+
+config DEBUG_ERIZO
+	bool "Erizo ns16550 port"
+	depends on SOC_ERIZO
+
+config DEBUG_SIFIVE
+	bool "SiFive serial0 port"
+	depends on SOC_SIFIVE
+
 endchoice
 
 config DEBUG_IMX_UART_PORT
@@ -1461,6 +1498,10 @@ endmenu
 
 config HAS_DEBUG_LL
 	bool
+
+config HAS_ASM_DEBUG_LL
+	bool
+	select HAS_DEBUG_LL
 
 config DDR_SPD
 	bool
