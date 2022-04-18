@@ -232,7 +232,24 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 			return err;
 	}
 
-	return of_fixup_bootargs_bootsource(root, node);
+	err = of_fixup_bootargs_bootsource(root, node);
+	if (err)
+		return err;
+
+	if (IS_ENABLED(CONFIG_RISCV)) {
+		const char *hartid;
+
+		hartid = getenv("global.hartid");
+		if (hartid) {
+			unsigned long id;
+
+			err = kstrtoul(hartid, 10, &id);
+			if (!err)
+				err = of_property_write_u32(node, "boot-hartid", id);
+		}
+	}
+
+	return err;
 }
 
 static int of_register_bootargs_fixup(void)
@@ -326,6 +343,8 @@ int of_fix_tree(struct device_node *node)
 	struct of_fixup *of_fixup;
 	int ret;
 
+	of_overlay_load_firmware_clear();
+
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
 		ret = of_fixup->fixup(node, of_fixup->context);
 		if (ret)
@@ -353,7 +372,7 @@ struct fdt_header *of_get_fixed_tree(struct device_node *node)
 		if (!node)
 			return NULL;
 
-		freenp = node = of_copy_node(NULL, node);
+		freenp = node = of_dup(node);
 		if (!node)
 			return NULL;
 	}

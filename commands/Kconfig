@@ -47,9 +47,9 @@ config CMD_ARM_CPUINFO
 config CMD_RISCV_CPUINFO
 	bool "cpuinfo command"
 	default y
-	depends on RISCV_SBI
+	depends on RISCV
 	help
-	  Show SBI info about RISC-V CPU
+	  Show info about RISC-V CPU
 
 config CMD_DEVINFO
 	tristate
@@ -205,6 +205,13 @@ config CMD_REGULATOR
 	help
 	  the regulator command lists the currently registered regulators and
 	  their current state.
+
+config CMD_NVMEM
+	bool
+	depends on NVMEM
+	prompt "nvmem command"
+	help
+	  the nvmem command lists the currently registered nvmem devices.
 
 config CMD_LSPCI
 	bool

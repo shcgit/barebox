@@ -9,6 +9,12 @@ menuconfig NVMEM
 
 if NVMEM
 
+config NVMEM_RMEM
+	bool "Reserved Memory Based Driver Support"
+	help
+	  This driver maps reserved memory into an nvmem device. It might be
+	  useful to expose information left by firmware in memory.
+
 config NVMEM_SNVS_LPGPR
 	tristate "Freescale SNVS LPGPR support"
 	select MFD_SYSCON
@@ -58,5 +64,13 @@ config STM32_BSEC
 	help
 	  This adds support for the STM32 OTP controller. Reads and writes
 	  to will go to the shadow RAM, not the OTP fuses themselvers.
+
+config STARFIVE_OTP
+	tristate "Starfive OTP Supprot"
+	depends on SOC_STARFIVE
+	depends on OFDEVICE
+	help
+	  This adds support for the StarFive OTP controller. Only reading
+	  is currently supported.
 
 endif

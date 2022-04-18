@@ -32,6 +32,8 @@
 #include <usb/ehci.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
+#include <linux/clk.h>
+#include <linux/phy/phy.h>
 
 #include "ehci.h"
 
@@ -305,7 +307,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	struct usb_host *host = dev->host;
 	struct ehci_host *ehci = to_ehci(host);
 	const bool dir_in = usb_pipein(pipe);
-	dma_addr_t buffer_dma, req_dma;
+	dma_addr_t buffer_dma = DMA_ERROR_CODE, req_dma;
 	struct QH *qh = &ehci->qh_list[1];
 	struct qTD *td;
 	volatile struct qTD *vtd;
@@ -1413,6 +1415,9 @@ static int ehci_probe(struct device_d *dev)
 	struct ehci_platform_data *pdata = dev->platform_data;
 	struct device_node *dn = dev->device_node;
 	struct ehci_host *ehci;
+	struct clk_bulk_data *clks;
+	int num_clocks, ret;
+	struct phy *usb2_generic_phy;
 
 	if (pdata)
 		data.flags = pdata->flags;
@@ -1439,6 +1444,27 @@ static int ehci_probe(struct device_d *dev)
 	}
 	else
 		data.hcor = NULL;
+
+	usb2_generic_phy = phy_optional_get(dev, "usb");
+	if (IS_ERR(usb2_generic_phy))
+		return PTR_ERR(usb2_generic_phy);
+
+	ret = phy_init(usb2_generic_phy);
+	if (ret)
+		return ret;
+
+	ret = phy_power_on(usb2_generic_phy);
+	if (ret)
+		return ret;
+
+	ret = clk_bulk_get_all(dev, &clks);
+	if (ret < 0)
+		return ret;
+
+	num_clocks = ret;
+	ret = clk_bulk_enable(num_clocks, clks);
+	if (ret)
+		return ret;
 
 	ehci = ehci_register(dev, &data);
 	if (IS_ERR(ehci))

@@ -35,6 +35,7 @@ struct device_node {
 	struct list_head parent_list;
 	struct list_head list;
 	phandle phandle;
+	struct device_d *dev;
 };
 
 struct of_device_id {
@@ -109,8 +110,8 @@ void of_print_properties(struct device_node *node);
 void of_diff(struct device_node *a, struct device_node *b, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
-struct device_node *of_unflatten_dtb(const void *fdt);
-struct device_node *of_unflatten_dtb_const(const void *infdt);
+struct device_node *of_unflatten_dtb(const void *fdt, int size);
+struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 
 struct cdev;
 
@@ -162,6 +163,7 @@ extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
 extern struct device_node *of_copy_node(struct device_node *parent,
 				const struct device_node *other);
+extern struct device_node *of_dup(const struct device_node *root);
 extern void of_delete_node(struct device_node *node);
 
 extern const char *of_get_machine_compatible(void);
@@ -267,6 +269,7 @@ extern int barebox_register_fdt(const void *dtb);
 
 extern struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent);
+extern void of_platform_device_dummy_drv(struct device_d *dev);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device_d *parent);
@@ -276,11 +279,18 @@ extern struct device_d *of_device_enable_and_register_by_name(const char *name);
 extern struct device_d *of_device_enable_and_register_by_alias(
 							const char *alias);
 
+extern int of_device_ensure_probed(struct device_node *np);
+extern int of_device_ensure_probed_by_alias(const char *alias);
+extern int of_devices_ensure_probed_by_property(const char *property_name);
+extern int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids);
+extern int of_partition_ensure_probed(struct device_node *np);
+
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_fixup_partitions(struct device_node *np, struct cdev *cdev);
 int of_partitions_register_fixup(struct cdev *cdev);
-int of_device_is_stdout_path(struct device_d *dev);
+struct device_node *of_get_stdoutpath(unsigned int *);
+int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
@@ -317,7 +327,12 @@ static inline int of_partitions_register_fixup(struct cdev *cdev)
 	return -ENOSYS;
 }
 
-static inline int of_device_is_stdout_path(struct device_d *dev)
+static inline struct device_node *of_get_stdoutpath(unsigned int *rate)
+{
+	return NULL;
+}
+
+static inline int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
 {
 	return 0;
 }
@@ -351,6 +366,36 @@ static inline struct device_d *of_platform_device_create(struct device_node *np,
 							 struct device_d *parent)
 {
 	return NULL;
+}
+
+static inline void of_platform_device_dummy_drv(struct device_d *dev)
+{
+}
+
+static inline int of_device_ensure_probed(struct device_node *np)
+{
+	return 0;
+}
+
+static inline int of_device_ensure_probed_by_alias(const char *alias)
+{
+	return 0;
+}
+
+static inline int of_devices_ensure_probed_by_property(const char *property_name)
+{
+	return 0;
+}
+
+static inline int
+of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
+{
+	return 0;
+}
+
+static inline int of_partition_ensure_probed(struct device_node *np)
+{
+	return 0;
 }
 
 static inline int of_bus_n_addr_cells(struct device_node *np)
@@ -1021,11 +1066,20 @@ static inline struct device_node *of_find_root_node(struct device_node *node)
 	return node;
 }
 
+struct of_overlay_filter {
+	bool (*filter_filename)(struct of_overlay_filter *, const char *filename);
+	bool (*filter_content)(struct of_overlay_filter *, struct device_node *);
+	char *name;
+	struct list_head list;
+};
+
 #ifdef CONFIG_OF_OVERLAY
 struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay);
 int of_overlay_apply_tree(struct device_node *root,
 			  struct device_node *overlay);
+int of_overlay_apply_file(struct device_node *root, const char *filename,
+			  bool filter);
 int of_register_overlay(struct device_node *overlay);
 int of_process_overlay(struct device_node *root,
 		    struct device_node *overlay,
@@ -1033,7 +1087,11 @@ int of_process_overlay(struct device_node *root,
 				   struct device_node *overlay, void *data),
 		    void *data);
 
-int of_firmware_load_overlay(struct device_node *overlay, const char *path);
+int of_overlay_pre_load_firmware(struct device_node *root, struct device_node *overlay);
+int of_overlay_load_firmware(void);
+void of_overlay_load_firmware_clear(void);
+void of_overlay_set_basedir(const char *path);
+int of_overlay_register_filter(struct of_overlay_filter *);
 #else
 static inline struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay)
@@ -1043,6 +1101,12 @@ static inline struct device_node *of_resolve_phandles(struct device_node *root,
 
 static inline int of_overlay_apply_tree(struct device_node *root,
 					struct device_node *overlay)
+{
+	return -ENOSYS;
+}
+
+static inline int of_overlay_apply_file(struct device_node *root,
+					const char *filename, bool filter)
 {
 	return -ENOSYS;
 }
@@ -1061,10 +1125,25 @@ static inline int of_process_overlay(struct device_node *root,
 	return -ENOSYS;
 }
 
-static inline int of_firmware_load_overlay(struct device_node *overlay, const char *path)
+static inline int of_overlay_pre_load_firmware(struct device_node *root,
+					       struct device_node *overlay)
 {
 	return -ENOSYS;
 }
+
+static inline int of_overlay_load_firmware(void)
+{
+	return 0;
+}
+
+static inline void of_overlay_load_firmware_clear(void)
+{
+}
+
+static inline void of_overlay_set_basedir(const char *path)
+{
+}
+
 #endif
 
 #endif /* __OF_H */

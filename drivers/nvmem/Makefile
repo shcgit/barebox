@@ -3,7 +3,9 @@
 #
 
 obj-$(CONFIG_NVMEM)		+= nvmem_core.o
-nvmem_core-y			:= core.o regmap.o
+nvmem_core-y			:= core.o regmap.o partition.o
+
+obj-$(CONFIG_NVMEM_RMEM)	+= rmem.o
 
 # Devices
 obj-$(CONFIG_NVMEM_SNVS_LPGPR)	+= nvmem_snvs_lpgpr.o
@@ -20,3 +22,5 @@ nvmem_eeprom_93xx46-y		:= eeprom_93xx46.o
 
 obj-$(CONFIG_STM32_BSEC)	+= nvmem_bsec.o
 nvmem_bsec-y			:= bsec.o
+
+obj-$(CONFIG_STARFIVE_OTP)	+= starfive-otp.o
