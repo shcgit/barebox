@@ -249,13 +249,8 @@
 /delete-node/ &{/clk12m};
 /delete-node/ &{/gpio_buttons};
 
-&cpsw_emac1 {
-	/delete-property/ phy-handle;
-	/delete-property/ phy-mode;
-};
-
-&davinci_mdio {
-	/delete-node/ phy1;
+&cpsw_port2 {
+	status = "disabled";
 };
 
 &i2c0 {
@@ -353,10 +348,9 @@
 	pinctrl-0 = <&led_mod_pins>;
 };
 
-&mac {
+&mac_sw {
 	pinctrl-0 = <&eth_slave1_pins_default>;
 	pinctrl-1 = <&eth_slave1_pins_sleep>;
-	slaves = <1>;
 };
 
 &master_codec {

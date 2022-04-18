@@ -42,13 +42,9 @@
 		};
 	};
 
-<<<<<<< HEAD
-	leds {
-=======
 	gpio_leds: leds {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_leds>;
->>>>>>> v2021.06.0
 		compatible = "gpio-leds";
 
 		led_green: green {
