@@ -88,7 +88,6 @@ machine-$(CONFIG_ARCH_CLPS711X)		:= clps711x
 machine-$(CONFIG_ARCH_DAVINCI)		:= davinci
 machine-$(CONFIG_ARCH_DIGIC)		:= digic
 machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
-machine-$(CONFIG_ARCH_HIGHBANK)		:= highbank
 machine-$(CONFIG_ARCH_IMX)		:= imx
 machine-$(CONFIG_ARCH_LAYERSCAPE)	:= layerscape
 machine-$(CONFIG_ARCH_MXS)		:= mxs
@@ -106,7 +105,6 @@ machine-$(CONFIG_ARCH_TEGRA)		:= tegra
 machine-$(CONFIG_ARCH_UEMD)		:= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
-machine-$(CONFIG_ARCH_QEMU)		:= qemu
 
 
 # Board directory name.  This list is sorted alphanumerically

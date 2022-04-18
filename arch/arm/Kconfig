@@ -5,6 +5,7 @@ config ARM
 	select HAVE_CONFIGURABLE_TEXT_BASE if !RELOCATABLE
 	select HAVE_IMAGE_COMPRESSION
 	select HAVE_ARCH_KASAN
+	select HAS_ARCH_SJLJ
 	select ARM_OPTIMZED_STRING_FUNCTIONS if KASAN
 	default y
 
@@ -17,9 +18,8 @@ config HAVE_MACH_ARM_HEAD
 	bool
 
 config ARM_USE_COMPRESSED_DTB
-	bool
-	select UNCOMPRESS
-	select LZO_DECOMPRESS
+       bool
+       select USE_COMPRESSED_DTB
 
 config TEXT_BASE
 	hex
@@ -85,17 +85,6 @@ config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
 	select CPU_ARM920T
 	select GENERIC_GPIO
-
-config ARCH_HIGHBANK
-	bool "Calxeda Highbank"
-	select HAS_DEBUG_LL
-	select ARCH_HAS_L2X0
-	select CPU_V7
-	select ARM_AMBA
-	select AMBA_SP804
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select GPIOLIB
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
@@ -282,9 +271,16 @@ config ARCH_ZYNQMP
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select HAS_MACB
 
-config ARCH_QEMU
-	bool "ARM QEMU boards"
-	select HAS_DEBUG_LL
+config ARCH_ARM64_VIRT
+	bool "ARM64 QEMU Virt board"
+	select CPU_V8
+	select HAVE_PBL_MULTI_IMAGES
+	select OFDEVICE
+	select OFTREE
+	select RELOCATABLE
+	select SYS_SUPPORTS_64BIT_KERNEL
+	select ARM_AMBA
+	select BOARD_ARM_VIRT
 
 endchoice
 
@@ -295,7 +291,6 @@ source "arch/arm/mach-clps711x/Kconfig"
 source "arch/arm/mach-davinci/Kconfig"
 source "arch/arm/mach-digic/Kconfig"
 source "arch/arm/mach-ep93xx/Kconfig"
-source "arch/arm/mach-highbank/Kconfig"
 source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
@@ -312,11 +307,15 @@ source "arch/arm/mach-vexpress/Kconfig"
 source "arch/arm/mach-tegra/Kconfig"
 source "arch/arm/mach-uemd/Kconfig"
 source "arch/arm/mach-zynq/Kconfig"
-source "arch/arm/mach-qemu/Kconfig"
 source "arch/arm/mach-zynqmp/Kconfig"
 
+config BOARD_ARM_VIRT
+	bool
+	select BOARD_ARM_GENERIC_DT
+	select OF_OVERLAY
+
 config BOARD_ARM_GENERIC_DT
-	select LIBFDT
+	select BOARD_GENERIC_DT
 	select ARM_AMBA
 	depends on HAVE_PBL_MULTI_IMAGES
 	depends on OFDEVICE

@@ -1,8 +1,70 @@
 RISC-V
 ======
 
-Running RISC-V barebox on qemu
-------------------------------
+QEMU Virt
+---------
+
+barebox supports both the qemu riscv32 and riscv64 ``-M virt`` boards::
+
+  make ARCH=riscv virt64_defconfig
+  qemu-system-riscv64 -M virt -serial stdio -kernel build/images/barebox-dt-2nd.img
+
+Replace ``64`` by ``32`` for 32-bit build. :ref:`virtio` over MMIO is supported and
+can be used for e.g. an extra console or to pass in a virtio-blk device::
+
+  qemu-system-riscv64 -M virt -serial stdio                                \
+  	-kernel ./images/barebox-dt-2nd.img                                \
+  	-device virtio-rng-device                                          \
+  	-drive if=none,file=./images/barebox-dt-2nd.img,format=raw,id=hd0  \
+  	-device virtio-blk-device,drive=hd0                                \
+  	-device virtio-serial-device                                       \
+  	-chardev socket,path=/tmp/foo,server,nowait,id=foo           	   \
+  	-device virtconsole,chardev=foo,name=console.foo
+
+  barebox 2021.02.0 #27 Sun Mar 14 10:08:09 CET 2021
+  
+  
+  Board: riscv-virtio,qemu
+  malloc space: 0x83dff820 -> 0x87bff03f (size 62 MiB)
+  
+  barebox@riscv-virtio,qemu:/ filetype /dev/virtioblk0
+  /dev/virtioblk0: RISC-V Linux image (riscv-linux)
+
+Note that the ``board-dt-2nd.img`` uses the Linux RISC-V kernel image
+format and boot protocol. It thus requires the device tree to be passed
+from outside in ``a1`` and must be loaded at an offset as indicated in
+the header for the initial stack to work. Using the ``-kernel`` option
+in Qemu or booting from bootloaders that can properly boot Linux will
+take care of this.
+
+TinyEMU
+-------
+
+TinyEMU can emulate a qemu-virt like machine with a RISC-V 32-, 64-
+and 128-bit CPU. It can run barebox with this sample configuration::
+
+  /* temu barebox-virt64.cfg */
+  {
+      version: 1,
+      machine: "riscv64",
+      memory_size: 256,
+      bios: "bbl64.bin",
+      kernel: "./images/barebox-dt-2nd.img",
+  }
+
+``barebox-dt-2nd.img`` can be generated like with Qemu. Graphical
+output is also supported, but virtio input support is still missing.
+To activate add::
+
+    display0: { device: "simplefb", width: 800, height: 600 },
+
+into the config file.
+
+Erizo
+-----
+
+Running on qemu
+~~~~~~~~~~~~~~~
 
 Obtain RISC-V GCC/Newlib Toolchain,
 see https://github.com/riscv/riscv-tools/blob/master/README.md
@@ -44,7 +106,7 @@ Next compile barebox::
 Run barebox::
 
   $ <path to riscv-qemu source>/riscv32-softmmu/qemu-system-riscv32 \
-      -nographic -M erizo -bios <path to barebox sources >/barebox.bin \
+      -nographic -M erizo -bios ./images/barebox-erizo-generic.img \
       -serial stdio -monitor none -trace file=/dev/null
   Switch to console [cs0]
   
@@ -59,8 +121,8 @@ Run barebox::
   barebox:/
 
 
-Running RISC-V barebox on DE0-Nano FPGA board
----------------------------------------------
+Running on DE0-Nano FPGA board
+------------------------------
 
 See https://github.com/open-design/riscv-soc-cores/ for instructions
 on DE0-Nano bitstream generation and loading.

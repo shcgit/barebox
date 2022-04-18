@@ -253,6 +253,15 @@ config CMD_POLLER
 	  is_timeout() or one of the various delay functions. The poller command prints
 	  informations about registered pollers.
 
+config CMD_BTHREAD
+	tristate
+	prompt "bthread"
+	depends on BTHREAD
+	help
+	  barebox threads are cooperatively-scheduled (green) threads that are running in
+	  the background whenever code executes is_timeout() or one of the various delay
+	  functions. The bthread command prints informations about registered bthreads.
+
 config CMD_SLICE
 	tristate
 	prompt "slice"
@@ -1875,7 +1884,6 @@ config CMD_NANDTEST
 	tristate
 	depends on NAND
 	depends on PARTITION
-	depends on NAND_ECC_HW || NAND_ECC_SOFT
 	prompt "nandtest"
 	help
 	  NAND flash memory test

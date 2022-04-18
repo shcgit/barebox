@@ -14,22 +14,35 @@
 #include <asm-generic/barebox.lds.h>
 
 OUTPUT_ARCH(riscv)
-ENTRY(_start)
+ENTRY(start)
+#ifdef CONFIG_64BIT
+OUTPUT_FORMAT("elf64-littleriscv")
+#else
+OUTPUT_FORMAT("elf32-littleriscv")
+#endif
 SECTIONS
 {
-	. = TEXT_BASE;
+	. = 0x0;
 
-	. = ALIGN(8);
+	.image_start : { *(.__image_start) }
+
+	. = ALIGN(4);
+	._text : { *(._text) }
 	.text      :
 	{
 		_stext = .;
-		_start = .;
-		KEEP(*(.text_entry*))
-		_text = .;
+		*(.text_entry*)
+		__bare_init_start = .;
+		*(.text_bare_init*)
+		__bare_init_end = .;
+		__exceptions_start = .;
+		KEEP(*(.text_exceptions*))
+		__exceptions_stop = .;
 		*(.text*)
 	}
+	BAREBOX_BARE_INIT_SIZE
 
-	. = ALIGN(8);
+	. = ALIGN(4);
 	.rodata : {
 		*(.rodata*)
 		RO_DATA_SECTION
@@ -38,20 +51,32 @@ SECTIONS
 	_etext = .;			/* End of text and rodata section */
 	_sdata = .;
 
-	. = ALIGN(8);
+	. = ALIGN(4);
 	.data : { *(.data*) }
 
 	.barebox_imd : { BAREBOX_IMD }
 
-	. = ALIGN(8);
-	.got : { *(.got*) }
+	/DISCARD/ : { *(.rela.plt*) }
+	.rela.dyn : {
+		__rel_dyn_start = .;
+		*(.rel*)
+		__rel_dyn_end = .;
+	}
 
-	.rela.dyn : { *(.rela*) }
+	.dynsym : {
+		__dynsym_start = .;
+		*(.dynsym)
+		__dynsym_end = .;
+	}
 
 	_edata = .;
-	. = ALIGN(8);
-	__bss_start = .;
-	.bss : { *(.bss*) *(.sbss*) }
-	__bss_stop = .;
+
+	.image_end : { *(.__image_end) }
+
+	. = ALIGN(4);
+	.__bss_start :  { *(.__bss_start) }
+	.bss : { *(.bss*) }
+	.__bss_stop :  { *(.__bss_stop) }
 	_end = .;
+	_barebox_image_size = __bss_start;
 }

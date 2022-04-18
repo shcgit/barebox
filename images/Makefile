@@ -42,6 +42,8 @@
 # both as entrypoint and as filename
 #
 
+include scripts/Makefile.lib
+
 quiet_cmd_objcopy_bin = OBJCOPYB $@
       cmd_objcopy_bin = \
 		$(OBJCOPY) -O binary $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@ && \
@@ -64,6 +66,7 @@ PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
 $(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
 	$(call if_changed,elf__,$(*F))
+	$(call cmd,prelink__)
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
@@ -165,11 +168,12 @@ include $(srctree)/images/Makefile.at91
 include $(srctree)/images/Makefile.zynq
 include $(srctree)/images/Makefile.zynqmp
 include $(srctree)/images/Makefile.layerscape
+include $(srctree)/images/Makefile.riscv
 
 
-pblb-$(CONFIG_BOARD_ARM_GENERIC_DT) += start_dt_2nd
+pblb-$(CONFIG_BOARD_GENERIC_DT) += start_dt_2nd
 FILE_barebox-dt-2nd.img = start_dt_2nd.pblb
-image-$(CONFIG_BOARD_ARM_GENERIC_DT) += barebox-dt-2nd.img
+image-$(CONFIG_BOARD_GENERIC_DT) += barebox-dt-2nd.img
 
 ifdef CONFIG_ARM
 pblb-$(CONFIG_PBL_SINGLE_IMAGE) += start_pbl
