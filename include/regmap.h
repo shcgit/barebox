@@ -77,6 +77,19 @@ struct regmap *regmap_init_mmio_clk(struct device_d *dev, const char *clk_id,
 				    const struct regmap_config *config);
 
 /**
+ * regmap_init_i2c() - Initialise i2c register map
+ *
+ * @i2c: Device that will be interacted with
+ * @config: Configuration for register map
+ *
+ * The return value will be an ERR_PTR() on error or a valid pointer
+ * to a struct regmap.
+ */
+struct i2c_client;
+struct regmap *regmap_init_i2c(struct i2c_client *i2c,
+			       const struct regmap_config *config);
+
+/**
  * regmap_init_mmio() - Initialise register map
  *
  * @dev: Device that will be interacted with
@@ -96,6 +109,7 @@ void regmap_mmio_detach_clk(struct regmap *map);
 void regmap_exit(struct regmap *map);
 
 struct regmap *dev_get_regmap(struct device_d *dev, const char *name);
+struct device_d *regmap_get_device(struct regmap *map);
 
 int regmap_register_cdev(struct regmap *map, const char *name);
 
@@ -115,5 +129,29 @@ int regmap_write_bits(struct regmap *map, unsigned int reg,
 		      unsigned int mask, unsigned int val);
 int regmap_update_bits(struct regmap *map, unsigned int reg,
 		       unsigned int mask, unsigned int val);
+
+/**
+ * regmap_read_poll_timeout - Poll until a condition is met or a timeout occurs
+ *
+ * @map: Regmap to read from
+ * @addr: Address to poll
+ * @val: Unsigned integer variable to read the value into
+ * @cond: Break condition (usually involving @val)
+ * @timeout_us: Timeout in us, 0 means never timeout
+ *
+ * Returns 0 on success and -ETIMEDOUT upon a timeout or the regmap_read
+ * error return value in case of a error read. In the two former cases,
+ * the last read value at @addr is stored in @val. Must not be called
+ * from atomic context if sleep_us or timeout_us are used.
+ *
+ * This is modelled after the readx_poll_timeout macros in linux/iopoll.h.
+ */
+#define regmap_read_poll_timeout(map, addr, val, cond, timeout_us) \
+({ \
+	int __ret, __tmp; \
+	__tmp = read_poll_timeout(regmap_read, __ret, __ret || (cond), \
+			timeout_us, (map), (addr), &(val)); \
+	__ret ?: __tmp; \
+})
 
 #endif /* __REGMAP_H */

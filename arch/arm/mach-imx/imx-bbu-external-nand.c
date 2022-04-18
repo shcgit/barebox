@@ -1,17 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+
 /*
  * imx-bbu-external-nand.c - i.MX specific update functions for external
  *			     nand boot
- *
- * Copyright (c) 2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <common.h>
@@ -39,7 +31,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	uint32_t num_bb = 0, bbt = 0;
 	loff_t offset = 0;
 	int block = 0, len, now, blocksize;
-	void *image = data->image;
+	void *image = NULL;
 
 	ret = stat(data->devicefile, &s);
 	if (ret)
@@ -54,6 +46,12 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	ret = ioctl(fd, MEMGETINFO, &meminfo);
 	if (ret)
 		goto out;
+
+	image = memdup(data->image, data->len);
+	if (!image) {
+		ret = -ENOMEM;
+		goto out;
+	}
 
 	blocksize = meminfo.erasesize;
 
@@ -172,6 +170,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 
 out:
 	close(fd);
+	free(image);
 
 	return ret;
 }

@@ -95,7 +95,7 @@ static inline void of_write_number(void *__cell, u64 val, int size)
 	}
 }
 
-static inline const void *of_property_get_value(struct property *pp)
+static inline const void *of_property_get_value(const struct property *pp)
 {
 	return pp->value ? pp->value : pp->value_const;
 }
@@ -105,6 +105,7 @@ void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 
 void of_print_nodes(struct device_node *node, int indent);
+void of_print_properties(struct device_node *node);
 void of_diff(struct device_node *a, struct device_node *b, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
@@ -216,9 +217,9 @@ extern int of_property_read_string_helper(const struct device_node *np,
 					      const char *propname,
 					      const char **out_strs, size_t sz, int index);
 
-extern const __be32 *of_prop_next_u32(struct property *prop,
+extern const __be32 *of_prop_next_u32(const struct property *prop,
 				const __be32 *cur, u32 *pu);
-extern const char *of_prop_next_string(struct property *prop, const char *cur);
+extern const char *of_prop_next_string(const struct property *prop, const char *cur);
 
 extern int of_property_write_bool(struct device_node *np,
 				const char *propname, const bool value);
@@ -261,8 +262,8 @@ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
-extern void barebox_register_of(struct device_node *root);
-extern void barebox_register_fdt(const void *dtb);
+extern int barebox_register_of(struct device_node *root);
+extern int barebox_register_fdt(const void *dtb);
 
 extern struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent);
@@ -283,7 +284,7 @@ int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
-void of_add_memory_bank(struct device_node *node, bool dump, int r,
+int of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size);
 struct device_d *of_find_device_by_node_path(const char *path);
 #define OF_FIND_PATH_FLAGS_BB 1		/* return .bb device if available */
@@ -520,13 +521,13 @@ static inline int of_property_read_string_helper(const struct device_node *np,
 	return -ENOSYS;
 }
 
-static inline const __be32 *of_prop_next_u32(struct property *prop,
+static inline const __be32 *of_prop_next_u32(const struct property *prop,
 					const __be32 *cur, u32 *pu)
 {
 	return 0;
 }
 
-static inline const char *of_prop_next_string(struct property *prop,
+static inline const char *of_prop_next_string(const struct property *prop,
 					const char *cur)
 {
 	return NULL;

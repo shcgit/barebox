@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2021
-PATCHLEVEL = 06
+PATCHLEVEL = 07
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -343,17 +343,26 @@ ifeq ($(ARCH),arm64)
        SRCARCH := arm
 endif
 
+ifeq ($(ARCH),i386)
+       SRCARCH := x86
+endif
+
+ifeq ($(ARCH),x86_64)
+       SRCARCH := x86
+endif
+
 # Support ARCH=ppc for backward compatibility
 ifeq ($(ARCH),ppc)
        SRCARCH := powerpc
 endif
 
+ifeq ($(ARCH),um)
+       SRCARCH := sandbox
+endif
+
 KCONFIG_CONFIG	?= .config
 
 export KCONFIG_CONFIG
-
-# Default file for 'make defconfig'. This may be overridden by arch-Makefile.
-export KBUILD_DEFCONFIG := defconfig
 
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
@@ -569,7 +578,7 @@ endif
 include $(srctree)/scripts/Makefile.lib
 
 # Objects we will link into barebox / subdirs we need to visit
-common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
+common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/ test/
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
@@ -596,8 +605,11 @@ $(KCONFIG_CONFIG):
 # This exploits the 'multi-target pattern rule' trick.
 # The syncconfig should be executed only once to make all the targets.
 # (Note: use the grouped target '&:' when we bump to GNU Make 4.3)
-%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
-	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
+quiet_cmd_syncconfig = SYNC    $@
+      cmd_syncconfig = $(MAKE) -f $(srctree)/Makefile syncconfig
+
+%/config/auto.conf %/config/auto.conf.cmd %/generated/autoconf.h: $(KCONFIG_CONFIG)
+	+$(call cmd,syncconfig)
 else # !may-sync-config
 # External modules and some install targets need include/generated/autoconf.h
 # and include/config/auto.conf but do not care if they are up-to-date.
@@ -880,6 +892,20 @@ ifndef CONFIG_PBL_IMAGE
 	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 endif
 
+install:
+ifeq ($(INSTALL_PATH),)
+	@echo 'error: INSTALL_PATH undefined' >&2
+	@exit 1
+endif
+ifdef CONFIG_PBL_IMAGE
+	$(Q)$(MAKE) $(build)=images __images_install
+	@install -t "$(INSTALL_PATH)" barebox.bin
+else
+	@install -t "$(INSTALL_PATH)" $(KBUILD_IMAGE)
+endif
+
+PHONY += install
+
 # By default the uImage load address is 2MB below CONFIG_TEXT_BASE,
 # leaving space for the compressed PBL image at 1MB below CONFIG_TEXT_BASE.
 UIMAGE_BASE ?= $(shell printf "0x%08x" $$(($(CONFIG_TEXT_BASE) - 0x200000)))
@@ -941,7 +967,8 @@ scripts: scripts_basic
 PHONY += prepare archprepare prepare0
 
 archprepare: outputmakefile scripts_basic include/config/kernel.release \
-	$(version_h) include/generated/utsrelease.h include/config.h
+	$(version_h) include/generated/utsrelease.h include/config.h \
+	include/generated/autoconf.h
 
 prepare0: archprepare FORCE
 ifneq ($(KBUILD_MODULES),)
