@@ -24,8 +24,8 @@ static struct clocksource clps711x_cs = {
 static int clps711x_cs_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct clk *timer_clk;
 	u32 rate;
+	struct clk *timer_clk;
 	int id;
 
 	id = of_alias_get_id(dev->device_node, "timer");

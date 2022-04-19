@@ -8,6 +8,7 @@
 #include <linux/clkdev.h>
 #include <linux/sizes.h>
 #include <dt-bindings/clock/clps711x-clock.h>
+
 #include <mach/clps711x.h>
 
 #define CLPS711X_OSC_FREQ	3686400
