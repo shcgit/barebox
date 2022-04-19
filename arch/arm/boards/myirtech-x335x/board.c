@@ -1,32 +1,17 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// SPDX-FileCopyrightText: 2008 Raghavendra KH <r-khandenahally@ti.com>, Texas Instruments (http://www.ti.com/)
-// SPDX-FileCopyrightText: 2012 Jan Luebbe <j.luebbe@pengutronix.de>
+/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
 
-/**
- * @file
- * @brief BeagleBone Specific Board Initialization routines
- */
-
+#include <bootsource.h>
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <envfs.h>
-#include <environment.h>
-#include <globalvar.h>
+#include <init.h>
 #include <linux/sizes.h>
-#include <net.h>
-#include <bootsource.h>
-#include <asm/armlinux.h>
-#include <generated/mach-types.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/gpmc.h>
-#include <linux/err.h>
 #include <mach/am33xx-generic.h>
-#include <i2c/i2c.h>
 
 #ifdef CONFIG_I2C
+
+#include <i2c/i2c.h>
 
 static void myir_set_timing(struct device_node *root, const char *timingpath)
 {
@@ -114,7 +99,8 @@ static __init int myir_devices_init(void)
 		break;
 	}
 
-	defaultenv_append_directory(defaultenv_beaglebone);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		defaultenv_append_directory(defaultenv_myirtech_x335x);
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
+
 #include <io.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
@@ -18,21 +21,21 @@ static const struct am33xx_ddr_data ddr3_data = {
 	.rd_slave_ratio0	= 0x38,
 	.wr_dqs_slave_ratio0	= 0x44,
 	.fifo_we_slave_ratio0	= 0x94,
-	.wr_slave_ratio0	= 0x7D,
-	.use_rank0_delay	= 0x01,//
-	.dll_lock_diff0		= 0x0,//
+	.wr_slave_ratio0	= 0x7d,
+	.use_rank0_delay	= 0x01,
+	.dll_lock_diff0		= 0x00,
 };
 
 static const struct am33xx_cmd_control ddr3_cmd_ctrl = {
 	.slave_ratio0	= 0x80,
-	.dll_lock_diff0	= 0x1,//
-	.invert_clkout0	= 0x0,
+	.dll_lock_diff0	= 0x01,
+	.invert_clkout0	= 0x00,
 	.slave_ratio1	= 0x80,
-	.dll_lock_diff1	= 0x1,//
-	.invert_clkout1	= 0x0,
+	.dll_lock_diff1	= 0x01,
+	.invert_clkout1	= 0x00,
 	.slave_ratio2	= 0x80,
-	.dll_lock_diff2	= 0x1,//
-	.invert_clkout2	= 0x0,
+	.dll_lock_diff2	= 0x01,
+	.invert_clkout2	= 0x00,
 };
 
 /* CPU module contains 512MB (2*256MB) DDR3 SDRAM (2*128MB compatible),
@@ -45,7 +48,7 @@ static const struct am33xx_emif_regs ddr3_regs = {
 	.emif_tim3		= 0x501f867f,
 	.zq_config		= 0x50074be4,
 	.sdram_config		= 0x61c05332,
-	.sdram_config2		= 0x0,
+	.sdram_config2		= 0x00,
 	.sdram_ref_ctrl		= 0xc30,
 };
 
