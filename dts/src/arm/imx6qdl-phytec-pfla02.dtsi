@@ -206,8 +206,12 @@
 			};
 		};
 
-		rtc {
+		da9063_rtc: rtc {
 			compatible = "dlg,da9063-rtc";
+		};
+
+		da9063_wdog: watchdog {
+			compatible = "dlg,da9063-watchdog";
 		};
 	};
 };
