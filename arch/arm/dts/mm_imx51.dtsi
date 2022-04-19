@@ -106,7 +106,7 @@
 
 		port {
 			disp1_in: endpoint {
-				remote-endpoint = <&ipu_di1_disp1>;
+				remote-endpoint = <&ipu_di1_disp2>;
 			};
 		};
 	};
@@ -353,7 +353,7 @@
 	remote-endpoint = <&disp0_in>;
 };
 
-&ipu_di1_disp1 {
+&ipu_di1_disp2 {
 	remote-endpoint = <&disp1_in>;
 };
 
