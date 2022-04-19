@@ -35,8 +35,8 @@ static inline void setup_uart(void)
 
 static inline void start_ccxmx51(void)
 {
-	void *fdt;
 	extern char __dtb_imx51_ccxmx51_start[];
+	void *fdt;
 
 	imx5_cpu_lowlevel_init();
 

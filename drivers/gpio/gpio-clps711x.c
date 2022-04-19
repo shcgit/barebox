@@ -9,10 +9,10 @@
 
 static int clps711x_gpio_probe(struct device_d *dev)
 {
-	void __iomem *dat, *dir = NULL, *dir_inv = NULL;
 	struct resource *iores;
-	struct bgpio_chip *bgc;
 	int err, id = of_alias_get_id(dev->device_node, "gpio");
+	void __iomem *dat, *dir = NULL, *dir_inv = NULL;
+	struct bgpio_chip *bgc;
 
 	if (id < 0 || id > 4)
 		return -ENODEV;
