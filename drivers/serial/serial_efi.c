@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) 2017 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  */
@@ -8,7 +8,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 /*
