@@ -15,4 +15,11 @@
 
 };
 
+&nand0 {
+	env_nand: partition@a0000 {
+		label = "env";
+		reg = <0xa0000 0x40000>;
+	};
+};
+
 #include "mm_am335x.dtsi"

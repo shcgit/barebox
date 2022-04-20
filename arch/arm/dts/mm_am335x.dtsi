@@ -365,11 +365,6 @@
 };
 
 &nand0 {
-	env_nand: partition@a0000 {
-		label = "env";
-		reg = <0xa0000 0x40000>;
-	};
-
 	partition@e0000 {
 		label = "system";
 		reg = <0xe0000 0>;
