@@ -25,7 +25,7 @@
 			regulator-name = "usb_otg_vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio4 15 GPIO_ACTIVE_HIGH>;
+			gpio = <&gpio4 15 0>;
 			enable-active-high;
 		};
 
@@ -37,7 +37,7 @@
 			regulator-name = "usb_h1_vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio1 0 GPIO_ACTIVE_HIGH>;
+			gpio = <&gpio1 0 0>;
 			enable-active-high;
 		};
 	};
@@ -49,12 +49,12 @@
 
 		led_green: green {
 			label = "phyflex:green";
-			gpios = <&gpio1 30 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpio1 30 0>;
 		};
 
 		led_red: red {
 			label = "phyflex:red";
-			gpios = <&gpio2 31 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpio2 31 0>;
 		};
 	};
 };
