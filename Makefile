@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2022
-PATCHLEVEL = 01
+PATCHLEVEL = 02
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -631,6 +631,11 @@ endif # may-sync-config
 endif # need-config
 
 KBUILD_CFLAGS		+= -ggdb3
+
+ifdef CONFIG_FRAME_POINTER
+KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
+endif
 
 # Force gcc to behave correct even for buggy distributions
 KBUILD_CFLAGS          += $(call cc-option, -fno-stack-protector)
