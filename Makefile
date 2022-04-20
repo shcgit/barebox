@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2022
-PATCHLEVEL = 02
+PATCHLEVEL = 03
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -247,7 +247,7 @@ version_h := include/generated/version.h
 clean-targets := %clean mrproper cleandocs
 no-dot-config-targets := $(clean-targets) \
 			 cscope gtags TAGS tags help% %docs \
-			 $(version_h) kernelversion outputmakefile
+			 $(version_h) bareboxversion outputmakefile
 no-sync-config-targets := $(no-dot-config-targets) install %install \
 			   kernelrelease
 
@@ -431,8 +431,9 @@ USERINCLUDE    := \
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
-LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
+LINUXINCLUDE    := -Iinclude \
                    $(if $(building_out_of_srctree), -I$(srctree)/include) \
+                   -I$(srctree)/dts/include \
 		   -I$(srctree)/arch/$(SRCARCH)/include \
 		   -I$(objtree)/arch/$(SRCARCH)/include \
 		   $(USERINCLUDE)
@@ -1276,6 +1277,9 @@ docs: FORCE
 	@$(srctree)/Documentation/gen_commands.py $(srctree) $(srctree)/Documentation/commands
 	@$(SPHINXBUILD) -b html -d $(objtree)/doctrees $(srctree)/Documentation \
 		$(objtree)/Documentation/html
+
+bareboxversion:
+	@echo $(KERNELVERSION)
 
 # Single targets
 # ---------------------------------------------------------------------------
