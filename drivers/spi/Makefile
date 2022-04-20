@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 obj-$(CONFIG_SPI) += spi.o
 obj-$(CONFIG_SPI_MEM) += spi-mem.o
 obj-$(CONFIG_DRIVER_SPI_ATH79) += ath79_spi.o
@@ -14,3 +15,4 @@ obj-$(CONFIG_SPI_ATMEL_QUADSPI) += atmel-quadspi.o
 obj-$(CONFIG_DRIVER_SPI_OMAP3) += omap3_spi.o
 obj-$(CONFIG_DRIVER_SPI_DSPI) += dspi_spi.o
 obj-$(CONFIG_SPI_ZYNQ_QSPI) += zynq_qspi.o
+obj-$(CONFIG_DRIVER_SPI_STM32) += stm32_spi.o
