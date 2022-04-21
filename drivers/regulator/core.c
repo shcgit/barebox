@@ -166,6 +166,8 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	rd->always_on = of_property_read_bool(node, "regulator-always-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
+	if (!name)
+		name = node->name;
 
 	ri = __regulator_register(rd, name);
 	if (IS_ERR(ri))
@@ -197,13 +199,13 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	struct device_node *node, *node_parent;
 	int ret;
 
-	propname = basprintf("%s-supply", supply);
-
 	/*
 	 * If the device does have a device node return the dummy regulator.
 	 */
 	if (!dev->device_node)
 		return NULL;
+
+	propname = basprintf("%s-supply", supply);
 
 	/*
 	 * If the device node does not contain a supply property, this device doesn't
@@ -244,7 +246,8 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 			goto out;
 		}
 
-		return ERR_PTR(ret);
+		ri = ERR_PTR(ret);
+		goto out;
 	}
 
 	list_for_each_entry(ri, &regulator_list, list) {
