@@ -61,6 +61,8 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 
 	am33xx_save_bootinfo((void *)bootinfo);
 
+	arm_cpu_lowlevel_init();
+
 	relocate_to_current_adr();
 	setup_c();
 
