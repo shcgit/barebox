@@ -88,9 +88,9 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 	am335x_sdram_init(0x18b, &ddr3_cmd_ctrl, &ddr3_regs, &ddr3_data);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-		am33xx_uart_soft_reset((void *)AM33XX_UART0_BASE);
+		am33xx_uart_soft_reset(IOMEM(AM33XX_UART0_BASE));
 		am33xx_enable_uart0_pin_mux();
-		omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
+		omap_uart_lowlevel_init(IOMEM(AM33XX_UART0_BASE));
 		putc_ll('>');
 	}
 
