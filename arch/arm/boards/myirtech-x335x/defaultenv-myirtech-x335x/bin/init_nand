@@ -8,7 +8,7 @@ erase /dev/nand0
 global.env_erased=true
 ubiformat /dev/nand0.system -y
 ubiattach /dev/nand0.system
-ubimkvol -t static /dev/nand0.system.ubi kernel 4194304
+ubimkvol -t static /dev/nand0.system.ubi kernel 5242880
 ubimkvol -t dynamic /dev/nand0.system.ubi root 67108864
 ubimkvol -t dynamic /dev/nand0.system.ubi update 67108864
 ubimkvol -t dynamic /dev/nand0.system.ubi bbox 0
