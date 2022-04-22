@@ -364,13 +364,6 @@
 	/delete-property/ cd-gpios;
 };
 
-&nand_partitions {
-	partition@e0000 {
-		label = "system";
-		reg = <0xe0000 0>;
-	};
-};
-
 &rtc {
 	clocks = <&clk32k>;
 	clock-names = "ext-clk";

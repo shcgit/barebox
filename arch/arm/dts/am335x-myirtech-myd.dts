@@ -16,9 +16,27 @@
 };
 
 &nand_partitions {
-	env_nand: partition@a0000 {
+	/delete-node/ partition@0;
+	/delete-node/ partition@20000;
+
+	partition@0 {
+		label = "MLO";
+		reg = <0x00000 0x80000>;
+	};
+
+	partition@80000 {
+		label = "boot";
+		reg = <0x80000 0x80000>;
+	};
+
+	env_nand: partition@100000 {
 		label = "env";
-		reg = <0xa0000 0x40000>;
+		reg = <0x100000 0x40000>;
+	};
+
+	partition@140000 {
+		label = "system";
+		reg = <0x140000 0>;
 	};
 };
 
