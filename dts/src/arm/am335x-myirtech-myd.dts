@@ -234,7 +234,7 @@
 
 		partition@0 {
 			label = "MLO";
-			reg = <0x00000 0x80000>;
+			reg = <0x00000 0x20000>;
 		};
 
 		partition@80000 {
