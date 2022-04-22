@@ -77,7 +77,7 @@ postcore_initcall(myir_i2c_fixup);
 
 static struct omap_barebox_part myir_barebox_part = {
 	.nand_offset = SZ_512K,
-	.nand_size = SZ_512K,
+	.nand_size = SZ_1G,
 };
 
 static __init int myir_devices_init(void)
