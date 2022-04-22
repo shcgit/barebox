@@ -4,7 +4,7 @@
 # created.
 obj- += dummy.o
 
-lwl-$(CONFIG_ARCH_CLPS711X) += ep7212-clep7212.dtb.o ep7211-edb7211.dtb.o
+lwl-$(CONFIG_ARCH_CLPS711X) += ep7212-clep7212.dtb.o
 lwl-$(CONFIG_MACH_ADVANTECH_ROM_742X) += imx6dl-advantech-rom-7421.dtb.o
 lwl-$(CONFIG_MACH_AFI_GF) += am335x-afi-gf.dtb.o
 lwl-$(CONFIG_MACH_BEAGLEBONE) += am335x-bone.dtb.o am335x-boneblack.dtb.o am335x-bone-common.dtb.o

@@ -84,14 +84,8 @@ static inline void clps711x_start(void *fdt)
 }
 
 extern char __dtb_ep7212_clep7212_start[];
-extern char __dtb_ep7211_edb7211_start[];
 
 ENTRY_FUNCTION(start_ep7212_clep7212, r0, r1, r2)
 {
 	clps711x_start(__dtb_ep7212_clep7212_start);
-}
-
-ENTRY_FUNCTION(start_ep7211_edb7211, r0, r1, r2)
-{
-	clps711x_start(__dtb_ep7211_edb7211_start);
 }

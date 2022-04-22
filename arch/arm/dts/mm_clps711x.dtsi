@@ -269,12 +269,16 @@
 			    <&nand_ctrl 5 0>;
 		rdy-gpios = <&nand_stat 1 0>,
 			    <&nand_stat 2 0>;
-		#address-cells = <1>;
-		#size-cells = <1>;
 
-		partition@0 {
-			label = "nand-gpio";
-			reg = <0 0>;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "nand-gpio";
+				reg = <0 0>;
+			};
 		};
 	};
 
