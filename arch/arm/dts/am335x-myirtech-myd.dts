@@ -15,7 +15,7 @@
 
 };
 
-&nand0 {
+&nand_partitions {
 	env_nand: partition@a0000 {
 		label = "env";
 		reg = <0xa0000 0x40000>;

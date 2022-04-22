@@ -364,7 +364,7 @@
 	/delete-property/ cd-gpios;
 };
 
-&nand0 {
+&nand_partitions {
 	partition@e0000 {
 		label = "system";
 		reg = <0xe0000 0>;
