@@ -227,19 +227,19 @@
 };
 
 &nand0 {
-	nand_partitions: partitions {
+	nand_parts: partitions {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
 
 		partition@0 {
 			label = "MLO";
-			reg = <0x00000 0x20000>;
+			reg = <0x00000 0x80000>;
 		};
 
-		partition@20000 {
+		partition@80000 {
 			label = "boot";
-			reg = <0x20000 0x80000>;
+			reg = <0x80000 0x100000>;
 		};
 	};
 };
