@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 pblb-$(CONFIG_ARCH_CLPS711X) += start_ep7212_clep7212
 FILE_barebox-ep7212-clep7212.img = start_ep7212_clep7212.pblb
 image-$(CONFIG_ARCH_CLPS711X) += barebox-ep7212-clep7212.img
