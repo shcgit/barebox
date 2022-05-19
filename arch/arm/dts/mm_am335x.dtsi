@@ -1,4 +1,4 @@
-#include <dt-bindings/sound/tlv320aic31xx-micbias.h>
+#include <dt-bindings/sound/tlv320aic31xx.h>
 
 / {
 	model = "Mega-Milas Informer/Spider AM335x";
