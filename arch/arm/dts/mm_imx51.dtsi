@@ -267,8 +267,6 @@
 		clock-names = "osc";
 		interrupt-parent = <&gpio3>;
 		interrupts = <7 IRQ_TYPE_EDGE_FALLING>;
-		gpio-controller;
-		#gpio-cells = <2>;
 	};
 
 	mcp2515@1 {

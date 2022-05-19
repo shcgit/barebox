@@ -253,6 +253,10 @@
 	status = "disabled";
 };
 
+&adc {
+	ti,adc-channels = <0>;
+};
+
 &i2c0 {
 	sgtl5000: codec@a {
 		compatible = "fsl,sgtl5000";
@@ -388,7 +392,7 @@
 		#gpio-cells = <2>;
 	};
 
-	maxgpios: max14830@1 {
+	max14830@1 {
 		pinctrl-names = "default";
 		pinctrl-0 = <&mm_max14830_pins_default>;
 		compatible = "maxim,max14830";
@@ -398,13 +402,7 @@
 		clock-names = "osc";
 		interrupt-parent = <&gpio1>;
 		interrupts = <31 IRQ_TYPE_EDGE_FALLING>;
-		gpio-controller;
-		#gpio-cells = <2>;
 	};
-};
-
-&tscadc {
-	status = "disabled";
 };
 
 &uart1 {
