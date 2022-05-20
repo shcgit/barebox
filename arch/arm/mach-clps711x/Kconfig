@@ -3,12 +3,12 @@
 if ARCH_CLPS711X
 
 choice
-    prompt "Cirrus Logic EP711x/EP721x/EP731x Board Type"
+	prompt "Cirrus Logic EP711x/EP721x/EP731x Board Type"
 
 config MACH_CLEP7212
-    bool "Cirrus Logic CLEP7212"
-    help
-      Boards based on the Cirrus Logic 7212/7312 CPU.
+	bool "Cirrus Logic CLEP7212"
+	help
+	  Boards based on the Cirrus Logic 7212/7312 CPU.
 
 endchoice
 
