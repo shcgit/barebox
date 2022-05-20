@@ -255,4 +255,6 @@
 #define UBRLCR_WRDLEN7		(2 << 17)
 #define UBRLCR_WRDLEN8		(3 << 17)
 
+void clps711x_start(void *);
+
 #endif

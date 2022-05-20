@@ -7,12 +7,12 @@
 #include <asm/io.h>
 #include <mach/clps711x.h>
 
-static inline void PUTC_LL(char ch)
+static inline void PUTC_LL(char c)
 {
 	do {
 	} while (readl(SYSFLG1) & SYSFLG_UTXFF);
 
-	writew(ch, UARTDR1);
+	writew(c, UARTDR1);
 
 	do {
 	} while (readl(SYSFLG1) & SYSFLG_UBUSY);

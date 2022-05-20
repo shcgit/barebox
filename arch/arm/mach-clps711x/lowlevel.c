@@ -5,8 +5,6 @@
 #include <asm/barebox-arm.h>
 #include <common.h>
 #include <debug_ll.h>
-#include <init.h>
-#include <linux/kernel.h>
 #include <linux/sizes.h>
 #include <mach/clps711x.h>
 
@@ -25,14 +23,9 @@ static inline void setup_uart(const u32 bus_speed)
 	putc_ll('>');
 }
 
-static inline void clps711x_start(void *fdt)
+void clps711x_start(void *fdt)
 {
 	u32 bus, pll;
-
-	arm_cpu_lowlevel_init();
-
-	/* Stack in SRAM */
-	arm_setup_stack(CS6_BASE - 16);
 
 	/* Check if we running from external 13 MHz clock */
 	if (!(readl(SYSFLG2) & SYSFLG2_CKMODE)) {
@@ -80,12 +73,5 @@ static inline void clps711x_start(void *fdt)
 	/* Disable LED flasher */
 	writew(0, LEDFLSH);
 
-	barebox_arm_entry(SDRAM0_BASE, SZ_8M, fdt + get_runtime_offset());
-}
-
-extern char __dtb_ep7212_clep7212_start[];
-
-ENTRY_FUNCTION(start_ep7212_clep7212, r0, r1, r2)
-{
-	clps711x_start(__dtb_ep7212_clep7212_start);
+	barebox_arm_entry(SDRAM0_BASE, SZ_8M, fdt);
 }

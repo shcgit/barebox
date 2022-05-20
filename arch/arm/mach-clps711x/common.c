@@ -2,9 +2,6 @@
 // SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru>
 
 #include <driver.h>
-#include <envfs.h>
-#include <init.h>
-#include <of.h>
 #include <restart.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
@@ -23,38 +20,14 @@ static void __noreturn clps711x_restart(struct restart_handler *rst)
 	hang();
 }
 
-static int clps711x_dt_fixup(struct device_node *root, void *context)
-{
-	char *serial = basprintf("%08x%08x", 0, readl(UNIQID));
-
-	of_set_property(root, "serial-number", serial, strlen(serial) + 1, 1);
-
-	free(serial);
-
-	return 0;
-}
-
 static __init int clps711x_fixup(void)
 {
-	if (of_machine_is_compatible("cirrus,ep7209")) {
+	if (of_machine_is_compatible("cirrus,ep7209"))
 		restart_handler_register_fn("vector", clps711x_restart);
-		of_register_fixup(clps711x_dt_fixup, NULL);
-	}
 
 	return 0;
 }
 postcore_initcall(clps711x_fixup);
-
-#if defined(CONFIG_DEFAULT_ENVIRONMENT)
-static __init int clps711x_defaultenv_init(void)
-{
-	if (of_machine_is_compatible("cirrus,ep7209"))
-		defaultenv_append_directory(defaultenv_clps711x);
-
-	return 0;
-}
-device_initcall(clps711x_defaultenv_init);
-#endif
 
 static int __init clps711x_bus_map(void)
 {
