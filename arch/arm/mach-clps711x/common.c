@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru>
 
+#include <common.h>
 #include <driver.h>
 #include <restart.h>
 #include <asm/io.h>
@@ -20,14 +21,24 @@ static void __noreturn clps711x_restart(struct restart_handler *rst)
 	hang();
 }
 
-static __init int clps711x_fixup(void)
+static __init int clps711x_init(void)
 {
-	if (of_machine_is_compatible("cirrus,ep7209"))
-		restart_handler_register_fn("vector", clps711x_restart);
+	char *serial;
+
+	if (!of_machine_is_compatible("cirrus,ep7209"))
+		return 0;
+
+	restart_handler_register_fn("vector", clps711x_restart);
+
+	serial = basprintf("%08x%08x", 0, readl(UNIQID));
+
+	barebox_set_serial_number(serial);
+
+	free(serial);
 
 	return 0;
 }
-postcore_initcall(clps711x_fixup);
+postcore_initcall(clps711x_init);
 
 static int __init clps711x_bus_map(void)
 {
