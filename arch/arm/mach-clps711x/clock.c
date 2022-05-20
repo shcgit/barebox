@@ -17,9 +17,10 @@
 static struct clk *clks[CLPS711X_CLK_MAX];
 static struct clk_onecell_data clk_data;
 
-static struct clk_div_table tdiv_tbl[] = {
+static const struct clk_div_table tdiv_tbl[] = {
 	{ .val = 0, .div = 256, },
 	{ .val = 1, .div = 1, },
+	{ }
 };
 
 static int clps711x_clk_probe(struct device_d *dev)

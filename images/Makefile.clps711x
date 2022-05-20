@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for CLPS711X images
+#
 
 pblb-$(CONFIG_ARCH_CLPS711X) += start_ep7212_clep7212
 FILE_barebox-ep7212-clep7212.img = start_ep7212_clep7212.pblb
