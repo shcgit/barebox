@@ -1,7 +1,0 @@
-#!/bin/sh
-
-[ -e /dev/nand0.root.ubi ] && ubidetach /dev/nand0.root
-
-ubiformat /dev/nand0.root -y
-ubiattach /dev/nand0.root
-ubimkvol -t dynamic /dev/nand0.root.ubi root 0

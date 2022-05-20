@@ -1,9 +1,0 @@
-#!/bin/sh
-
-mci0.probe=1
-[ ! -d /disk ] && mkdir /disk
-mount /dev/disk0.0 /disk
-barebox_update -t nand -y /disk/barebox-phytec-phycore-imx27.img
-umount /disk
-
-/env/bin/erase_env
