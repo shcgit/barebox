@@ -262,13 +262,11 @@
 		compatible = "gpio-control-nand";
 		reg = <3 0x00000000 0x2>;
 		chip-delay = <25>;
+		rdy-gpios = <&nand_stat 1 0>;
+		nce-gpios = <&nand_ctrl 4 0>;
 		ale-gpios = <&nand_ctrl 1 0>;
 		cle-gpios = <&nand_ctrl 0 0>;
 		nwp-gpios = <&nand_ctrl 2 0>;
-		nce-gpios = <&nand_ctrl 4 0>,
-			    <&nand_ctrl 5 0>;
-		rdy-gpios = <&nand_stat 1 0>,
-			    <&nand_stat 2 0>;
 
 		partitions {
 			compatible = "fixed-partitions";
@@ -287,6 +285,13 @@
 		reg = <3 0x00008004 0x1>;
 		gpio-controller;
 		#gpio-cells = <2>;
+
+		ce1-hog {
+			gpio-hog;
+			gpios = <5 GPIO_ACTIVE_HIGH>;
+			output-high;
+			line-name = "NAND CE@1";
+		};
 	};
 
 	nand_stat: bgpio@3,8014 {
