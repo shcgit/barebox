@@ -7,7 +7,7 @@
 
 static __init int clep7212_init(void)
 {
-	if (of_machine_is_compatible("cirrus,ep7209"))
+	if (of_machine_is_compatible("cirrus,clep7212"))
 		defaultenv_append_directory(defaultenv_clep7212);
 
 	return 0;

@@ -21,11 +21,16 @@ static void __noreturn clps711x_restart(struct restart_handler *rst)
 	hang();
 }
 
+static __init int is_clps711x_compatible(void)
+{
+	return of_machine_is_compatible("cirrus,ep7209");
+}
+
 static __init int clps711x_init(void)
 {
 	char *serial;
 
-	if (!of_machine_is_compatible("cirrus,ep7209"))
+	if (!is_clps711x_compatible())
 		return 0;
 
 	restart_handler_register_fn("vector", clps711x_restart);
@@ -42,12 +47,18 @@ postcore_initcall(clps711x_init);
 
 static int __init clps711x_bus_map(void)
 {
-	if (of_machine_is_compatible("cirrus,ep7209") && remap_size)
+	if (is_clps711x_compatible() && remap_size)
 		map_io_sections(0, (void *)CLPS711X_MAP_ADDR, remap_size);
 
 	return 0;
 }
 postmmu_initcall(clps711x_bus_map);
+
+/* Scan for devices that start at zero address and maps them
+ * to a different unused address.
+ * To start the kernel, a fixup is used that rewrites the address
+ * of the patched device to its original state.
+ */
 
 static void clps711x_bus_patch(struct device_node *node,
 			       u32 compare, u32 change)
