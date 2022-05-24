@@ -104,7 +104,6 @@ static int clps711x_bus_fixup(struct device_node *root, void *context)
 {
 	struct device_node *node = context;
 
-	/* Remove patch before boot */
 	if (remap_size)
 		clps711x_bus_patch(node, CLPS711X_MAP_ADDR, 0);
 
@@ -123,7 +122,6 @@ static int clps711x_bus_probe(struct device_d *dev)
 				  "barebox,ep7209-memcfg2", &mcfg))
 		writel(mcfg, MEMCFG2);
 
-	/* Patch bus for zero address */
 	clps711x_bus_patch(dev->device_node, 0, CLPS711X_MAP_ADDR);
 
 	of_platform_populate(dev->device_node, NULL, dev);
@@ -133,7 +131,7 @@ static int clps711x_bus_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct of_device_id __maybe_unused clps711x_bus_dt_ids[] = {
+static const struct of_device_id __maybe_unused clps711x_bus_dt_ids[] = {
 	{ .compatible = "cirrus,ep7209-bus", },
 	{ }
 };

@@ -79,7 +79,7 @@ static int clps711x_clk_probe(struct device_d *dev)
 	return 0;
 }
 
-static __maybe_unused struct of_device_id clps711x_clk_dt_ids[] = {
+static const struct of_device_id __maybe_unused clps711x_clk_dt_ids[] = {
 	{ .compatible = "cirrus,ep7209-clk", },
 	{ }
 };
