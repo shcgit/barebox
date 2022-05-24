@@ -181,7 +181,7 @@ out_err:
 	return err;
 }
 
-static struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
+static const struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
 	{ .compatible = "cirrus,ep7209-uart", },
 	{ /* sentinel */ }
 };
