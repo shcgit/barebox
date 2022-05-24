@@ -80,7 +80,6 @@ static void clps711x_putc(struct console_device *cdev, char c)
 	/* Wait until there is space in the FIFO */
 	do {
 		regmap_read(s->regmap, SYSFLG, &tmp);
-		
 	} while (tmp & SYSFLG_UTXFF);
 
 	/* Send the character */
