@@ -27,9 +27,9 @@ static void myir_disable_device(struct device_node *root, const char *label)
 		of_device_disable(np);
 }
 
-static int myir_probe_i2c(struct i2c_adapter *adapter, int addr)
+static int myir_probe_i2c(struct i2c_adapter *adapter, int addr, u8 cmd)
 {
-	u8 buf[1];
+	u8 buf[1] = { cmd, };
 	struct i2c_msg msg = {
 		.addr = addr,
 		.buf = buf,
@@ -37,7 +37,7 @@ static int myir_probe_i2c(struct i2c_adapter *adapter, int addr)
 		.flags = I2C_M_RD,
 	};
 
-	return (i2c_transfer(adapter, &msg, 1) == 1) ? 0 : -ENODEV;
+	return (i2c_transfer(adapter, &msg, 1) == 1) ? buf[0] : -ENODEV;
 }
 
 #define SGTL5000_ADDR	0x0a
@@ -50,12 +50,12 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 	if (!adapter)
 		return -ENODEV;
 
-	if (myir_probe_i2c(adapter, SGTL5000_ADDR))
+	if (myir_probe_i2c(adapter, SGTL5000_ADDR, 0) < 0)
 		myir_disable_device(root, "sound");
-	else if (myir_probe_i2c(adapter, AIC3100_ADDR))
+	else if (myir_probe_i2c(adapter, AIC3100_ADDR, 0) < 0)
 		myir_disable_device(root, "sound1");
 
-	if (!myir_probe_i2c(adapter, ISL97671_ADDR))
+	if (myir_probe_i2c(adapter, ISL97671_ADDR, 0) >= 0)
 		myir_set_timing(root, "/panel/display-timings/PH320240T");
 
 	return 0;
