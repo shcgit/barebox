@@ -43,9 +43,11 @@ static int myir_probe_i2c(struct i2c_adapter *adapter, int addr, u8 cmd)
 #define SGTL5000_ADDR	0x0a
 #define AIC3100_ADDR	0x18
 #define ISL97671_ADDR	0x2c
+#define PCA9536_ADDR	0x41
 
 static int myir_board_fixup(struct device_node *root, void *unused)
 {
+	int dispver;
 	struct i2c_adapter *adapter = i2c_get_adapter(0);
 	if (!adapter)
 		return -ENODEV;
@@ -55,19 +57,41 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 	else if (myir_probe_i2c(adapter, AIC3100_ADDR, 0) < 0)
 		myir_disable_device(root, "sound1");
 
-	if (myir_probe_i2c(adapter, ISL97671_ADDR, 0) >= 0)
+	if (myir_probe_i2c(adapter, ISL97671_ADDR, 0) >= 0) {
 		myir_set_timing(root, "/panel/display-timings/PH320240T");
+		return 0;
+	}
+
+	dispver = myir_probe_i2c(adapter, PCA9536_ADDR, 0);
+	if (dispver < 0) {
+		pr_warn("Display not detected!\n");
+		return 0;
+	}
+
+	dispver &= 0x0f;
+
+	switch (dispver) {
+	case 0:
+		/* G104XVN01 */
+		myir_set_timing(root, "/panel/display-timings/G104XVN01");
+		break;
+//	case 1:
+//		/* AT070TN94 */
+//		myir_set_timing(root, "/panel/display-timings/AT070TN94");
+//		break;
+	default:
+		pr_warn("Unhandled display version: %i.\n", dispver);
+		break;
+	}
 
 	return 0;
 }
 
 static __init int myir_i2c_fixup(void)
 {
-	if (!of_machine_is_compatible("milas,informer-am335x") &&
-	    !of_machine_is_compatible("milas,spider-am335x"))
-		return 0;
-
-	of_register_fixup(myir_board_fixup, NULL);
+	if (of_machine_is_compatible("milas,informer-am335x") ||
+	    of_machine_is_compatible("milas,spider-am335x"))
+		of_register_fixup(myir_board_fixup, NULL);
 
 	return 0;
 }

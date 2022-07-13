@@ -198,6 +198,20 @@
 				vsync-active = <0>;
 				de-active = <1>;
 			};
+
+			timing2: AT070TN94 {
+				clock-frequency = <26400000 33300000 46800000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <46>;
+				hfront-porch = <16 209 354>;
+				hsync-len = <1 1 40>;
+				vback-porch = <23>;
+				vfront-porch = <7 21 147>;
+				vsync-len = <1 1 20>;
+				de-active = <1>;
+			};
+
 		};
 	};
 
@@ -310,6 +324,14 @@
 	isl97671a@2c {
 		compatible = "intersil,isl97671a";
 		reg = <0x2c>;
+	};
+
+	dispver: gpio@41 {
+		compatible = "nxp,pca9536";
+		reg = <0x41>;
+		gpio-controller;
+		
+		#gpio-cells = <2>;
 	};
 };
 
