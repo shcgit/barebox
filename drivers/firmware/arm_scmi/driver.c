@@ -1247,12 +1247,12 @@ static const struct of_device_id scmi_of_match[] = {
 	{ /* Sentinel */ },
 };
 
-static struct driver_d scmi_driver = {
+static struct driver_d arm_scmi_driver = {
 	.name = "arm-scmi",
 	.of_compatible = scmi_of_match,
 	.probe = scmi_probe,
 };
-core_platform_driver(scmi_driver);
+core_platform_driver(arm_scmi_driver);
 
 static int __init scmi_bus_driver_init(void)
 {
