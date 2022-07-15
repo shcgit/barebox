@@ -40,6 +40,37 @@ static int myir_probe_i2c(struct i2c_adapter *adapter, int addr, u8 cmd)
 	return (i2c_transfer(adapter, &msg, 1) == 1) ? buf[0] : -ENODEV;
 }
 
+static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
+{
+	struct device_node *np = of_find_node_by_name(root, "backlight");
+	const __be32 *pwms;
+	__be32 newpwms[4];
+	int size;
+
+	if (!np) {
+		pr_warn("Cannot find backlight node!\n");
+		return;
+	}
+
+	pwms = of_get_property(np, "pwms", &size);
+	if (!pwms) {
+		pr_warn("Cannot get pwms property!\n");
+		return;
+	}
+
+	if (size != 4) {
+		pr_warn("Ivalid size of pwms property: %i.\n", size);
+		return;
+	}
+
+	memcpy(&newpwms, pwms, sizeof(newpwms));
+
+	newpwms[2] = cpu_to_be32(freq);
+
+	if (of_set_property(np, "pwms", &newpwms, size, 0))
+		pr_warn("Cannot set up pwm frequency!\n");
+}
+
 #define SGTL5000_ADDR	0x0a
 #define AIC3100_ADDR	0x18
 #define ISL97671_ADDR	0x2c
@@ -74,10 +105,12 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 	case 0:
 		/* G104XVN01 */
 		myir_set_timing(root, "/panel/display-timings/G104XVN01");
+		myir_set_pwm_freq(root, 100000);
 		break;
 //	case 1:
 //		/* AT070TN94 */
 //		myir_set_timing(root, "/panel/display-timings/AT070TN94");
+//		myir_set_pwm_freq(root, 400);
 //		break;
 	default:
 		pr_warn("Unhandled display version: %i.\n", dispver);
