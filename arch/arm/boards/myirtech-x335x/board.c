@@ -29,15 +29,13 @@ static void myir_disable_device(struct device_node *root, const char *label)
 
 static int myir_probe_i2c(struct i2c_adapter *adapter, int addr, u8 cmd)
 {
-	u8 buf[1] = { cmd, };
-	struct i2c_msg msg = {
-		.addr = addr,
-		.buf = buf,
-		.len = sizeof(buf),
-		.flags = I2C_M_RD,
-	};
+	struct i2c_client client;
+	u8 value;
 
-	return (i2c_transfer(adapter, &msg, 1) == 1) ? buf[0] : -ENODEV;
+	client.adapter = adapter;
+	client.addr = addr;
+
+	return (i2c_read_reg(&client, cmd, &value, 1) < 0) ? -ENODEV : value;
 }
 
 static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
@@ -48,18 +46,18 @@ static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
 	int size;
 
 	if (!np) {
-		pr_warn("Cannot find backlight node!\n");
+		printf("Cannot find backlight node!\n");
 		return;
 	}
 
 	pwms = of_get_property(np, "pwms", &size);
 	if (!pwms) {
-		pr_warn("Cannot get pwms property!\n");
+		printf("Cannot get pwms property!\n");
 		return;
 	}
 
-	if (size != 4) {
-		pr_warn("Ivalid size of pwms property: %i.\n", size);
+	if (size != sizeof(newpwms)) {
+		printf("Ivalid size of pwms property: %i.\n", size);
 		return;
 	}
 
@@ -68,7 +66,7 @@ static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
 	newpwms[2] = cpu_to_be32(freq);
 
 	if (of_set_property(np, "pwms", &newpwms, size, 0))
-		pr_warn("Cannot set up pwm frequency!\n");
+		printf("Cannot set up pwm frequency!\n");
 }
 
 #define SGTL5000_ADDR	0x0a
@@ -78,7 +76,7 @@ static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
 
 static int myir_board_fixup(struct device_node *root, void *unused)
 {
-	int dispver;
+	int dispver, inversion;
 	struct i2c_adapter *adapter = i2c_get_adapter(0);
 	if (!adapter)
 		return -ENODEV;
@@ -87,6 +85,8 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 		myir_disable_device(root, "sound");
 	else if (myir_probe_i2c(adapter, AIC3100_ADDR, 0) < 0)
 		myir_disable_device(root, "sound1");
+	else
+		printf("Sound not detected!\n");
 
 	if (myir_probe_i2c(adapter, ISL97671_ADDR, 0) >= 0) {
 		myir_set_timing(root, "/panel/display-timings/PH320240T");
@@ -94,12 +94,15 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 	}
 
 	dispver = myir_probe_i2c(adapter, PCA9536_ADDR, 0);
-	if (dispver < 0) {
-		pr_warn("Display not detected!\n");
+	inversion = myir_probe_i2c(adapter, PCA9536_ADDR, 2);
+	if ((dispver < 0) || (inversion < 0)) {
+		printf("Display not detected!\n");
 		return 0;
 	}
 
-	dispver &= 0x0f;
+	dispver = (dispver ^ inversion) & 0x0f;
+
+	printf("Display version: %i.\n", dispver);
 
 	switch (dispver) {
 	case 0:
@@ -107,13 +110,13 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 		myir_set_timing(root, "/panel/display-timings/G104XVN01");
 		myir_set_pwm_freq(root, 100000);
 		break;
-//	case 1:
-//		/* AT070TN94 */
-//		myir_set_timing(root, "/panel/display-timings/AT070TN94");
-//		myir_set_pwm_freq(root, 400);
-//		break;
+	case 1:
+		/* AT070TN94 */
+		myir_set_timing(root, "/panel/display-timings/AT070TN94");
+		myir_set_pwm_freq(root, 400);
+		break;
 	default:
-		pr_warn("Unhandled display version: %i.\n", dispver);
+		printf("Unhandled display version.\n");
 		break;
 	}
 
