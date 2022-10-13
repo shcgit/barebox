@@ -309,12 +309,35 @@
 
 	input: gpio@21 {
 		pinctrl-names = "default";
-		pinctrl-0 = <&mm_pca9534_pins>;
+		pinctrl-0 = <&mm_inputgpio_pins>;
 		compatible = "nxp,pca9534";
 		reg = <0x21>;
 		gpio-controller;
 		interrupt-parent = <&gpio2>;
 		interrupts = <26 IRQ_TYPE_EDGE_BOTH>;
+		interrupt-controller;
+
+		#gpio-cells = <2>;
+		#interrupt-cells = <2>;
+	};
+
+	board_out: gpio@22 {
+		compatible = "nxp,pca9535";
+		reg = <0x22>;
+		gpio-controller;
+
+		#gpio-cells = <2>;
+		#interrupt-cells = <2>;
+	};
+
+	board_in: gpio@23 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&mm_boardingpio_pins>;
+		compatible = "nxp,pca9534";
+		reg = <0x23>;
+		gpio-controller;
+		interrupt-parent = <&intc>;
+		interrupts = <7>; /* NMI */
 		interrupt-controller;
 
 		#gpio-cells = <2>;
@@ -450,6 +473,12 @@
 };
 
 &am33xx_pinmux {
+	mm_boardingpio_pins: pinmux_mm_boardingpio_pins {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_NNMI, PIN_INPUT_PULLUP, MUX_MODE0)	/* nNMI */
+		>;
+	};
+
 	mm_keypad_pins_default: pinmux_mm_keypad_pins_default {
 		pinctrl-single,pins = <
 			AM33XX_PADCONF(AM335X_PIN_GPMC_A0, PIN_INPUT_PULLUP, MUX_MODE7)		/*  gpio1[16] */
@@ -479,7 +508,7 @@
 		>;
 	};
 
-	mm_pca9534_pins: pinmux_mm_pca9534_pins {
+	mm_inputgpio_pins: pinmux_mm_inputgpio_pins {
 		pinctrl-single,pins = <
 			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT3, PIN_INPUT_PULLUP, MUX_MODE7)	/* gpio2[26] */
 		>;

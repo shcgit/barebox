@@ -38,7 +38,7 @@ static int myir_probe_i2c(struct i2c_adapter *adapter, int addr, u8 cmd)
 	return (i2c_read_reg(&client, cmd, &value, 1) < 0) ? -ENODEV : value;
 }
 
-static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
+static void myir_set_pwm_freq(struct device_node *root, unsigned int period_ns)
 {
 	struct device_node *np = of_find_node_by_name(root, "backlight");
 	const __be32 *pwms;
@@ -63,7 +63,7 @@ static void myir_set_pwm_freq(struct device_node *root, unsigned int freq)
 
 	memcpy(&newpwms, pwms, sizeof(newpwms));
 
-	newpwms[2] = cpu_to_be32(freq);
+	newpwms[2] = cpu_to_be32(period_ns);
 
 	if (of_set_property(np, "pwms", &newpwms, size, 0))
 		printf("Cannot set up pwm frequency!\n");
@@ -90,6 +90,7 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 
 	if (myir_probe_i2c(adapter, ISL97671_ADDR, 0) >= 0) {
 		myir_set_timing(root, "/panel/display-timings/PH320240T");
+		printf("Display type: 320x240.\n");
 		return 0;
 	}
 
@@ -102,21 +103,21 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 
 	dispver = (dispver ^ inversion) & 0x0f;
 
-	printf("Display version: %i.\n", dispver);
-
 	switch (dispver) {
 	case 0:
 		/* G104XVN01 */
 		myir_set_timing(root, "/panel/display-timings/G104XVN01");
-		myir_set_pwm_freq(root, 100000);
+		myir_set_pwm_freq(root, 100000); /* 10 kHz */
+		printf("Display type: 1024x768.\n");
 		break;
 	case 1:
 		/* AT070TN94 */
 		myir_set_timing(root, "/panel/display-timings/AT070TN94");
-		myir_set_pwm_freq(root, 400);
+		myir_set_pwm_freq(root, 5000000); /* 200 Hz */
+		printf("Display type: 800x480.\n");
 		break;
 	default:
-		printf("Unhandled display version.\n");
+		printf("Unhandled display type %i!.\n", dispver);
 		break;
 	}
 
