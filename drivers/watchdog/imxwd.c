@@ -229,7 +229,7 @@ static int imx_wd_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct imx_wd *priv;
-//	struct clk *clk;
+	struct clk *clk;
 	void *ops;
 	int ret;
 
@@ -244,13 +244,13 @@ static int imx_wd_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	}
 
-//	clk = clk_get(dev, NULL);
-//	if (IS_ERR(clk))
-//		return PTR_ERR(clk);
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
 
-//	ret = clk_enable(clk);
-//	if (ret)
-//		return ret;
+	ret = clk_enable(clk);
+	if (ret)
+		return ret;
 
 	priv->base = IOMEM(iores->start);
 	priv->ops = ops;
