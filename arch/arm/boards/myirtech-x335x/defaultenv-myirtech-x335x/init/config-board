@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Turn PWM pin low
+gpio_direction_output 2 0
+
 # Beeper ON
 i2c_write -a 0x20 -r 0x03 0x1f
 i2c_write -a 0x20 -r 0x01 0x3f

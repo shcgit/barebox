@@ -99,8 +99,8 @@
 		compatible = "gpio-matrix-keypad";
 		pinctrl-names = "default";
 		pinctrl-0 = <&mm_keypad_pins_default>;
-		debounce-delay-ms = <5>;
-		col-scan-delay-us = <2>;
+		debounce-delay-ms = <10>;
+		col-scan-delay-us = <50>;
 		gpio-activelow;
 		wakeup-source;
 
@@ -211,7 +211,6 @@
 				vsync-len = <1 1 20>;
 				de-active = <1>;
 			};
-
 		};
 	};
 
@@ -263,12 +262,12 @@
 /delete-node/ &{/clk12m};
 /delete-node/ &{/gpio_buttons};
 
-&cpsw_port2 {
-	status = "disabled";
-};
-
 &adc {
 	ti,adc-channels = <0>;
+};
+
+&cpsw_port2 {
+	status = "disabled";
 };
 
 &i2c0 {
