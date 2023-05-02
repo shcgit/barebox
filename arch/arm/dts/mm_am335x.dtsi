@@ -262,10 +262,6 @@
 /delete-node/ &{/clk12m};
 /delete-node/ &{/gpio_buttons};
 
-&adc {
-	ti,adc-channels = <0>;
-};
-
 &cpsw_port2 {
 	status = "disabled";
 };
@@ -447,6 +443,10 @@
 		interrupt-parent = <&gpio1>;
 		interrupts = <31 IRQ_TYPE_EDGE_FALLING>;
 	};
+};
+
+&tscadc {
+	status = "disabled";
 };
 
 &uart1 {

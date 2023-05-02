@@ -27,6 +27,19 @@ static void myir_disable_device(struct device_node *root, const char *label)
 		of_device_disable(np);
 }
 
+#if 0
+static void myir_remove_property(struct device_node *root, const char *path,
+				 const char *propname)
+{
+	struct device_node *np = of_find_node_by_path_from(root, path);
+	if (np) {
+		struct property *prop = of_find_property(np, propname, NULL);
+		if (prop)
+			of_delete_property(prop);
+	}
+}
+#endif
+
 static int myir_probe_i2c(struct i2c_adapter *adapter, int addr, u8 cmd)
 {
 	struct i2c_client client;
@@ -116,6 +129,8 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 		myir_set_pwm_freq(root, 5000000); /* 200 Hz */
 		printf("Display type: 800x480.\n");
 		break;
+	case 2:
+		/* Reserved for G057QN01 (320x240) */
 	default:
 		printf("Unhandled display type %i!.\n", dispver);
 		break;
