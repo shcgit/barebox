@@ -136,7 +136,7 @@ static struct nvmem_cell *nvmem_find_cell(const char *cell_id)
 	struct nvmem_cell *p;
 
 	list_for_each_entry(p, &nvmem_cells, node)
-		if (p && !strcmp(p->name, cell_id))
+		if (!strcmp(p->name, cell_id))
 			return p;
 
 	return NULL;
@@ -591,6 +591,9 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 
 		/* setup the first byte with lsb bits from nvmem */
 		rc = nvmem->bus->read(nvmem->priv, cell->offset, &v, 1);
+		if (IS_ERR_VALUE(rc))
+			return ERR_PTR(rc);
+
 		*b++ |= GENMASK(bit_offset - 1, 0) & v;
 
 		/* setup rest of the byte if any */
@@ -609,6 +612,9 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 		/* setup the last byte with msb bits from nvmem */
 		rc = nvmem->bus->read(nvmem->priv, cell->offset + cell->bytes - 1,
 				      &v, 1);
+		if (IS_ERR_VALUE(rc))
+			return ERR_PTR(rc);
+
 		*p |= GENMASK(7, (nbits + bit_offset) % BITS_PER_BYTE) & v;
 
 	}
@@ -803,3 +809,36 @@ void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
 	return value;
 }
 EXPORT_SYMBOL_GPL(nvmem_cell_get_and_read);
+
+/**
+ * nvmem_cell_read_variable_le_u32() - Read up to 32-bits of data as a little endian number.
+ *
+ * @dev: Device that requests the nvmem cell.
+ * @cell_id: Name of nvmem cell to read.
+ * @val: pointer to output value.
+ *
+ * Return: 0 on success or negative errno.
+ */
+int nvmem_cell_read_variable_le_u32(struct device_d *dev, const char *cell_id,
+				    u32 *val)
+{
+	size_t len;
+	const u8 *buf;
+	int i;
+
+	len = sizeof(*val);
+
+	buf = nvmem_cell_get_and_read(dev->device_node, cell_id, len);
+	if (IS_ERR(buf))
+		return PTR_ERR(buf);
+
+	/* Copy w/ implicit endian conversion */
+	*val = 0;
+	for (i = 0; i < len; i++)
+		*val |= buf[i] << (8 * i);
+
+	kfree(buf);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(nvmem_cell_read_variable_le_u32);

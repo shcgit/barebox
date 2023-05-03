@@ -46,7 +46,14 @@ static ZSTD_DCtx *ubifs_zstd_cctx;
 static int gzip_decompress(const unsigned char *in, size_t in_len,
 			   unsigned char *out, size_t *out_len)
 {
-	return deflate_decompress(&ubifs_zlib_stream, in, in_len, out, out_len);
+	unsigned int olen;
+	int ret;
+
+	ret = deflate_decompress(&ubifs_zlib_stream, in, in_len, out, &olen);
+
+	*out_len = olen;
+
+	return ret;
 }
 #endif
 
@@ -526,13 +533,13 @@ static int zlib_decomp_init(void)
 
 static int zstd_decomp_init(void)
 {
-	const size_t wksp_size = zstd_dctx_workspace_bound();
+	const size_t wksp_size = ZSTD_DCtxWorkspaceBound();
 	void *wksp = malloc(wksp_size);
 
 	if (!wksp)
 		return -ENOMEM;
 
-	ubifs_zstd_cctx = zstd_init_dctx(wksp, wksp_size);
+	ubifs_zstd_cctx = ZSTD_initDCtx(wksp, wksp_size);
 	if (!ubifs_zstd_cctx)
 		return -EINVAL;
 
