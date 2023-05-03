@@ -184,6 +184,8 @@ char *deviceid_from_spec_str(const char *str, char **endp);
 
 static inline const char *dev_id(const struct device_d *dev)
 {
+	if (!dev)
+		return NULL;
 	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
 }
 
@@ -616,6 +618,11 @@ static inline struct device_node *dev_of_node(struct device_d *dev)
 static inline void *dev_get_priv(struct device_d *dev)
 {
 	return dev->priv;
+}
+
+static inline bool dev_is_probed(struct device_d *dev)
+{
+	return dev->driver ? true : false;
 }
 
 #endif /* DRIVER_H */

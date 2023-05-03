@@ -42,9 +42,13 @@ void relocate_to_current_adr(void)
 	if (!offset)
 		return;
 
-	dstart = __rel_dyn_start + offset;
-	dend = __rel_dyn_end + offset;
-	dynsym = (void *)__dynsym_start + offset;
+	/*
+	 * We have yet to relocate, so using runtime_address
+	 * to compute the relocated address
+	 */
+	dstart = runtime_address(__rel_dyn_start);
+	dend = runtime_address(__rel_dyn_end);
+	dynsym = runtime_address(__dynsym_start);
 
 	for (rela = dstart; (void *)rela < dend; rela++) {
 		unsigned long *fixup;
@@ -66,7 +70,7 @@ void relocate_to_current_adr(void)
 			putc_ll(' ');
 			puthex_ll(rela->r_addend);
 			putc_ll('\n');
-			panic("");
+			__hang();
 		}
 	}
 

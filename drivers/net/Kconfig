@@ -283,22 +283,6 @@ config DRIVER_NET_AG71XX
 	help
 	  This option enables support for Atheros AG71XX ethernet chip.
 
-config DRIVER_NET_TSE
-	depends on NIOS2
-	bool "Altera TSE ethernet driver"
-	select PHYLIB
-	help
-	  This option enables support for the Altera TSE MAC.
-
-config TSE_USE_DEDICATED_DESC_MEM
-	depends on DRIVER_NET_TSE
-	bool "Altera TSE uses dedicated descriptor memory"
-	help
-	  This option tells the TSE driver to use an onchip memory
-	  to store SGDMA descriptors. Descriptor memory is not
-	  reserved with a malloc but directly mapped to the memory
-	  address (defined in config.h)
-
 config DRIVER_NET_LITEETH
 	bool "LiteX ethernet driver"
 	select PHYLIB
@@ -315,6 +299,12 @@ menuconfig DSA
 	select PHYLIB
 
 if DSA
+
+config DRIVER_NET_KSZ8873
+	bool "KSZ8873 switch driver"
+	help
+	  This option enables support for the Microchip KSZ8873
+	  switch chip.
 
 config DRIVER_NET_KSZ9477
 	bool "KSZ9477 switch driver"

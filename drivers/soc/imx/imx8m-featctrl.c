@@ -28,6 +28,11 @@ static int imx8m_feat_check(struct feature_controller *feat, int idx)
 	return test_bit(idx, priv->features) ? FEATCTRL_OKAY : FEATCTRL_GATED;
 }
 
+static inline bool is_fused(u32 val, u32 bitmask)
+{
+	return bitmask && (val & bitmask) == bitmask;
+}
+
 int imx8m_feat_ctrl_init(struct device_d *dev, u32 tester4,
 			 const struct imx8m_featctrl_data *data)
 {
@@ -44,17 +49,23 @@ int imx8m_feat_ctrl_init(struct device_d *dev, u32 tester4,
 
 	bitmap_fill(features, IMX8M_FEAT_END);
 
-	if (tester4 & data->vpu_bitmask)
+	if (is_fused(tester4, data->vpu_bitmask))
 		clear_bit(IMX8M_FEAT_VPU, features);
-	if (tester4 & data->gpu_bitmask)
+	if (is_fused(tester4, data->gpu_bitmask))
 		clear_bit(IMX8M_FEAT_GPU, features);
+	if (is_fused(tester4, data->mipi_dsi_bitmask))
+		clear_bit(IMX8M_FEAT_MIPI_DSI, features);
+	if (is_fused(tester4, data->isp_bitmask))
+		clear_bit(IMX8M_FEAT_ISP, features);
 
-	switch (tester4 & 3) {
-	case 0b11:
-		clear_bit(IMX8M_FEAT_CPU_DUAL, features);
-		fallthrough;
-	case 0b10:
-		clear_bit(IMX8M_FEAT_CPU_QUAD, features);
+	if (data->check_cpus) {
+		switch (tester4 & 3) {
+		case 0b11:
+			clear_bit(IMX8M_FEAT_CPU_DUAL, features);
+			fallthrough;
+		case 0b10:
+			clear_bit(IMX8M_FEAT_CPU_QUAD, features);
+		}
 	}
 
 	priv->feat.dev = dev;

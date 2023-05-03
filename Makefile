@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2022
-PATCHLEVEL = 10
+PATCHLEVEL = 11
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -658,6 +658,11 @@ KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check)
 # ensure -fcf-protection is disabled as it is incompatible with our sjlj
 # Platforms that have their setjmp appropriately implemented may override this
 KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
+
+# We don't have the necessary infrastructure to benefit from ARMv8.3+ pointer
+# authentication. On older CPUs, they are interpreted as NOPs and blot the
+# code and break less portable code that expects a very specific code layout
+KBUILD_CFLAGS += $(call cc-option,-mbranch-protection=none)
 
 KBUILD_CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
 

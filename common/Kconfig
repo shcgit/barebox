@@ -78,7 +78,7 @@ config ARCH_DMA_ADDR_T_64BIT
 
 config BAREBOX_UPDATE_IMX_NAND_FCB
 	bool
-	depends on ARCH_IMX6 || ARCH_IMX28
+	depends on ARCH_IMX7 || ARCH_IMX6 || ARCH_IMX28
 	depends on BAREBOX_UPDATE
 	depends on MTD_WRITE
 	depends on NAND_MXS
@@ -1468,6 +1468,11 @@ config DEBUG_SIFIVE
 config DEBUG_LITEX
 	bool "LiteX serial port"
 	depends on SOC_LITEX
+
+config DEBUG_SUN20I
+	bool "Allwinner Sun20i ns16550 serial0 port"
+	depends on SOC_ALLWINNER_SUN20I
+	select DEBUG_LL_NS16550
 
 endchoice
 

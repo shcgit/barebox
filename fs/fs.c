@@ -756,7 +756,7 @@ int register_fs_driver(struct fs_driver_d *fsdrv)
 }
 EXPORT_SYMBOL(register_fs_driver);
 
-static const char *detect_fs(const char *filename, const char *fsoptions)
+const char *fs_detect(const char *filename, const char *fsoptions)
 {
 	enum filetype type;
 	struct driver_d *drv;
@@ -890,6 +890,21 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	return 0;
 }
 
+int unreaddir(DIR *dir, const struct dirent *d)
+{
+	struct readdir_entry *entry;
+
+	if (d != &dir->d)
+		return -EINVAL;
+
+	entry = xzalloc(sizeof(*entry));
+	entry->d = *d;
+	list_add_tail(&entry->list, &dir->entries);
+
+	return 0;
+}
+EXPORT_SYMBOL(unreaddir);
+
 struct dirent *readdir(DIR *dir)
 {
 	struct readdir_entry *entry;
@@ -997,6 +1012,25 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	}
 
 	return cdev_get_mount_path(cdev);
+}
+
+/*
+ * cdev_mount - return existing mount or mount a cdev to the default path
+ *
+ * If a cdev is already mounted anywhere return the path
+ * it's mounted on.
+ * Otherwise mount it to /mnt/<cdevname> and return the path. Returns an
+ * error pointer on failure.
+ */
+const char *cdev_mount(struct cdev *cdev)
+{
+	const char *path;
+
+	path = cdev_get_mount_path(cdev);
+	if (path)
+		return path;
+
+	return cdev_mount_default(cdev, NULL);
 }
 
 /*
@@ -2961,7 +2995,7 @@ int mount(const char *device, const char *fsname, const char *pathname,
 			device, pathname, fsname, fsoptions);
 
 	if (!fsname)
-		fsname = detect_fs(device, fsoptions);
+		fsname = fs_detect(device, fsoptions);
 
 	if (!fsname) {
 		ret = -ENOENT;
