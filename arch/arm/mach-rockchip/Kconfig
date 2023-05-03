@@ -30,7 +30,7 @@ config ARCH_RK3288
 config ARCH_ROCKCHIP_V8
 	bool
 	select CPU_V8
-	select SYS_SUPPORTS_64BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_ATF
 	select RELOCATABLE
 
@@ -79,6 +79,12 @@ config MACH_PINE64_QUARTZ64
 	bool "Pine64 Quartz64"
 	help
 	  Say Y here if you are using a Pine64 Quartz64
+
+config MACH_RADXA_ROCK3
+       select ARCH_RK3568
+       bool "Radxa ROCK3"
+       help
+	  Say Y here if you are using a Radxa ROCK3
 
 comment "select board features:"
 
