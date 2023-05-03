@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2022
-PATCHLEVEL = 11
+PATCHLEVEL = 12
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -453,8 +453,14 @@ KBUILD_CFLAGS_MODULE := -DMODULE
 LDFLAGS_barebox	:= -Map barebox.map
 
 # Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
-LDFLAGS_barebox += $(call ld-option, --no-dynamic-linker)
-LDFLAGS_pbl += $(call ld-option, --no-dynamic-linker)
+LDFLAGS_common += $(call ld-option, --no-dynamic-linker)
+# Avoid 'missing .note.GNU-stack section implies executable stack' warnings on binutils 2.39+
+LDFLAGS_common += -z noexecstack
+# Avoid '... has a LOAD segment with RWX permissions' warnings on binutils 2.39+
+LDFLAGS_common += $(call ld-option,--no-warn-rwx-segments)
+
+LDFLAGS_barebox += $(LDFLAGS_common)
+LDFLAGS_pbl += $(LDFLAGS_common)
 
 export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC
 export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHINE
@@ -660,8 +666,7 @@ KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check)
 KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
 
 # We don't have the necessary infrastructure to benefit from ARMv8.3+ pointer
-# authentication. On older CPUs, they are interpreted as NOPs and blot the
-# code and break less portable code that expects a very specific code layout
+# authentication. On older CPUs, they are interpreted as NOPs bloating the code
 KBUILD_CFLAGS += $(call cc-option,-mbranch-protection=none)
 
 KBUILD_CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
