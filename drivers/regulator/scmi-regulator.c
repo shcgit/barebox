@@ -44,7 +44,7 @@ struct scmi_regulator {
 	struct scmi_device *sdev;
 	struct scmi_protocol_handle *ph;
 	struct regulator_dev rdev;
-	struct device_node *device_node;
+	struct device_node *of_node;
 	struct scmi_reg_desc sdesc;
 };
 
@@ -213,7 +213,7 @@ scmi_config_discrete_regulator_mappings(struct scmi_regulator *sreg,
 static int scmi_regulator_common_init(struct scmi_regulator *sreg)
 {
 	int ret;
-	struct device_d *dev = &sreg->sdev->dev;
+	struct device *dev = &sreg->sdev->dev;
 	const struct scmi_voltage_info *vinfo;
 	struct scmi_reg_desc *sdesc = &sreg->sdesc;
 
@@ -232,7 +232,7 @@ static int scmi_regulator_common_init(struct scmi_regulator *sreg)
 	 */
 	if (vinfo->negative_volts_allowed) {
 		dev_warn(dev, "Negative voltages NOT supported...skip %s\n",
-			 sreg->device_node->full_name);
+			 sreg->of_node->full_name);
 		return -EOPNOTSUPP;
 	}
 
@@ -278,7 +278,7 @@ static int process_scmi_regulator_of_node(struct scmi_device *sdev,
 	rinfo->sregv[dom]->ph = ph;
 
 	/* get hold of good nodes */
-	rinfo->sregv[dom]->device_node = np;
+	rinfo->sregv[dom]->of_node = np;
 
 	dev_dbg(&sdev->dev,
 		"Found SCMI Regulator entry -- OF node [%d] -> %s\n",
@@ -335,7 +335,7 @@ static int scmi_regulator_probe(struct scmi_device *sdev)
 	 * plausible SCMI Voltage Domain number, all belonging to this SCMI
 	 * platform instance node (handle->dev->of_node).
 	 */
-	np = of_find_node_by_name(handle->dev->device_node, "regulators");
+	np = of_find_node_by_name(handle->dev->of_node, "regulators");
 	for_each_child_of_node(np, child) {
 		ret = process_scmi_regulator_of_node(sdev, ph, child, rinfo);
 		/* abort on any mem issue */

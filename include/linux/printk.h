@@ -25,13 +25,14 @@
 #endif
 
 /* debugging and troubleshooting/diagnostic helpers. */
-struct device_d;
+struct device;
 
 #ifndef CONFIG_CONSOLE_NONE
-int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+int dev_printf(int level, const struct device *dev, const char *format, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
 #else
-static inline int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+static inline int dev_printf(int level, const struct device *dev,
+			     const char *format, ...)
 {
 	return 0;
 }
@@ -76,12 +77,13 @@ static inline int pr_print(int level, const char *format, ...)
 	__dev_printf(8, (dev) , format , ## arg)
 
 #if LOGLEVEL >= MSG_ERR
-int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
 #elif !defined(dev_err_probe)
-static int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+static int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
-static inline int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+static inline int dev_err_probe(struct device *dev, int err, const char *fmt,
+				...)
 {
 	return err;
 }
@@ -91,6 +93,15 @@ static inline int dev_err_probe(struct device_d *dev, int err, const char *fmt, 
 	({	\
 		(level) <= LOGLEVEL ? pr_print((level), (format), ##args) : 0; \
 	 })
+
+#define __pr_printk_once(level, format, args...) do {	\
+	static bool __print_once;			\
+							\
+	if (!__print_once && (level) <= LOGLEVEL) {	\
+		__print_once = true;			\
+		pr_print((level), (format), ##args);	\
+	}						\
+} while (0)
 
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
@@ -108,7 +119,18 @@ static inline int dev_err_probe(struct device_d *dev, int err, const char *fmt, 
 #define pr_vdebug(fmt, arg...)	__pr_printk(8, pr_fmt(fmt), ##arg)
 #define pr_cont(fmt, arg...)	__pr_printk(-1, fmt, ##arg)
 
+#define pr_emerg_once(fmt, arg...)	__pr_printk_once(0, pr_fmt(fmt), ##arg)
+#define pr_alert_once(fmt, arg...)	__pr_printk_once(1, pr_fmt(fmt), ##arg)
+#define pr_crit_once(fmt, arg...)	__pr_printk_once(2, pr_fmt(fmt), ##arg)
+#define pr_err_once(fmt, arg...)	__pr_printk_once(3, pr_fmt(fmt), ##arg)
+#define pr_warning_once(fmt, arg...)	__pr_printk_once(4, pr_fmt(fmt), ##arg)
+#define pr_notice_once(fmt, arg...)	__pr_printk_once(5, pr_fmt(fmt), ##arg)
+#define pr_info_once(fmt, arg...)	__pr_printk_once(6, pr_fmt(fmt), ##arg)
+#define pr_debug_once(fmt, arg...)	__pr_printk_once(7, pr_fmt(fmt), ##arg)
+#define pr_vdebug_once(fmt, arg...)	__pr_printk_once(8, pr_fmt(fmt), ##arg)
+
 #define pr_warn			pr_warning
+#define pr_warn_once		pr_warning_once
 
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size,
 		   int swab);

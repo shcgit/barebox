@@ -54,12 +54,12 @@ static int dsa_port_probe(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	phy_interface_t interface;
 	int ret;
 
 	if (ops->port_probe) {
-		interface = of_get_phy_mode(dp->dev->device_node);
+		interface = of_get_phy_mode(dp->dev->of_node);
 		ret = ops->port_probe(dp, dp->index, interface);
 		if (ret)
 			return ret;
@@ -86,14 +86,14 @@ static int dsa_port_start(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	phy_interface_t interface;
 	int ret;
 
 	if (dp->enabled)
 		return -EBUSY;
 
-	interface = of_get_phy_mode(dp->dev->device_node);
+	interface = of_get_phy_mode(dp->dev->of_node);
 
 	if (ops->port_pre_enable) {
 		/* In case of RMII interface we need to enable RMII clock
@@ -122,6 +122,16 @@ static int dsa_port_start(struct eth_device *edev)
 	if (!ds->cpu_port_users) {
 		struct dsa_port *dpc = ds->dp[ds->cpu_port];
 
+		if (ops->port_pre_enable) {
+			/* In case of RMII interface we need to enable RMII clock
+			 * before talking to the PHY.
+			 */
+			ret = ops->port_pre_enable(dpc, ds->cpu_port,
+						   ds->cpu_port_fixed_phy->interface);
+			if (ret)
+				return ret;
+		}
+
 		if (ops->port_enable) {
 			ret = ops->port_enable(dpc, ds->cpu_port,
 					       ds->cpu_port_fixed_phy);
@@ -147,7 +157,7 @@ static void dsa_port_stop(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 
 	if (!dp->enabled)
 		return;
@@ -174,7 +184,7 @@ static int dsa_port_send(struct eth_device *edev, void *packet, int length)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	void *tx_buf = ds->tx_buf;
 	size_t full_length, stuff = 0;
 	int ret;
@@ -235,11 +245,10 @@ static int dsa_ether_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return edev_master->get_ethaddr(edev_master, adr);
 }
 
-static int dsa_switch_register_edev(struct dsa_switch *ds,
-				    struct device_node *dn, int port)
+static struct dsa_port *dsa_port_alloc(struct dsa_switch *ds,
+				       struct device_node *dn, int port)
 {
-	struct eth_device *edev;
-	struct device_d *dev;
+	struct device *dev;
 	struct dsa_port *dp;
 
 	ds->dp[port] = xzalloc(sizeof(*dp));
@@ -248,14 +257,24 @@ static int dsa_switch_register_edev(struct dsa_switch *ds,
 	dev = of_platform_device_create(dn, ds->dev);
 	of_platform_device_dummy_drv(dev);
 	dp->dev = dev;
-
-	dp->rx_buf = xmalloc(DSA_PKTSIZE);
 	dp->ds = ds;
 	dp->index = port;
 
+	return dp;
+}
+
+static int dsa_switch_register_edev(struct dsa_switch *ds,
+				    struct device_node *dn, int port)
+{
+	struct eth_device *edev;
+	struct dsa_port *dp;
+
+	dp = dsa_port_alloc(ds, dn, port);
+	dp->rx_buf = xmalloc(DSA_PKTSIZE);
+
 	edev = &dp->edev;
 	edev->priv = dp;
-	edev->parent = dev;
+	edev->parent = dp->dev;
 	edev->init = dsa_port_probe;
 	edev->open = dsa_port_start;
 	edev->send = dsa_port_send;
@@ -271,7 +290,7 @@ static int dsa_rx_preprocessor(struct eth_device *edev, unsigned char **packet,
 			       int *length)
 {
 	struct dsa_switch *ds = edev->rx_preprocessor_priv;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	struct dsa_port *dp;
 	int ret, port;
 
@@ -308,7 +327,6 @@ static int dsa_switch_register_master(struct dsa_switch *ds,
 {
 	struct device_node *phy_node;
 	struct phy_device *phydev;
-	struct dsa_port *dp;
 	int ret;
 
 	if (ds->edev_master) {
@@ -339,9 +357,7 @@ static int dsa_switch_register_master(struct dsa_switch *ds,
 
 	phydev->interface = of_get_phy_mode(np);
 
-	ds->dp[port] = xzalloc(sizeof(*dp));
-	dp = ds->dp[port];
-	dp->ds = ds;
+	dsa_port_alloc(ds, np, port);
 
 	ds->cpu_port = port;
 	ds->cpu_port_fixed_phy = phydev;
@@ -416,7 +432,7 @@ int dsa_register_switch(struct dsa_switch *ds)
 		return -ENODEV;
 	}
 
-	if (!ds->dev->device_node)
+	if (!ds->dev->of_node)
 		return -ENODEV;
 
 	if (!ds->num_ports || ds->num_ports > DSA_MAX_PORTS) {
@@ -424,7 +440,7 @@ int dsa_register_switch(struct dsa_switch *ds)
 		return -EINVAL;
 	}
 
-	ret = dsa_switch_parse_ports_of(ds, ds->dev->device_node);
+	ret = dsa_switch_parse_ports_of(ds, ds->dev->of_node);
 	if (ret)
 		return ret;
 

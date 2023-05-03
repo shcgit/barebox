@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <kallsyms.h>
 #include <wchar.h>
+#include <of.h>
 
 #include <common.h>
 #include <pbl.h>
@@ -197,6 +198,27 @@ static char *string(char *buf, const char *end, const char *s, int field_width,
 	return trailing_spaces(buf, end, len, &field_width, flags);
 }
 
+static __maybe_unused char *string_array(char *buf, const char *end, char *const *s,
+					 int field_width, int precision, int flags,
+					 const char *separator)
+{
+	size_t i, len = strlen(separator);
+
+	while (*s) {
+		buf = string(buf, end, *s, field_width, precision, flags);
+		if (!*++s)
+			break;
+
+		for (i = 0; i < len; ++i) {
+			if (buf < end)
+				*buf = separator[i];
+			++buf;
+		}
+	}
+
+	return buf;
+}
+
 static char *wstring(char *buf, const char *end, const wchar_t *s, int field_width,
 		     int precision, int flags)
 {
@@ -369,6 +391,26 @@ char *hex_string(char *buf, const char *end, const u8 *addr, int field_width,
 }
 
 static noinline_for_stack
+char *jsonpath_string(char *buf, const char *end, char *const *path, int field_width,
+		 int precision, int flags, const char *fmt)
+{
+	if ((unsigned long)path < PAGE_SIZE)
+		return string(buf, end, "<NULL>", field_width, precision, flags);
+
+	if (buf < end)
+		*buf = '$';
+	++buf;
+
+	if (*path) {
+		if (buf < end)
+			*buf = '.';
+		++buf;
+	}
+
+	return string_array(buf, end, path, field_width, precision, flags, ".");
+}
+
+static noinline_for_stack
 char *address_val(char *buf, const char *end, const void *addr,
 		  int field_width, int precision, int flags, const char *fmt)
 {
@@ -389,6 +431,14 @@ char *address_val(char *buf, const char *end, const void *addr,
 	}
 
 	return number(buf, end, num, 16, field_width, precision, flags);
+}
+
+static noinline_for_stack
+char *device_node_string(char *buf, const char *end, const struct device_node *np,
+			 int field_width, int precision, int flags, const char *fmt)
+{
+	return string(buf, end, of_node_full_name(np), field_width,
+		      precision, flags);
 }
 
 /*
@@ -454,10 +504,17 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		break;
 	case 'e':
 		return error_string(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'O':
+		if (IS_ENABLED(CONFIG_OFTREE))
+			return device_node_string(buf, end, ptr, field_width, precision, flags, fmt + 1);
+		break;
 	case 'h':
 		if (IS_ENABLED(CONFIG_PRINTF_HEXSTR))
 			return hex_string(buf, end, ptr, field_width, precision, flags, fmt);
 		break;
+	case 'J':
+		if (fmt[1] == 'P' && IS_ENABLED(CONFIG_JSMN))
+			return jsonpath_string(buf, end, ptr, field_width, precision, flags, fmt);
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

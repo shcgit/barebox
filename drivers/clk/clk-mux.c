@@ -118,7 +118,7 @@ long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 	struct clk *bestparent;
 
 	if (clk->flags & CLK_SET_RATE_NO_REPARENT)
-		return *prate;
+		return clk_parent_round_rate(hw, rate, prate);
 
 	bestparent = clk_mux_best_parent(clk, rate, &rrate);
 
@@ -135,7 +135,7 @@ static int clk_mux_set_rate(struct clk_hw *hw, unsigned long rate,
 	int ret;
 
 	if (clk->flags & CLK_SET_RATE_NO_REPARENT)
-		return 0;
+		return clk_parent_set_rate(hw, rate, parent_rate);
 
 	parent = clk_mux_best_parent(clk, rate, &rrate);
 
@@ -204,21 +204,23 @@ struct clk *clk_mux(const char *name, unsigned clk_flags, void __iomem *reg,
 	return m;
 }
 
-struct clk *clk_register_mux(struct device_d *dev, const char *name,
-		const char * const *parent_names, u8 num_parents,
-		unsigned long flags,
-		void __iomem *reg, u8 shift, u8 width,
-		u8 clk_mux_flags, spinlock_t *lock)
+struct clk *clk_register_mux(struct device *dev, const char *name,
+			     const char * const *parent_names, u8 num_parents,
+			     unsigned long flags,
+			     void __iomem *reg, u8 shift, u8 width,
+			     u8 clk_mux_flags, spinlock_t *lock)
 {
 	return clk_mux(name, flags, reg, shift, width, parent_names,
 		       num_parents, clk_mux_flags);
 }
 
-struct clk_hw *__clk_hw_register_mux(struct device_d *dev,
-		const char *name, u8 num_parents,
-		const char * const *parent_names,
-		unsigned long flags, void __iomem *reg, u8 shift, u32 mask,
-		u8 clk_mux_flags, u32 *table, spinlock_t *lock)
+struct clk_hw *__clk_hw_register_mux(struct device *dev,
+				     const char *name, u8 num_parents,
+				     const char * const *parent_names,
+				     unsigned long flags, void __iomem *reg,
+				     u8 shift, u32 mask,
+				     u8 clk_mux_flags, u32 *table,
+				     spinlock_t *lock)
 {
 	struct clk_mux *mux;
 	struct clk_hw *hw;

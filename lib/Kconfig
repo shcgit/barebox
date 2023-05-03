@@ -8,6 +8,11 @@ config UNCOMPRESS
 	bool
 	select FILETYPE
 
+config JSMN
+	bool "JSMN JSON Parser" if COMPILE_TEST
+	help
+	  A minimalistic JSON parser.
+
 config XXHASH
 	bool
 
@@ -204,5 +209,10 @@ config ARCH_HAS_ZERO_PAGE
 
 config HAVE_EFFICIENT_UNALIGNED_ACCESS
 	bool
+
+config GENERIC_ALLOCATOR
+	bool
+	help
+	  Support is curently limited to allocaing a complete mmio-sram at once.
 
 endmenu

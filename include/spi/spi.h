@@ -64,7 +64,7 @@ struct spi_board_info {
  * information about how this particular board wires the chip's pins.
  */
 struct spi_device {
-	struct device_d		dev;
+	struct device		dev;
 	struct spi_controller	*controller;
 	struct spi_controller	*master;	/* compatibility layer */
 	struct spi_mem		*mem;
@@ -108,7 +108,7 @@ struct spi_device {
 	 */
 };
 
-static inline struct spi_device *to_spi_device(struct device_d *dev)
+static inline struct spi_device *to_spi_device(struct device *dev)
 {
         return dev ? container_of(dev, struct spi_device, dev) : NULL;
 }
@@ -153,7 +153,7 @@ struct spi_message;
  * message's completion function when the transaction completes.
  */
 struct spi_controller {
-	struct device_d *dev;
+	struct device *dev;
 
 	/* other than negative (== assign one dynamically), bus_num is fully
 	 * board-specific.  usually that simplifies to being SOC-specific.
@@ -556,9 +556,14 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 
 extern struct bus_type spi_bus;
 
+static inline bool dev_bus_is_spi(struct device_d *dev)
+{
+	return IS_ENABLED(CONFIG_SPI) && dev->bus == &spi_bus;
+}
+
 struct spi_controller *spi_get_controller(int bus);
 
-static inline int spi_driver_register(struct driver_d *drv)
+static inline int spi_driver_register(struct driver *drv)
 {
 	drv->bus = &spi_bus;
 	return register_driver(drv);

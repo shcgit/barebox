@@ -19,6 +19,7 @@ obj-y			+= readkey.o
 obj-y			+= kfifo.o
 obj-y			+= libbb.o
 obj-y			+= libgen.o
+obj-$(CONFIG_JSMN)	+= jsmn.o
 obj-$(CONFIG_BLOBGEN)	+= blobgen.o
 obj-y			+= stringlist.o
 obj-y			+= cmdlinepart.o
@@ -74,6 +75,7 @@ obj-$(CONFIG_CRC8)	+= crc8.o
 obj-$(CONFIG_NLS)	+= nls_base.o
 obj-$(CONFIG_FSL_QE_FIRMWARE) += fsl-qe-firmware.o
 obj-$(CONFIG_UBSAN)	+= ubsan.o
+obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
 
 # GCC library routines
 obj-$(CONFIG_GENERIC_LIB_ASHLDI3) += ashldi3.o

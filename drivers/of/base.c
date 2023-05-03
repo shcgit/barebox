@@ -739,11 +739,11 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 }
 EXPORT_SYMBOL(of_find_matching_node_and_match);
 
-int of_match(struct device_d *dev, struct driver_d *drv)
+int of_match(struct device *dev, struct driver *drv)
 {
 	const struct of_device_id *id;
 
-	id = of_match_node(drv->of_compatible, dev->device_node);
+	id = of_match_node(drv->of_compatible, dev->of_node);
 	if (!id)
 		return 1;
 
@@ -1130,6 +1130,7 @@ EXPORT_SYMBOL_GPL(of_prop_next_string);
  *
  * @np:		device node from which the property is to be set.
  * @propname:	name of the property to be set.
+ * @value	true to set, false to delete
  *
  * Search for a property in a device node and create or delete the property.
  * If the property already exists and write value is false, the property is
@@ -2514,7 +2515,7 @@ mem_initcall(of_probe_memory);
 
 static void of_platform_device_create_root(struct device_node *np)
 {
-	static struct device_d *dev;
+	static struct device *dev;
 	int ret;
 
 	if (dev)
@@ -2522,7 +2523,7 @@ static void of_platform_device_create_root(struct device_node *np)
 
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;
-	dev->device_node = np;
+	dev->of_node = np;
 	dev_set_name(dev, "machine");
 
 	ret = platform_device_register(dev);
@@ -2667,30 +2668,51 @@ void of_delete_node(struct device_node *node)
 	free(node);
 }
 
+/*
+ * of_find_node_by_chosen - Find a node given a chosen property pointing at it
+ * @propname:   the name of the property containing a path or alias
+ *              The function will lookup the first string in the property
+ *              value up to the first : character or till \0.
+ * @options     The Remainder (without : or \0 at the end) will be written
+ *              to *options if not NULL.
+ */
+struct device_node *of_find_node_by_chosen(const char *propname,
+					   const char **options)
+{
+	const char *value, *p;
+	char *buf;
+	struct device_node *dn;
+
+	value = of_get_property(of_chosen, propname, NULL);
+	if (!value)
+		return NULL;
+
+	p = strchrnul(value, ':');
+	buf = xstrndup(value, p - value);
+
+	dn = of_find_node_by_path_or_alias(NULL, buf);
+
+	free(buf);
+
+	if (options && *p)
+		*options = p + 1;
+
+	return dn;
+}
+
 struct device_node *of_get_stdoutpath(unsigned int *baudrate)
 {
+	const char *opts = NULL;
 	struct device_node *dn;
-	const char *name;
-	const char *p;
-	char *q;
 
-	name = of_get_property(of_chosen, "stdout-path", NULL);
-	if (!name)
-		name = of_get_property(of_chosen, "linux,stdout-path", NULL);
+	dn = of_find_node_by_chosen("stdout-path", &opts);
+	if (!dn)
+		dn = of_find_node_by_chosen("linux,stdout-path", &opts);
+	if (!dn)
+		return NULL;
 
-	if (!name)
-		return 0;
-
-	p = strchrnul(name, ':');
-
-	q = xstrndup(name, p - name);
-
-	dn = of_find_node_by_path_or_alias(NULL, q);
-
-	free(q);
-
-	if (baudrate && *p) {
-		unsigned rate = simple_strtoul(p + 1, NULL, 10);
+	if (baudrate && opts) {
+		unsigned rate = simple_strtoul(opts, NULL, 10);
 		if (rate)
 			*baudrate = rate;
 	}
@@ -2698,11 +2720,11 @@ struct device_node *of_get_stdoutpath(unsigned int *baudrate)
 	return dn;
 }
 
-int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
+int of_device_is_stdout_path(struct device *dev, unsigned int *baudrate)
 {
 	unsigned int tmp = *baudrate;
 
-	if (!dev || !dev->device_node || dev->device_node != of_get_stdoutpath(&tmp))
+	if (!dev || !dev->of_node || dev->of_node != of_get_stdoutpath(&tmp))
 		return false;
 
 	*baudrate = tmp;
@@ -2783,6 +2805,21 @@ int of_device_enable_path(const char *path)
 	struct device_node *node;
 
 	node = of_find_node_by_path(path);
+	if (!node)
+		return -ENODEV;
+
+	return of_device_enable(node);
+}
+
+/**
+ * of_device_enable_by_alias - enable a device node by alias
+ * @alias - the alias of the device tree node to enable
+ */
+int of_device_enable_by_alias(const char *alias)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_alias(NULL, alias);
 	if (!node)
 		return -ENODEV;
 

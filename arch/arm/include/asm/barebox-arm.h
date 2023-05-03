@@ -61,8 +61,6 @@ unsigned long arm_mem_ramoops_get(void);
 unsigned long arm_mem_membase_get(void);
 unsigned long arm_mem_endmem_get(void);
 
-struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);
-
 #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
 void arm_fixup_vectors(void);
 #else
@@ -80,13 +78,7 @@ static inline const void *arm_mem_scratch_get(void)
 	return (const void *)__arm_mem_scratch(arm_mem_endmem_get());
 }
 
-#define __arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K)
-
-#if defined(CONFIG_BOOTM_OPTEE) || defined(CONFIG_PBL_OPTEE)
-#define arm_mem_stack_top(membase, endmem) (__arm_mem_stack_top(membase, endmem) - OPTEE_SIZE)
-#else
-#define arm_mem_stack_top(membase, endmem)  __arm_mem_stack_top(membase, endmem)
-#endif
+#define arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K - OPTEE_SIZE)
 
 static inline unsigned long arm_mem_stack(unsigned long membase,
 					  unsigned long endmem)

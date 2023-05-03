@@ -41,7 +41,7 @@
 struct dsa_port;
 struct dsa_switch;
 
-struct dsa_ops {
+struct dsa_switch_ops {
 	int (*port_probe)(struct dsa_port *dp, int port,
 			  phy_interface_t phy_mode);
 	int (*port_pre_enable)(struct dsa_port *dp, int port,
@@ -58,7 +58,7 @@ struct dsa_ops {
 };
 
 struct dsa_port {
-	struct device_d *dev;
+	struct device *dev;
 	struct dsa_switch *ds;
 	unsigned int index;
 	struct eth_device edev;
@@ -68,8 +68,8 @@ struct dsa_port {
 };
 
 struct dsa_switch {
-	struct device_d *dev;
-	const struct dsa_ops *ops;
+	struct device *dev;
+	const struct dsa_switch_ops *ops;
 	size_t num_ports;
 	u32 cpu_port;
 	int cpu_port_users;
@@ -82,9 +82,26 @@ struct dsa_switch {
 	void *tx_buf;
 	struct mii_bus *slave_mii_bus;
 	u32 phys_mii_mask;
+	void *priv;
 };
+
+static inline struct dsa_port *dsa_to_port(struct dsa_switch *ds, int p)
+{
+	if (p >= DSA_MAX_PORTS)
+		return NULL;
+
+	return ds->dp[p];
+}
 
 int dsa_register_switch(struct dsa_switch *ds);
 u32 dsa_user_ports(struct dsa_switch *ds);
+
+#define dsa_switch_for_each_cpu_port(_dp, _dst) \
+	for (_dp = _dst->dp[_dst->cpu_port]; _dp; _dp = NULL)
+
+static inline bool dsa_port_is_cpu(struct dsa_port *port)
+{
+	return port->index == port->ds->cpu_port;
+}
 
 #endif /* __DSA_H__ */

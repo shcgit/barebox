@@ -64,7 +64,7 @@ struct ksz8873_dcfg {
 struct ksz8873_switch {
 	struct phy_device *mdiodev;
 	struct dsa_switch ds;
-	struct device_d *dev;
+	struct device *dev;
 	const struct ksz8873_dcfg *dcfg;
 	struct regmap *regmap;
 };
@@ -96,7 +96,7 @@ static int ksz8873_mdio_read(void *ctx, unsigned int reg, unsigned int *val)
 	return 0;
 }
 
-static ssize_t ksz8873_mdio_write(void *ctx, unsigned int reg, unsigned int val)
+static int ksz8873_mdio_write(void *ctx, unsigned int reg, unsigned int val)
 {
 	struct ksz8873_switch *priv = ctx;
 	struct phy_device *mdiodev = priv->mdiodev;
@@ -277,7 +277,7 @@ static void ksz8_w_phy(struct ksz8873_switch *priv, u16 phy, u16 reg, u16 val)
 
 static int ksz8873_phy_read16(struct dsa_switch *ds, int addr, int reg)
 {
-	struct device_d *dev = ds->dev;
+	struct device *dev = ds->dev;
 	struct ksz8873_switch *priv = dev_get_priv(dev);
 	u16 val = 0xffff;
 
@@ -292,7 +292,7 @@ static int ksz8873_phy_read16(struct dsa_switch *ds, int addr, int reg)
 static int ksz8873_phy_write16(struct dsa_switch *ds, int addr, int reg,
 			       u16 val)
 {
-	struct device_d *dev = ds->dev;
+	struct device *dev = ds->dev;
 	struct ksz8873_switch *priv = dev_get_priv(dev);
 
 	/* No real PHY after this. */
@@ -335,7 +335,7 @@ static int ksz8873_recv(struct dsa_switch *ds, int *port, void *packet,
 	return 0;
 };
 
-static const struct dsa_ops ksz8873_dsa_ops = {
+static const struct dsa_switch_ops ksz8873_dsa_ops = {
 	.port_enable = ksz8873_port_enable,
 	.xmit = ksz8873_xmit,
 	.rcv = ksz8873_recv,
@@ -365,7 +365,7 @@ static int ksz8873_default_setup(struct ksz8873_switch *priv)
 
 static int ksz8873_probe_mdio(struct phy_device *mdiodev)
 {
-	struct device_d *dev = &mdiodev->dev;
+	struct device *dev = &mdiodev->dev;
 	const struct ksz8873_dcfg *dcfg;
 	struct ksz8873_switch *priv;
 	struct dsa_switch *ds;

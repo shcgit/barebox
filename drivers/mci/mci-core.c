@@ -75,6 +75,28 @@ static int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *d
 }
 
 /**
+ * mci_send_cmd_retry() - send a command to the mmc device, retrying on error
+ *
+ * @dev:	device to receive the command
+ * @cmd:	command to send
+ * @data:	additional data to send/receive
+ * @retries:	how many times to retry; mci_send_cmd is always called at least
+ *              once
+ * Return: 0 if ok, -ve on error
+ */
+static int mci_send_cmd_retry(struct mci *mci, struct mci_cmd *cmd,
+			      struct mci_data *data, unsigned retries)
+{
+	int ret;
+
+	do
+		ret = mci_send_cmd(mci, cmd, data);
+	while (ret && retries--);
+
+	return ret;
+}
+
+/**
  * @param p Command definition to setup
  * @param cmd Valid SD/MMC command (refer MMC_CMD_* / SD_CMD_*)
  * @param arg Argument for the command (optional)
@@ -119,6 +141,67 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 
 static void *sector_buf;
 
+static int mci_send_status(struct mci *mci, unsigned int *status)
+{
+	struct mci_host *host = mci->host;
+	struct mci_cmd cmd;
+	int ret;
+
+	/*
+	 * While CMD13 is defined for SPI mode, the reported status bits have
+	 * different layout that SD/MMC. We skip supporting this for now.
+	 */
+	if (mmc_host_is_spi(host))
+		return -ENOSYS;
+
+	cmd.cmdidx = MMC_CMD_SEND_STATUS;
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.cmdarg = mci->rca << 16;
+
+	ret = mci_send_cmd_retry(mci, &cmd, NULL, 4);
+	if (!ret)
+		*status = cmd.response[0];
+
+	return ret;
+}
+
+static int mci_poll_until_ready(struct mci *mci, int timeout_ms)
+{
+	unsigned int status;
+	int err, retries = 0;
+
+	while (1) {
+		err = mci_send_status(mci, &status);
+		if (err)
+			return err;
+
+		/*
+		 * Some cards mishandle the status bits, so make sure to
+		 * check both the busy indication and the card state.
+		 */
+		if ((status & R1_READY_FOR_DATA) &&
+		    R1_CURRENT_STATE(status) != R1_STATE_PRG)
+			break;
+
+		if (status & R1_STATUS_MASK) {
+			dev_err(&mci->dev, "Status Error: 0x%08x\n", status);
+			return -EIO;
+		}
+
+		if (retries++ == timeout_ms) {
+			dev_err(&mci->dev, "Timeout awaiting card ready\n");
+			return -ETIMEDOUT;
+		}
+
+		udelay(1000);
+	}
+
+	dev_dbg(&mci->dev, "Ready polling took %ums\n", retries);
+
+	return 0;
+}
+
+
 /**
  * Write one or several blocks of data to the card
  * @param mci_dev MCI instance
@@ -135,6 +218,17 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 	const void *buf;
 	unsigned mmccmd;
 	int ret;
+
+	/*
+	 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
+	 * Due to legacy reasons, a Device may still treat CMD24/25 during
+	 * prg-state (while busy is active) as a legal or illegal command.
+	 * A host should not send CMD24/25 while the Device is in the prg
+	 * state and busy is active.
+	 */
+	ret = mci_poll_until_ready(mci, 1000 /* ms */);
+	if (ret && ret != -ENOSYS)
+		return ret;
 
 	if (blocks > 1)
 		mmccmd = MMC_CMD_WRITE_MULTIPLE_BLOCK;
@@ -230,6 +324,15 @@ static int mci_go_idle(struct mci *mci)
 	udelay(2000);	/* WTF? */
 
 	return 0;
+}
+
+static int sdio_send_op_cond(struct mci *mci)
+{
+	struct mci_cmd cmd;
+
+	mci_setup_cmd(&cmd, SD_IO_SEND_OP_COND, 0, MMC_RSP_SPI_R4 | MMC_RSP_R4 | MMC_CMD_BCR);
+
+	return mci_send_cmd(mci, &cmd, NULL);
 }
 
 /**
@@ -428,7 +531,7 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->idx = idx;
 
 	if (area_type == MMC_BLK_DATA_AREA_MAIN) {
-		part->blk.cdev.device_node = mci->host->hw_dev->device_node;
+		part->blk.cdev.device_node = mci->host->hw_dev->of_node;
 		part->blk.cdev.flags |= DEVFS_IS_MCI_MAIN_PART_DEV;
 	}
 
@@ -1570,7 +1673,7 @@ static void mci_print_caps(unsigned caps)
  * Output some valuable information when the user runs 'devinfo' on an MCI device
  * @param mci MCI device instance
  */
-static void mci_info(struct device_d *dev)
+static void mci_info(struct device *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
 	struct mci_host *host = mci->host;
@@ -1596,7 +1699,9 @@ static void mci_info(struct device_d *dev)
 	mci_print_caps(host->host_caps);
 
 	printf("Card information:\n");
-	printf("  Attached is a %s card\n", IS_SD(mci) ? "SD" : "MMC");
+	printf("  Card type: %s\n", mci->sdio ? "SDIO" : IS_SD(mci) ? "SD" : "MMC");
+	if (mci->sdio)
+		return;
 	printf("  Version: %s\n", mci_version_string(mci));
 	printf("  Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 
@@ -1699,7 +1804,7 @@ static int mci_register_partition(struct mci_part *part)
 	}
 	dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
 
-	np = host->hw_dev->device_node;
+	np = host->hw_dev->of_node;
 
 	/* create partitions on demand */
 	switch (part->area_type) {
@@ -1709,7 +1814,7 @@ static int mci_register_partition(struct mci_part *part)
 		else
 			partnodename = "boot1-partitions";
 
-		np = of_get_child_by_name(host->hw_dev->device_node,
+		np = of_get_child_by_name(host->hw_dev->of_node,
 					  partnodename);
 		break;
 	case MMC_BLK_DATA_AREA_MAIN:
@@ -1742,19 +1847,19 @@ static int mci_register_partition(struct mci_part *part)
 static int of_broken_cd_fixup(struct device_node *root, void *ctx)
 {
 	struct mci_host *host = ctx;
-	struct device_d *hw_dev = host->hw_dev;
+	struct device *hw_dev = host->hw_dev;
 	struct device_node *np;
 	char *name;
 
 	if (!host->broken_cd)
 		return 0;
 
-	name = of_get_reproducible_name(hw_dev->device_node);
+	name = of_get_reproducible_name(hw_dev->of_node);
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
 		dev_warn(hw_dev, "Cannot find nodepath %s, cannot fixup\n",
-			 hw_dev->device_node->full_name);
+			 hw_dev->of_node->full_name);
 		return -EINVAL;
 	}
 
@@ -1807,6 +1912,16 @@ static int mci_card_probe(struct mci *mci)
 	if (rc) {
 		dev_warn(&mci->dev, "Cannot reset the SD/MMC card\n");
 		goto on_error;
+	}
+
+	if (!host->no_sdio) {
+		rc = sdio_send_op_cond(mci);
+		if (!rc) {
+			mci->ready_for_use = true;
+			mci->sdio = true;
+			dev_info(&mci->dev, "SDIO card detected, ignoring\n");
+			return 0;
+		}
 	}
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
@@ -1916,14 +2031,14 @@ int mci_detect_card(struct mci_host *host)
 	return mci_card_probe(host->mci);
 }
 
-static int mci_detect(struct device_d *dev)
+static int mci_detect(struct device *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
 
 	return mci_detect_card(mci->host);
 }
 
-static int mci_hw_detect(struct device_d *dev)
+static int mci_hw_detect(struct device *dev)
 {
 	struct mci *mci;
 
@@ -1943,7 +2058,7 @@ static int mci_hw_detect(struct device_d *dev)
 int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
-	struct device_d *hw_dev;
+	struct device *hw_dev;
 	struct param_d *param_probe, *param_broken_cd;
 	int ret;
 
@@ -2086,12 +2201,13 @@ void mci_of_parse_node(struct mci_host *host,
 	host->broken_cd = of_property_read_bool(np, "broken-cd");
 	host->non_removable = of_property_read_bool(np, "non-removable");
 	host->no_sd = of_property_read_bool(np, "no-sd");
+	host->no_sdio = of_property_read_bool(np, "no-sdio");
 	host->disable_wp = of_property_read_bool(np, "disable-wp");
 }
 
 void mci_of_parse(struct mci_host *host)
 {
-	return mci_of_parse_node(host, host->hw_dev->device_node);
+	return mci_of_parse_node(host, host->hw_dev->of_node);
 }
 
 struct mci *mci_get_device_by_name(const char *name)

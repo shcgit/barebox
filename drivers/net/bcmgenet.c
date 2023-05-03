@@ -174,7 +174,7 @@ struct bcmgenet_eth_priv {
 	u32 interface;
 	struct mii_bus miibus;
 	struct eth_device edev;
-	struct device_d *dev;
+	struct device *dev;
 	unsigned char addr[6];
 };
 
@@ -314,8 +314,8 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	struct bcmgenet_eth_priv *priv = edev->priv;
 	void *desc_base = priv->mac_reg + GENET_RX_OFF + priv->rx_index * DMA_DESC_SIZE;
 	u32 prod_index = readl(priv->mac_reg + RDMA_PROD_INDEX);
-	u32 length;
-	unsigned long addr_lo, addr_hi, addr;
+	u32 length, addr_lo, addr_hi;
+	dma_addr_t addr;
 
 	if (prod_index == priv->c_index)
 		return -EAGAIN;
@@ -324,7 +324,7 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	length = (length >> DMA_BUFLENGTH_SHIFT) & DMA_BUFLENGTH_MASK;
 	addr_lo = readl(desc_base + DMA_DESC_ADDRESS_LO);
 	addr_hi = readl(desc_base + DMA_DESC_ADDRESS_HI);
-	addr = addr_hi << 32 | addr_lo;
+	addr = (u64)addr_hi << 32 | addr_lo;
 
 	dma_sync_single_for_cpu(addr, length, DMA_FROM_DEVICE);
 
@@ -518,7 +518,7 @@ static int bcmgenet_mdio_read(struct mii_bus *bus, int addr, int reg)
 	return val & 0xffff;
 }
 
-static int bcmgenet_probe(struct device_d *dev)
+static int bcmgenet_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct bcmgenet_eth_priv *priv;
@@ -561,7 +561,7 @@ static int bcmgenet_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	ret = of_get_phy_mode(dev->device_node);
+	ret = of_get_phy_mode(dev->of_node);
 	if (ret < 0)
 		priv->interface = PHY_INTERFACE_MODE_MII;
 	else
@@ -579,8 +579,8 @@ static int bcmgenet_probe(struct device_d *dev)
 
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
-	priv->miibus.dev.device_node
-		= of_get_compatible_child(dev->device_node, "brcm,genet-mdio-v5");
+	priv->miibus.dev.of_node
+		= of_get_compatible_child(dev->of_node, "brcm,genet-mdio-v5");
 
 	ret = mdiobus_register(&priv->miibus);
 	if (ret)
@@ -600,7 +600,7 @@ static void bcmgenet_gmac_eth_stop(struct bcmgenet_eth_priv *priv)
 	bcmgenet_disable_dma(priv);
 }
 
-static void bcmgenet_remove(struct device_d *dev)
+static void bcmgenet_remove(struct device *dev)
 {
 	struct bcmgenet_eth_priv *priv = dev->priv;
 
@@ -617,7 +617,7 @@ static struct of_device_id bcmgenet_ids[] = {
         },
 };
 
-static struct driver_d bcmgenet_driver = {
+static struct driver bcmgenet_driver = {
         .name   = "brcm-genet",
         .probe  = bcmgenet_probe,
         .remove = bcmgenet_remove,

@@ -7,13 +7,13 @@
 #include <net.h>
 #include <platform_data/ksz9477_reg.h>
 #include <spi/spi.h>
+#include <i2c/i2c.h>
+#include "ksz_common.h"
 
 /* SPI frame opcodes */
-#define KS_SPIOP_RD			3
-#define KS_SPIOP_WR			2
 
 #define SPI_ADDR_SHIFT			24
-#define SPI_ADDR_MASK			(BIT(SPI_ADDR_SHIFT) - 1)
+#define SPI_ADDR_ALIGN			3
 #define SPI_TURNAROUND_SHIFT		5
 
 #define GBIT_SUPPORT			BIT(0)
@@ -21,131 +21,13 @@
 #define IS_9893				BIT(2)
 #define KSZ9477_PHY_ERRATA		BIT(3)
 
-struct ksz_switch {
-	struct spi_device *spi;
-	struct dsa_switch ds;
-	struct device_d *dev;
-	int phy_port_cnt;
-	u32 chip_id;
-	u8 features;
-};
-
-static int ksz9477_spi_read_reg(struct spi_device *spi, u32 reg, u8 *val,
-				unsigned int len)
-{
-	u32 txbuf;
-	int ret;
-
-	txbuf = reg & SPI_ADDR_MASK;
-	txbuf |= KS_SPIOP_RD << SPI_ADDR_SHIFT;
-	txbuf <<= SPI_TURNAROUND_SHIFT;
-	txbuf = cpu_to_be32(txbuf);
-
-	ret = spi_write_then_read(spi, &txbuf, 4, val, len);
-
-	return ret;
-}
-
-static int ksz9477_spi_write_reg(struct spi_device *spi, u32 reg, u8 *val,
-				 unsigned int len)
-{
-	u32 txbuf[2];
-
-	txbuf[0] = reg & SPI_ADDR_MASK;
-	txbuf[0] |= (KS_SPIOP_WR << SPI_ADDR_SHIFT);
-	txbuf[0] <<= SPI_TURNAROUND_SHIFT;
-	txbuf[0] = cpu_to_be32(*txbuf);
-	memcpy(&txbuf[1], val, len);
-
-	return spi_write(spi, txbuf, 4 + len);
-}
-
-static int ksz_read8(struct ksz_switch *priv, u32 reg, u8 *val)
-{
-	return ksz9477_spi_read_reg(priv->spi, reg, val, 1);
-}
-
-static int ksz_write8(struct ksz_switch *priv, u32 reg, u8 value)
-{
-	return ksz9477_spi_write_reg(priv->spi, reg, &value, 1);
-}
-
-static int ksz_read16(struct ksz_switch *priv, u32 reg, u16 *val)
-{
-	int ret = ksz9477_spi_read_reg(priv->spi, reg, (u8 *)val, 2);
-
-	if (!ret)
-		*val = be16_to_cpu(*val);
-
-	return ret;
-}
-
-static int ksz_write16(struct ksz_switch *priv, u32 reg, u16 value)
-{
-	struct spi_device *spi = priv->spi;
-
-	value = cpu_to_be16(value);
-	return ksz9477_spi_write_reg(spi, reg, (u8 *)&value, 2);
-}
-
-static int ksz_read32(struct ksz_switch *priv, u32 reg, u32 *val)
-{
-	int ret = ksz9477_spi_read_reg(priv->spi, reg, (u8 *)val, 4);
-
-	if (!ret)
-		*val = be32_to_cpu(*val);
-
-	return ret;
-}
-
-static int ksz_write32(struct ksz_switch *priv, u32 reg, u32 value)
-{
-	struct spi_device *spi = priv->spi;
-
-	value = cpu_to_be32(value);
-	return ksz9477_spi_write_reg(spi, reg, (u8 *)&value, 4);
-}
-
-static void ksz_cfg(struct ksz_switch *priv, u32 addr, u8 bits, bool set)
-{
-	u8 data;
-
-	ksz_read8(priv, addr, &data);
-	if (set)
-		data |= bits;
-	else
-		data &= ~bits;
-	ksz_write8(priv, addr, data);
-}
-
-static int ksz_pread8(struct ksz_switch *priv, int port, int reg, u8 *val)
-{
-	return ksz_read8(priv, PORT_CTRL_ADDR(port, reg), val);
-}
-
-static int ksz_pwrite8(struct ksz_switch *priv, int port, int reg, u8 val)
-{
-	return ksz_write8(priv, PORT_CTRL_ADDR(port, reg), val);
-}
-
-static int ksz_pread16(struct ksz_switch *priv, int port, int reg, u16 *val)
-{
-	return ksz_read16(priv, PORT_CTRL_ADDR(port, reg), val);
-}
-
-static int ksz_pwrite16(struct ksz_switch *priv, int port, int reg, u16 val)
-{
-	return ksz_write16(priv, PORT_CTRL_ADDR(port, reg), val);
-}
-
-static int ksz_pwrite32(struct ksz_switch *priv, int port, int reg, u32 val)
-{
-	return ksz_write32(priv, PORT_CTRL_ADDR(port, reg), val);
-}
+KSZ_REGMAP_TABLE(ksz9477_spi, 32, SPI_ADDR_SHIFT,
+		 SPI_TURNAROUND_SHIFT, SPI_ADDR_ALIGN);
+KSZ_REGMAP_TABLE(ksz9477_i2c, not_used, 16, 0, 0);
 
 static int ksz9477_phy_read16(struct dsa_switch *ds, int addr, int reg)
 {
-	struct device_d *dev = ds->dev;
+	struct device *dev = ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
 	u16 val = 0xffff;
 
@@ -160,7 +42,7 @@ static int ksz9477_phy_read16(struct dsa_switch *ds, int addr, int reg)
 static int ksz9477_phy_write16(struct dsa_switch *ds, int addr, int reg,
 			       u16 val)
 {
-	struct device_d *dev = ds->dev;
+	struct device *dev = ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
 
 	/* No real PHY after this. */
@@ -200,7 +82,7 @@ static int ksz9477_switch_detect(struct ksz_switch *priv)
 	id_lo = (u8)(id32 >> 8);
 	if ((id_lo & 0xf) == 3) {
 		/* Chip is from KSZ9893 design. */
-		dev_info(priv->dev, "Found KSZ9893\n");
+		dev_info(priv->dev, "Found KSZ9893 or compatible\n");
 		priv->features |= IS_9893;
 		priv->features &= ~KSZ9477_PHY_ERRATA;
 
@@ -431,7 +313,7 @@ static int ksz_port_setup(struct ksz_switch *priv, int port,
 static int ksz_port_enable(struct dsa_port *dp, int port,
 			   struct phy_device *phy)
 {
-	struct device_d *dev = dp->ds->dev;
+	struct device *dev = dp->ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
 	u8 data8;
 	int ret;
@@ -479,7 +361,7 @@ static int ksz_recv(struct dsa_switch *ds, int *port, void *packet, int length)
 	return 0;
 };
 
-static const struct dsa_ops ksz_dsa_ops = {
+static const struct dsa_switch_ops ksz_dsa_ops = {
 	.port_enable = ksz_port_enable,
 	.xmit = ksz_xmit,
 	.rcv = ksz_recv,
@@ -503,8 +385,30 @@ static int ksz_default_setup(struct ksz_switch *priv)
 	return 0;
 }
 
-static int microchip_switch_probe(struct device_d *dev)
+static int microchip_switch_regmap_init(struct ksz_switch *priv)
 {
+	const struct regmap_config *cfg;
+	int i;
+
+	cfg = priv->spi ? ksz9477_spi_regmap_config : ksz9477_i2c_regmap_config;
+
+	for (i = 0; i < KSZ_REGMAP_ENTRY_COUNT; i++) {
+		if (priv->spi)
+			priv->regmap[i] = regmap_init_spi(priv->spi, &cfg[i]);
+		else
+			priv->regmap[i] = regmap_init_i2c(priv->i2c, &cfg[i]);
+		if (IS_ERR(priv->regmap[i]))
+			return dev_err_probe(priv->dev, PTR_ERR(priv->regmap[i]),
+					     "Failed to initialize regmap%i\n",
+					     cfg[i].val_bits);
+	}
+
+	return 0;
+}
+
+static int microchip_switch_probe(struct device *dev)
+{
+	struct device *hw_dev;
 	struct ksz_switch *priv;
 	int ret = 0, gpio;
 	struct dsa_switch *ds;
@@ -514,9 +418,19 @@ static int microchip_switch_probe(struct device_d *dev)
 	dev->priv = priv;
 	priv->dev = dev;
 
-	priv->spi = (struct spi_device *)dev->type_data;
-	priv->spi->mode = SPI_MODE_0;
-	priv->spi->bits_per_word = 8;
+	if (dev_bus_is_spi(dev)) {
+		priv->spi = (struct spi_device *)dev->type_data;
+		priv->spi->mode = SPI_MODE_0;
+		priv->spi->bits_per_word = 8;
+		hw_dev = &priv->spi->dev;
+	} else if (dev_bus_is_i2c(dev)) {
+		priv->i2c = dev->type_data;
+		hw_dev = &priv->i2c->dev;
+	}
+
+	ret = microchip_switch_regmap_init(priv);
+	if (ret)
+		return ret;
 
 	gpio = gpiod_get(dev, "reset", GPIOF_OUT_INIT_ACTIVE);
 	if (gpio_is_valid(gpio)) {
@@ -528,8 +442,7 @@ static int microchip_switch_probe(struct device_d *dev)
 
 	ret = ksz9477_switch_detect(dev->priv);
 	if (ret) {
-		dev_err(&priv->spi->dev, "error detecting KSZ9477: %s\n",
-			strerror(-ret));
+		dev_err(hw_dev, "error detecting KSZ9477: %pe\n", ERR_PTR(ret));
 		return -ENODEV;
 	}
 
@@ -548,19 +461,31 @@ static int microchip_switch_probe(struct device_d *dev)
 
 	ksz_default_setup(priv);
 
-	return dsa_register_switch(ds);
+	ret = dsa_register_switch(ds);
+	if (ret)
+		return ret;
+
+	return regmap_multi_register_cdev(priv->regmap[0], priv->regmap[1],
+					  priv->regmap[2], NULL);
 }
 
 static const struct of_device_id microchip_switch_dt_ids[] = {
+	{ .compatible = "microchip,ksz8563" },
 	{ .compatible = "microchip,ksz9477" },
 	{ .compatible = "microchip,ksz9563" },
 	{ }
 };
 
-static struct driver_d microchip_switch_driver = {
-	.name		= "ksz9477",
+static struct driver microchip_switch_spi_driver = {
+	.name		= "ksz9477-spi",
 	.probe		= microchip_switch_probe,
 	.of_compatible	= DRV_OF_COMPAT(microchip_switch_dt_ids),
 };
+device_spi_driver(microchip_switch_spi_driver);
 
-device_spi_driver(microchip_switch_driver);
+static struct driver microchip_switch_i2c_driver = {
+	.name		= "ksz9477-i2c",
+	.probe		= microchip_switch_probe,
+	.of_compatible	= DRV_OF_COMPAT(microchip_switch_dt_ids),
+};
+device_i2c_driver(microchip_switch_i2c_driver);

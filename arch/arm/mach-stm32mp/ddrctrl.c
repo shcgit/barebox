@@ -129,7 +129,7 @@ void __noreturn stm32mp1_barebox_entry(void *boarddata)
 }
 
 
-static int stm32mp1_ddr_probe(struct device_d *dev)
+static int stm32mp1_ddr_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -152,20 +152,9 @@ static __maybe_unused struct of_device_id stm32mp1_ddr_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32mp1_ddr_driver = {
+static struct driver stm32mp1_ddr_driver = {
 	.name   = "stm32mp1-ddr",
 	.probe  = stm32mp1_ddr_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32mp1_ddr_dt_ids),
 };
-
-static int stm32mp1_ddr_init(void)
-{
-	int ret;
-
-	ret = platform_driver_register(&stm32mp1_ddr_driver);
-	if (ret)
-		return ret;
-
-	return of_devices_ensure_probed_by_dev_id(stm32mp1_ddr_dt_ids);
-}
-mem_initcall(stm32mp1_ddr_init);
+mem_platform_driver(stm32mp1_ddr_driver);
