@@ -16,13 +16,13 @@
 	chosen {
 		environment {
 			compatible = "barebox,environment";
-			device-path = &nand0, "partname:env";
+			device-path = &nand_environment;
 		};
 	};
 };
 
 &nand_parts {
-	partition@180000 {
+	nand_environment: partition@180000 {
 		label = "env";
 		reg = <0x180000 0x40000>;
 	};
