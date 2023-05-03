@@ -140,7 +140,8 @@ static void efi_bio_print_info(struct device_d *dev)
 
 static bool is_bio_usbdev(struct efi_device *efidev)
 {
-	return efi_device_has_guid(efidev, EFI_USB_IO_PROTOCOL_GUID);
+	return IS_ENABLED(CONFIG_EFI_BLK_SEPARATE_USBDISK) &&
+		efi_device_has_guid(efidev, EFI_USB_IO_PROTOCOL_GUID);
 }
 
 static int efi_bio_probe(struct efi_device *efidev)
@@ -187,7 +188,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 		return ret;
 
 	if (efi_get_bootsource() == efidev)
-		bootsource_set_instance(instance);
+		bootsource_set_raw_instance(instance);
 
 	parse_partition_table(&priv->blk);
 

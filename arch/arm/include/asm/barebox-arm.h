@@ -20,6 +20,8 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/common.h>
 #include <asm/sections.h>
+#include <asm/reloc.h>
+#include <linux/stringify.h>
 
 /*
  * We have a 4GiB address space split into 1MiB sections, with each
@@ -27,34 +29,6 @@
  */
 #define ARM_TTB_SIZE	(SZ_4G / SZ_1M * sizeof(u32))
 
-unsigned long get_runtime_offset(void);
-
-/* global_variable_offset() - Access global variables when not running at link address
- *
- * Get the offset of global variables when not running at the address we are
- * linked at.
- */
-static inline unsigned long global_variable_offset(void)
-{
-#ifdef CONFIG_CPU_V8
-	unsigned long text;
-
-	__asm__ __volatile__(
-		"adr    %0, _text\n"
-		: "=r" (text)
-		:
-		: "memory");
-	return text - (unsigned long)_text;
-#else
-	return get_runtime_offset();
-#endif
-}
-
-void setup_c(void);
-void pbl_barebox_break(void);
-void relocate_to_current_adr(void);
-void relocate_to_adr(unsigned long target);
-void relocate_to_adr_full(unsigned long target);
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
 
 struct barebox_arm_boarddata {
@@ -164,23 +138,23 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 
 #ifdef CONFIG_CPU_64
 
-#define ____emit_entry_prologue(instr, ...) do { \
-	static __attribute__ ((unused,section(".text_head_prologue"))) \
+#define ____emit_entry_prologue(name, instr, ...) do { \
+	static __attribute__ ((unused,section(".text_head_prologue_" __stringify(name)))) \
 		const u32 __entry_prologue[] = {(instr), ##__VA_ARGS__}; \
 	barrier_data(__entry_prologue); \
 } while(0)
 
-#define __emit_entry_prologue(instr1, instr2, instr3, instr4, instr5) \
-	____emit_entry_prologue(instr1, instr2, instr3, instr4, instr5)
+#define __emit_entry_prologue(name, instr1, instr2, instr3, instr4, instr5) \
+	____emit_entry_prologue(name, instr1, instr2, instr3, instr4, instr5)
 
-#define __ARM_SETUP_STACK(stack_top) \
-	__emit_entry_prologue(0x14000002	/* b pc+0x8 */,		\
+#define __ARM_SETUP_STACK(name, stack_top) \
+	__emit_entry_prologue(name, 0x14000002	/* b pc+0x8 */,		\
 			      stack_top		/* 32-bit literal */,	\
 			      0x18ffffe9	/* ldr w9, top */,	\
 			      0xb4000049	/* cbz x9, pc+0x8 */,	\
 			      0x9100013f	/* mov sp, x9 */)
 #else
-#define __ARM_SETUP_STACK(stack_top) if (stack_top) arm_setup_stack(stack_top)
+#define __ARM_SETUP_STACK(name, stack_top) if (stack_top) arm_setup_stack(stack_top)
 #endif
 
 /*
@@ -201,7 +175,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 				(ulong r0, ulong r1, ulong r2)		\
 		{							\
 			__barebox_arm_head();				\
-			__ARM_SETUP_STACK(stack_top);			\
+			__ARM_SETUP_STACK(name, stack_top);		\
 			__##name(r0, r1, r2);				\
 		}							\
 		static void noinline __##name				\
@@ -211,7 +185,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	static void ____##name(ulong, ulong, ulong);			\
 	ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	{								\
-		__ARM_SETUP_STACK(stack_top);				\
+		__ARM_SETUP_STACK(name, stack_top);			\
 		____##name(arg0, arg1, arg2);				\
 	}								\
 	static void noinline ____##name					\
@@ -228,7 +202,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 				(ulong r0, ulong r1, ulong r2)		\
 		{							\
 			__barebox_arm_head();				\
-			__ARM_SETUP_STACK(0);				\
+			__ARM_SETUP_STACK(name, 0);			\
 			__##name(r0, r1, r2);				\
 		}							\
 		static void NAKED noinline __##name			\

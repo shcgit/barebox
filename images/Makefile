@@ -108,18 +108,13 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
 
-suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
-suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)  = lzo
-suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4)	= lz4
-suffix_$(CONFIG_IMAGE_COMPRESSION_XZKERN) = xzkern
-suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy
-
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 
 $(obj)/sha_sum.o: $(obj)/barebox.sha.bin FORCE
 
 quiet_cmd_sha256bin ?= SHA-BIN $@
-      cmd_sha256bin ?= printf "$(shell awk '{printf $$1}' < $(obj)/barebox.sum | sed -e 's/../\\x&/g' )" > $@
+      cmd_sha256bin = printf "$(shell sed 's/ .*$$//;s/../0x&\n/g;s/\n$$//' $(obj)/barebox.sum | \
+			while read -r byte; do printf '\%o' $$byte; done)" > $@
 
 quiet_cmd_sha256sum ?= SHA     $@
       cmd_sha256sum ?= sha256sum $(obj)/barebox.z > $@
