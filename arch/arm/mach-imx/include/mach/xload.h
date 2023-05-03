@@ -12,6 +12,7 @@ int imx6_spi_start_image(int instance);
 int imx6_esdhc_start_image(int instance);
 int imx6_nand_start_image(void);
 int imx7_esdhc_start_image(int instance);
+int imx7_nand_start_image(void);
 int imx8m_esdhc_load_image(int instance, bool start);
 int imx8mn_esdhc_load_image(int instance, bool start);
 int imx8mp_esdhc_load_image(int instance, bool start);
@@ -29,5 +30,16 @@ int piggydata_size(void);
 
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
+
+struct imx_scratch_space {
+	u32 bootrom_log[128];
+};
+
+struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth);
+
+#define imx8mq_scratch_space() __imx8m_scratch_space(32)
+#define imx8mm_scratch_space() __imx8m_scratch_space(32)
+#define imx8mn_scratch_space() __imx8m_scratch_space(16)
+#define imx8mp_scratch_space() __imx8m_scratch_space(32)
 
 #endif /* __MACH_XLOAD_H */

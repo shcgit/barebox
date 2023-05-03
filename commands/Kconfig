@@ -60,6 +60,14 @@ config CMD_RISCV_CPUINFO
 	help
 	  Show info about RISC-V CPU
 
+config CMD_BOOTROM
+	bool "bootrom command"
+	depends on ARCH_IMX8M
+	help
+	  Interact with bootrom on i.MX8M
+
+	  bootrom [-la]
+
 config CMD_DEVINFO
 	tristate
 	default y
@@ -325,6 +333,15 @@ config CMD_SLICE
 	  slices are a way to protect resources from being accessed by pollers. The slice
 	  command can be used to print informations about slices and also to manipulate
 	  them on the command line for debugging purposes.
+
+config CMD_FCB
+	depends on BAREBOX_UPDATE_IMX_NAND_FCB
+	tristate
+	prompt "fcb"
+	help
+	  Several i.MX SoCs booting from NAND flash need a so called Flash Control Block
+	  at the beginning of the NAND device. The fcb command prints information about
+	  the FCB.
 
 # end Information commands
 endmenu
