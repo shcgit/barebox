@@ -84,7 +84,7 @@
 		};
 
 		syscon1: syscon@80000100 {
-			compatible = "syscon";
+			compatible = "cirrus,ep7209-syscon1", "syscon";
 			reg = <0x80000100 0x80>;
 		};
 
@@ -155,7 +155,7 @@
 		};
 
 		syscon2: syscon@80001100 {
-			compatible = "syscon";
+			compatible = "cirrus,ep7209-syscon2", "syscon";
 			reg = <0x80001100 0x80>;
 		};
 
@@ -179,7 +179,7 @@
 		};
 
 		syscon3: syscon@80002200 {
-			compatible = "syscon";
+			compatible = "cirrus,ep7209-syscon3", "syscon";
 			reg = <0x80002200 0x40>;
 		};
 	};
