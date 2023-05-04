@@ -25,9 +25,14 @@
 #include <clock.h>
 #include <regmap.h>
 #include <linux/clk.h>
-#include <mach/ocotp.h>
 #include <machine_id.h>
-#include <mach/ocotp-fusemap.h>
+#ifdef CONFIG_ARCH_IMX
+#include <mach/imx/ocotp.h>
+#include <mach/imx/ocotp-fusemap.h>
+#else
+#include <mach/mxs/ocotp.h>
+#include <mach/mxs/ocotp-fusemap.h>
+#endif
 #include <soc/imx8m/featctrl.h>
 #include <linux/nvmem-provider.h>
 

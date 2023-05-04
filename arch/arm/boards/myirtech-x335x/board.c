@@ -7,7 +7,7 @@
 #include <envfs.h>
 #include <init.h>
 #include <linux/sizes.h>
-#include <mach/am33xx-generic.h>
+#include <mach/omap/am33xx-generic.h>
 
 #ifdef CONFIG_I2C
 

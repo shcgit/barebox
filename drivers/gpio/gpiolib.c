@@ -583,7 +583,7 @@ int dev_gpiod_get_index(struct device *dev,
 	buf = NULL;
 
 	if (!label) {
-		if (con_id)
+		if (_con_id)
 			label = buf = basprintf("%s-%s", dev_name(dev), _con_id);
 		else
 			label = dev_name(dev);
@@ -716,7 +716,7 @@ static int do_gpiolib(int argc, char *argv[])
 			printf("\nGPIOs %u-%u, chip %s:\n",
 				gi->chip->base,
 				gi->chip->base + gi->chip->ngpio - 1,
-				gi->chip->dev->name);
+				dev_name(gi->chip->dev));
 			printf("             %-3s %-3s %-9s %-20s %-20s\n", "dir", "val", "requested", "name", "label");
 		}
 

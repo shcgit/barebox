@@ -29,7 +29,7 @@
 #include <linux/err.h>
 
 #include <io.h>
-#include <mach/board.h>
+#include <mach/at91/board.h>
 
 #include <errno.h>
 
@@ -1240,18 +1240,13 @@ static int __init atmel_nand_probe(struct device *dev)
 
 	nand_chip->ecc.mode = pdata->ecc_mode;
 	nand_chip->ecc.strength = pdata->ecc_strength ? : 1;
-	nand_chip->ecc.size = 1 << pdata->ecc_size_shift ? : 512;
+	nand_chip->ecc.size = 1 << (pdata->ecc_size_shift ? : 9);
 
-	if (pdata->ecc_mode == NAND_ECC_HW) {
-		nand_chip->ecc.mode = NAND_ECC_HW;
+	if (pdata->ecc_mode == NAND_ECC_SOFT) {
+		nand_chip->ecc.algo = NAND_ECC_ALGO_HAMMING;
 	}
 
 	nand_chip->legacy.chip_delay = 40;		/* 40us command delay time */
-
-	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&
-			pdata->ecc_mode == NAND_ECC_SOFT_BCH) {
-		nand_chip->ecc.mode = NAND_ECC_SOFT_BCH;
-	}
 
 	if (host->board->bus_width_16) {	/* 16-bit bus width */
 		nand_chip->options |= NAND_BUSWIDTH_16;

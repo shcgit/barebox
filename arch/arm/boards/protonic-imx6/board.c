@@ -13,9 +13,9 @@
 #include <globalvar.h>
 #include <gpio.h>
 #include <i2c/i2c.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
-#include <mach/ocotp-fusemap.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/ocotp-fusemap.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <mfd/syscon.h>
 #include <net.h>
@@ -530,7 +530,7 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 		emmc_flags = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	devicefile = basprintf("mmc%d", dcfg->emmc_usdhc);
+	devicefile = basprintf("/dev/mmc%d", dcfg->emmc_usdhc);
 	if (!devicefile) {
 		ret = -ENOMEM;
 		goto exit_bbu;
@@ -540,7 +540,7 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 	if (ret)
 		goto exit_bbu;
 
-	devicefile = basprintf("mmc%d", dcfg->sd_usdhc);
+	devicefile = basprintf("/dev/mmc%d", dcfg->sd_usdhc);
 	if (!devicefile) {
 		ret = -ENOMEM;
 		goto exit_bbu;
@@ -1262,7 +1262,7 @@ static const struct of_device_id prt_imx6_of_match[] = {
 	{ .compatible = "kvg,vicut1", .data = &prt_imx6_cfg_vicut1 },
 	{ .compatible = "kvg,vicut1q", .data = &prt_imx6_cfg_vicut1q },
 	{ .compatible = "kvg,vicutp", .data = &prt_imx6_cfg_vicutp },
-	{ .compatible = "lan,lanmcu", .data = &prt_imx6_cfg_lanmcu },
+	{ .compatible = "vdl,lanmcu", .data = &prt_imx6_cfg_lanmcu },
 	{ .compatible = "ply,plybas", .data = &prt_imx6_cfg_plybas },
 	{ .compatible = "ply,plym2m", .data = &prt_imx6_cfg_plym2m },
 	{ .compatible = "prt,prti6g", .data = &prt_imx6_cfg_prti6g },

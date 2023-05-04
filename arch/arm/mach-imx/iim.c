@@ -23,11 +23,11 @@
 #include <regulator.h>
 #include <linux/err.h>
 
-#include <mach/iim.h>
-#include <mach/imx51-regs.h>
-#include <mach/imx53-regs.h>
-#include <mach/clock-imx51_53.h>
-#include <mach/imx25-fusemap.h>
+#include <mach/imx/iim.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/clock-imx51_53.h>
+#include <mach/imx/imx25-fusemap.h>
 
 #define DRIVERNAME	"imx_iim"
 #define IIM_NUM_BANKS	8
@@ -291,7 +291,7 @@ err_out:
 	return ret;
 }
 
-static ssize_t imx_iim_reg_write(void *ctx, unsigned int reg, unsigned int val)
+static int imx_iim_reg_write(void *ctx, unsigned int reg, unsigned int val)
 {
 	struct iim_bank *bank = ctx;
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 2023
-PATCHLEVEL = 03
+PATCHLEVEL = 04
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = None
@@ -364,7 +364,7 @@ KCONFIG_CONFIG	?= .config
 
 CROSS_PKG_CONFIG ?= $(CROSS_COMPILE)pkg-config
 
-export KCONFIG_CONFIG
+export KCONFIG_CONFIG CROSS_PKG_CONFIG
 
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
@@ -1145,8 +1145,8 @@ CLEAN_FILES +=	barebox System.map stickypage.bin include/generated/barebox_defau
                 .tmp_version .tmp_barebox* barebox.bin barebox.map \
 		.tmp_kallsyms* barebox.ldr compile_commands.json \
 		barebox-flash-image \
-		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
-		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart \
+		barebox.srec barebox.s5p barebox.ubl \
+		barebox.uimage \
 		barebox.efi barebox.canon-a1100.bin
 
 CLEAN_FILES +=	scripts/bareboxenv-target scripts/kernel-install-target \
