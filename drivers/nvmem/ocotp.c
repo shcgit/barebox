@@ -88,6 +88,7 @@
 #define MAC_OFFSET_0			(0x22 * 4)
 #define IMX6UL_MAC_OFFSET_1		(0x23 * 4)
 #define MAC_OFFSET_1			(0x24 * 4)
+#define IMX8MP_MAC_OFFSET_1		(0x25 * 4)
 #define MAX_MAC_OFFSETS			2
 #define MAC_BYTES			8
 #define UNIQUE_ID_NUM			2
@@ -130,7 +131,6 @@ struct ocotp_priv {
 	struct regmap_config map_config;
 	const struct imx_ocotp_data *data;
 	int  mac_offset_idx;
-	struct nvmem_config config;
 };
 
 static struct ocotp_priv *imx_ocotp;
@@ -598,7 +598,7 @@ static int imx_ocotp_read_mac(const struct imx_ocotp_data *data,
 	if (ret < 0)
 		return ret;
 
-	if (offset != IMX6UL_MAC_OFFSET_1)
+	if (offset != IMX6UL_MAC_OFFSET_1 && offset != IMX8MP_MAC_OFFSET_1)
 		data->format_mac(mac, buf, OCOTP_HW_TO_MAC);
 	else
 		data->format_mac(mac, buf + 2, OCOTP_HW_TO_MAC);
@@ -624,7 +624,8 @@ static int imx_ocotp_set_mac(struct param_d *param, void *priv)
 	if (ret < 0)
 		return ret;
 
-	if (ethaddr->offset != IMX6UL_MAC_OFFSET_1)
+	if (ethaddr->offset != IMX6UL_MAC_OFFSET_1 &&
+	    ethaddr->offset != IMX8MP_MAC_OFFSET_1)
 		ethaddr->data->format_mac(buf, ethaddr->value,
 					  OCOTP_MAC_TO_HW);
 	else
@@ -639,6 +640,21 @@ static struct regmap_bus imx_ocotp_regmap_bus = {
 	.reg_write = imx_ocotp_reg_write,
 	.reg_read = imx_ocotp_reg_read,
 };
+
+static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
+			     void *data, size_t bytes)
+{
+	/* Deal with some post processing of nvmem cell data */
+	if (id && !strcmp(id, "mac-address")) {
+		u8 *buf = data;
+		int i;
+
+		for (i = 0; i < bytes/2; i++)
+			swap(buf[i], buf[bytes - i - 1]);
+	}
+
+	return 0;
+}
 
 static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 {
@@ -680,20 +696,6 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	return imx8m_feat_ctrl_init(priv->dev.parent, tester4, priv->data->feat);
 }
 
-static int imx_ocotp_write(void *ctx, unsigned offset, const void *val, size_t bytes)
-{
-	struct ocotp_priv *priv = ctx;
-
-	return regmap_bulk_write(priv->map, offset, val, bytes);
-}
-
-static int imx_ocotp_read(void *ctx, unsigned offset, void *val, size_t bytes)
-{
-	struct ocotp_priv *priv = ctx;
-
-	return regmap_bulk_read(priv->map, offset, val, bytes);
-}
-
 static void imx_ocotp_set_unique_machine_id(void)
 {
 	uint32_t unique_id_parts[UNIQUE_ID_NUM];
@@ -706,11 +708,6 @@ static void imx_ocotp_set_unique_machine_id(void)
 
 	machine_id_set_hashable(unique_id_parts, sizeof(unique_id_parts));
 }
-
-static const struct nvmem_bus imx_ocotp_nvmem_bus = {
-	.write = imx_ocotp_write,
-	.read  = imx_ocotp_read,
-};
 
 static int imx_ocotp_probe(struct device *dev)
 {
@@ -749,15 +746,8 @@ static int imx_ocotp_probe(struct device *dev)
 	if (IS_ERR(priv->map))
 		return PTR_ERR(priv->map);
 
-	priv->config.name = "imx-ocotp";
-	priv->config.dev = dev;
-	priv->config.priv = priv;
-	priv->config.stride = 4;
-	priv->config.word_size = 4;
-	priv->config.size = data->num_regs;
-	priv->config.bus = &imx_ocotp_nvmem_bus;
-
-	nvmem = nvmem_register(&priv->config);
+	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx-ocotp",
+					      imx_ocotp_cell_pp);
 	if (IS_ERR(nvmem))
 		return PTR_ERR(nvmem);
 
@@ -898,7 +888,7 @@ static struct imx_ocotp_data imx8mp_ocotp_data = {
 	.num_regs = 1024,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 2,
-	.mac_offsets = { 0x90, 0x96 },
+	.mac_offsets = { 0x90, 0x94 },
 	.format_mac = imx_ocotp_format_mac,
 	.feat = &imx8mp_featctrl_data,
 };

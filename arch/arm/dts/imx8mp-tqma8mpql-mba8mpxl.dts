@@ -24,6 +24,8 @@
 	};
 };
 
+/delete-node/ &{/memory@40000000};
+
 &usdhc2 {
 	#address-cells = <1>;
 	#size-cells = <1>;
@@ -52,8 +54,4 @@
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};
-};
-
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x640>;
 };

@@ -30,6 +30,8 @@
 	};
 };
 
+/delete-node/ &{/memory@40000000};
+
 &ethphy1 {
 	reset-assert-us = <15000>;
 	reset-deassert-us = <100000>;
@@ -67,8 +69,4 @@
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};
-};
-
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x640>;
 };
