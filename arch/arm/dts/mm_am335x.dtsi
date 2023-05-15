@@ -363,10 +363,10 @@
 	/delete-property/ pinctrl-names;
 	/delete-property/ pinctrl-0;
 	/delete-property/ pinctrl-1;
+};
 
-	port {
-		/delete-node/ endpoint@0;
-	};
+&lcdc_0 {
+	remote-endpoint = <0>;
 };
 
 &led_mod {

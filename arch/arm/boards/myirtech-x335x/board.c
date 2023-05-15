@@ -130,7 +130,7 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 		printf("Display type: 800x480.\n");
 		break;
 	case 2:
-		/* Reserved for G057QN01 (320x240) */
+		/* Reserved for 320x240 */
 	default:
 		printf("Unhandled display type %i!.\n", dispver);
 		break;
