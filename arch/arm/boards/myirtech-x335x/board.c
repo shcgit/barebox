@@ -102,6 +102,7 @@ static int myir_board_fixup(struct device_node *root, void *unused)
 		printf("Sound not detected!\n");
 
 	if (myir_probe_i2c(adapter, ISL97671_ADDR, 0) >= 0) {
+		/* PH320240T, G057QN01 */
 		myir_set_timing(root, "/panel/display-timings/PH320240T");
 		printf("Display type: 320x240.\n");
 		return 0;
