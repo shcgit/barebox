@@ -48,32 +48,6 @@
 				vsync-active = <0>;
 				de-active = <1>;
 			};
-
-			timing0_1: PD104SL5 {
-				clock-frequency = <33250000>;
-				hactive = <800>;
-				vactive = <600>;
-				hback-porch = <30>;
-				hfront-porch = <30>;
-				hsync-len = <60>;
-				vback-porch = <1>;
-				vfront-porch = <1>;
-				vsync-len = <2>;
-				de-active = <1>;
-			};
-
-			timing0_2: AA192AA01 {
-				clock-frequency = <55000000>;
-				hactive = <1920>;
-				vactive = <360>;
-				hback-porch = <210>;
-				hfront-porch = <210>;
-				hsync-len = <210>;
-				vback-porch = <10>;
-				vfront-porch = <10>;
-				vsync-len = <10>;
-				de-active = <1>;
-			};
 		};
 
 		port {
