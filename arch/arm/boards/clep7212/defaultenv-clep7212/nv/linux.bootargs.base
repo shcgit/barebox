@@ -1,1 +1,1 @@
-ubi.mtd=nand-gpio feature-sound feature-hostapp
+ubi.mtd=nand-gpio feature-hostapp
