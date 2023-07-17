@@ -434,7 +434,7 @@
 
 /* Fix for linux-6.3 */
 &nand0 {
-	gpmc,wait-pin = <0>;
+//	gpmc,wait-pin = <0>;
 //	gpmc,wait-on-read;
 //	gpmc,wait-on-write;
 	ti,nand-xfer-type = "prefetch-dma";
