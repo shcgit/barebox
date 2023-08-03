@@ -1757,7 +1757,7 @@ int barebox_register_of(struct device_node *root)
 	of_fix_tree(root);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {
-		of_clk_init(root, NULL);
+		of_clk_init();
 		if (!deep_probe_is_supported())
 			return of_probe();
 	}
@@ -2317,6 +2317,22 @@ struct property *of_rename_property(struct device_node *np,
 	pp->name = xstrdup(new_name);
 	return pp;
 }
+
+struct property *of_copy_property(const struct device_node *src,
+				  const char *propname,
+				  struct device_node *dst)
+{
+	struct property *prop;
+
+	prop = of_find_property(src, propname, NULL);
+	if (!prop)
+		return NULL;
+
+	return of_new_property(dst, propname,
+			       of_property_get_value(prop), prop->length);
+}
+EXPORT_SYMBOL_GPL(of_copy_property);
+
 
 /**
  * of_set_property - create a property for a given node

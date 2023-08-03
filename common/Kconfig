@@ -1016,6 +1016,8 @@ config STATE
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER
+	imply STATE_DRV
+	imply CMD_STATE
 	help
 	  barebox state is a generic framework for atomic power fail-safe
 	  variable storage and retrieval. It can be used to safely maintain
@@ -1634,7 +1636,7 @@ config DEBUG_INITCALLS
 
 config DEBUG_PBL
 	bool "Print PBL debugging information"
-	depends on PBL_CONSOLE || DEBUG_LL
+	depends on PBL_CONSOLE
 	help
 	  If enabled this will enable all debug prints in the prebootloader.
 	  For this to work, a console needs to be configured in the

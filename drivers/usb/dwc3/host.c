@@ -24,13 +24,17 @@ int dwc3_host_init(struct dwc3 *dwc)
 		return PTR_ERR(io);
 	}
 
-	dwc->xhci = add_generic_device("xHCI", DEVICE_ID_DYNAMIC, NULL,
-				       io->start, resource_size(io),
-				       IORESOURCE_MEM, NULL);
+	dwc->xhci = add_child_device(dev, "xHCI", DEVICE_ID_DYNAMIC, NULL,
+				     io->start, resource_size(io),
+				     IORESOURCE_MEM, NULL);
 	if (!dwc->xhci) {
 		dev_err(dev, "Failed to register xHCI device\n");
 		return -ENODEV;
 	}
-	
+
 	return 0;
+}
+
+void dwc3_host_exit(struct dwc3 *dwc)
+{
 }

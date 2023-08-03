@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <io.h>
+#include <image-metadata.h>
 #include <common.h>
 #include <debug_ll.h>
 #include <mach/imx/debug_ll.h>
