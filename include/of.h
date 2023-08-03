@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/err.h>
 #include <asm/byteorder.h>
 
 /* Default string compare functions */
@@ -123,6 +124,7 @@ int of_fixup_reserved_memory(struct device_node *node, void *data);
 struct cdev;
 
 #ifdef CONFIG_OFTREE
+extern struct device_node *of_read_file(const char *filename);
 extern struct of_reserve_map *of_get_reserve_map(void);
 extern int of_bus_n_addr_cells(struct device_node *np);
 extern int of_n_addr_cells(struct device_node *np);
@@ -334,6 +336,16 @@ int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flag
 struct device_node *of_find_node_by_devpath(struct device_node *root, const char *path);
 int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
 int of_unregister_fixup(int (*fixup)(struct device_node *, void *), void *context);
+
+struct of_fixup {
+	int (*fixup)(struct device_node *, void *);
+	void *context;
+	struct list_head list;
+	bool disabled;
+};
+
+extern struct list_head of_fixup_list;
+
 int of_register_set_status_fixup(const char *node, bool status);
 struct device_node *of_find_node_by_alias(struct device_node *root,
 		const char *alias);
@@ -349,6 +361,11 @@ static inline const char *of_node_full_name(const struct device_node *np)
 }
 
 #else
+static inline struct device_node *of_read_file(const char *filename)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
 static inline struct of_reserve_map *of_get_reserve_map(void)
 {
 	return NULL;
@@ -413,6 +430,11 @@ static inline struct device_node *of_get_root_node(void)
 }
 
 static inline int of_set_root_node(struct device_node *node)
+{
+	return -ENOSYS;
+}
+
+static inline int barebox_register_of(struct device_node *root)
 {
 	return -ENOSYS;
 }

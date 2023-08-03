@@ -22,7 +22,10 @@
 
 #include "mmu_64.h"
 
-static uint64_t *ttb;
+static uint64_t *get_ttb(void)
+{
+	return (uint64_t *)get_ttbr(current_el());
+}
 
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
@@ -32,7 +35,20 @@ static void set_table(uint64_t *pt, uint64_t *table_addr)
 	*pt = val;
 }
 
-static uint64_t *create_table(void)
+#ifdef __PBL__
+static uint64_t *alloc_pte(void)
+{
+	static unsigned int idx;
+
+	idx++;
+
+	if (idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
+		return NULL;
+
+	return get_ttb() + idx * GRANULE_SIZE;
+}
+#else
+static uint64_t *alloc_pte(void)
 {
 	uint64_t *new_table = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
@@ -41,6 +57,7 @@ static uint64_t *create_table(void)
 
 	return new_table;
 }
+#endif
 
 static __maybe_unused uint64_t *find_pte(uint64_t addr)
 {
@@ -49,7 +66,7 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 	uint64_t idx;
 	int i;
 
-	pte = ttb;
+	pte = get_ttb();
 
 	for (i = 0; i < 4; i++) {
 		block_shift = level2shift(i);
@@ -81,7 +98,7 @@ static void split_block(uint64_t *pte, int level)
 	/* level describes the parent level, we need the child ones */
 	levelshift = level2shift(level + 1);
 
-	new_table = create_table();
+	new_table = alloc_pte();
 
 	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
 		new_table[i] = old_pte | (i << levelshift);
@@ -98,6 +115,7 @@ static void split_block(uint64_t *pte, int level)
 static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 			    uint64_t attr)
 {
+	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
 	uint64_t block_shift;
 	uint64_t *pte;
@@ -106,9 +124,6 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	uint64_t *table;
 	uint64_t type;
 	int level;
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
 
 	addr = virt;
 
@@ -123,7 +138,8 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 
 			pte = table + idx;
 
-			if (size >= block_size && IS_ALIGNED(addr, block_size)) {
+			if (size >= block_size && IS_ALIGNED(addr, block_size) &&
+			    IS_ALIGNED(phys, block_size)) {
 				type = (level == 3) ?
 					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
 				*pte = phys | attr | type;
@@ -143,23 +159,42 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	tlb_invalidate();
 }
 
-int arch_remap_range(void *_start, size_t size, unsigned flags)
+static unsigned long get_pte_attrs(unsigned flags)
 {
-	unsigned long attrs;
-
 	switch (flags) {
 	case MAP_CACHED:
-		attrs = CACHED_MEM;
-		break;
+		return CACHED_MEM;
 	case MAP_UNCACHED:
-		attrs = attrs_uncached_mem();
-		break;
+		return attrs_uncached_mem();
+	case MAP_FAULT:
+		return 0x0;
 	default:
-		return -EINVAL;
+		return ~0UL;
 	}
+}
 
-	create_sections((uint64_t)_start, (uint64_t)_start, (uint64_t)size,
-			attrs);
+static void early_remap_range(uint64_t addr, size_t size, unsigned flags)
+{
+	unsigned long attrs = get_pte_attrs(flags);
+
+	if (WARN_ON(attrs == ~0UL))
+		return;
+
+	create_sections(addr, addr, size, attrs);
+}
+
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
+{
+	unsigned long attrs = get_pte_attrs(flags);
+
+	if (attrs == ~0UL)
+		return -EINVAL;
+
+	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs);
+
+	if (flags == MAP_UNCACHED)
+		dma_inv_range(virt_addr, size);
+
 	return 0;
 }
 
@@ -169,53 +204,43 @@ static void mmu_enable(void)
 	set_cr(get_cr() | CR_M | CR_C | CR_I);
 }
 
-void zero_page_access(void)
-{
-	create_sections(0x0, 0x0, PAGE_SIZE, CACHED_MEM);
-}
-
-void zero_page_faulting(void)
-{
-	create_sections(0x0, 0x0, PAGE_SIZE, 0x0);
-}
-
 /*
  * Prepare MMU for usage enable it.
  */
 void __mmu_init(bool mmu_on)
 {
+	uint64_t *ttb = get_ttb();
 	struct memory_bank *bank;
-	unsigned int el;
 
-	if (mmu_on)
-		mmu_disable();
+	if (!request_sdram_region("ttb", (unsigned long)ttb,
+				  ARM_EARLY_PAGETABLE_SIZE))
+		/*
+		 * This can mean that:
+		 * - the early MMU code has put the ttb into a place
+		 *   which we don't have inside our available memory
+		 * - Somebody else has occupied the ttb region which means
+		 *   the ttb will get corrupted.
+		 */
+		pr_crit("Can't request SDRAM region for ttb at %p\n", ttb);
 
-	ttb = create_table();
-	el = current_el();
-	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el, BITS_PER_VA),
-			  MEMORY_ATTRIBUTES);
-
-	pr_debug("ttb: 0x%p\n", ttb);
-
-	/* create a flat mapping */
-	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), attrs_uncached_mem());
-
-	/* Map sdram cached. */
 	for_each_memory_bank(bank) {
 		struct resource *rsv;
+		resource_size_t pos;
 
-		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
+		pos = bank->start;
 
 		for_each_reserved_region(bank, rsv) {
-			create_sections(resource_first_page(rsv), resource_first_page(rsv),
-					resource_count_pages(rsv), attrs_uncached_mem());
+			remap_range((void *)resource_first_page(rsv),
+				    resource_count_pages(rsv), MAP_UNCACHED);
+			remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
+			pos = rsv->end + 1;
 		}
+
+		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
 
 	/* Make zero page faulting to catch NULL pointer derefs */
 	zero_page_faulting();
-
-	mmu_enable();
 }
 
 void mmu_disable(void)
@@ -249,15 +274,36 @@ void dma_flush_range(void *ptr, size_t size)
 	v8_flush_dcache_range(start, end);
 }
 
-void dma_sync_single_for_device(dma_addr_t address, size_t size,
-                                enum dma_data_direction dir)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
-	/*
-	 * FIXME: This function needs a device argument to support non 1:1 mappings
-	 */
+	int el;
+	unsigned long ttb = arm_mem_ttb(membase + memsize);
 
-	if (dir == DMA_FROM_DEVICE)
-		v8_inv_dcache_range(address, address + size - 1);
-	else
-		v8_flush_dcache_range(address, address + size - 1);
+	pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
+
+	el = current_el();
+	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, BITS_PER_VA), MEMORY_ATTRIBUTES);
+
+	memset((void *)ttb, 0, GRANULE_SIZE);
+
+	early_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
+	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	early_remap_range(membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
+
+	mmu_enable();
+}
+
+void mmu_early_disable(void)
+{
+	unsigned int cr;
+
+	cr = get_cr();
+	cr &= ~(CR_M | CR_C);
+
+	set_cr(cr);
+	v8_flush_dcache_all();
+	tlb_invalidate();
+
+	dsb();
+	isb();
 }

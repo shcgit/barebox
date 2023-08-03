@@ -148,6 +148,7 @@ static int dwc2_probe(struct device *dev)
 		goto error;
 
 	dwc2_set_default_params(dwc2);
+	dwc2_get_device_properties(dwc2);
 
 	set_params = of_device_get_match_data(dev);
 	if (set_params)
@@ -202,6 +203,7 @@ static const struct of_device_id dwc2_platform_dt_ids[] = {
 	  .data = dwc2_set_stm32mp15_hsotg_params },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, dwc2_platform_dt_ids);
 
 static struct driver dwc2_driver = {
 	.name	= "dwc2",

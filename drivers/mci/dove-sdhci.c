@@ -189,6 +189,8 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	case MMC_BUS_WIDTH_4:
 		val |= SDHCI_CTRL_4BITBUS;
 		break;
+	case MMC_BUS_WIDTH_1:
+		break;
 	}
 
 	if (ios->clock > 26000000)
@@ -298,6 +300,7 @@ static struct of_device_id dove_sdhci_dt_ids[] = {
 	{ .compatible = "marvell,dove-sdhci", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, dove_sdhci_dt_ids);
 
 static struct driver dove_sdhci_driver = {
 	.name = "dove-sdhci",

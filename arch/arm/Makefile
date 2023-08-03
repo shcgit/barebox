@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-KBUILD_DEFCONFIG := qemu_virt64_defconfig
+KBUILD_DEFCONFIG := multi_v8_defconfig
 
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
@@ -78,10 +78,13 @@ endif
 ifeq ($(CONFIG_CPU_V8), y)
 KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 KBUILD_AFLAGS   += -include asm/unified.h
-export S64 = _64
+export S64_32 = 64
+export S64 = 64
 else
 KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) $(CFLAGS_THUMB2)
 KBUILD_AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
+export S64_32 = 32
+export S32 = 32
 endif
 
 # Machine directory name.  This list is sorted alphanumerically

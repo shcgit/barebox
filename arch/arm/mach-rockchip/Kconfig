@@ -45,6 +45,12 @@ config ARCH_RK3399PRO
 config ARCH_RK3568
 	bool
 	select ARCH_ROCKCHIP_V8
+	select HW_HAS_PCI
+
+config ARCH_RK3588
+	bool
+	select ARCH_ROCKCHIP_V8
+	select HW_HAS_PCI
 
 comment "select Rockchip boards:"
 
@@ -69,30 +75,42 @@ if 64BIT
 
 config MACH_RK3568_EVB
 	select ARCH_RK3568
+	depends on $(success,test -e $(srctree)/arch/arm/boards/rockchip-rk3568-evb/sdram-init.bin)
 	bool "RK3568 EVB"
 	help
 	  Say Y here if you are using a RK3568 EVB
 
 config MACH_RK3568_BPI_R2PRO
 	select ARCH_RK3568
+	depends on $(success,test -e $(srctree)/arch/arm/boards/rockchip-rk3568-bpi-r2pro/sdram-init.bin)
 	bool "RK3568 BPI R2PRO"
 	help
 	  Say Y here if you are using a RK3568 Bananpi R2 Pro
 
 config MACH_PINE64_QUARTZ64
 	select ARCH_RK3568
+	depends on $(success,test -e $(srctree)/arch/arm/boards/pine64-quartz64/sdram-init.bin)
 	bool "Pine64 Quartz64"
 	help
 	  Say Y here if you are using a Pine64 Quartz64
 
 config MACH_RADXA_ROCK3
-       select ARCH_RK3568
-       bool "Radxa ROCK3"
-       help
+	select ARCH_RK3568
+	depends on $(success,test -e $(srctree)/arch/arm/boards/radxa-rock3/sdram-init.bin)
+	bool "Radxa ROCK3"
+	help
 	  Say Y here if you are using a Radxa ROCK3
+
+config MACH_RADXA_ROCK5
+	select ARCH_RK3588
+	depends on $(success,test -e $(srctree)/arch/arm/boards/radxa-rock5/sdram-init.bin)
+	bool "Radxa ROCK5"
+	help
+	  Say Y here if you are using a Radxa ROCK5
 
 config MACH_RADXA_CM3
 	select ARCH_RK3568
+	depends on $(success,test -e $(srctree)/arch/arm/boards/radxa-cm3/sdram-init.bin)
 	bool "Radxa CM3"
 	help
 	  Say Y here if you are using a Radxa CM3

@@ -64,7 +64,7 @@ static int armv7m_systick_probe(struct device *dev)
 
 	writel_relaxed(SYSTICK_LOAD_RELOAD_MASK, systick_base + SYST_RVR);
 
-	cal = readl(&systick_base + SYST_CALIB);
+	cal = readl(systick_base + SYST_CALIB);
 	if (cal & SYSTICK_CAL_NOREF)
 		writel(SYSTICK_CTRL_EN | SYSTICK_CTRL_CPU_CLK, systick_base + SYST_CSR);
 	else
@@ -79,6 +79,7 @@ static struct of_device_id armv7m_systick_dt_ids[] = {
 	{ .compatible = "arm,armv7m-systick", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, armv7m_systick_dt_ids);
 
 static struct driver armv7m_systick_driver = {
 	.name = "armv7m-systick-timer",

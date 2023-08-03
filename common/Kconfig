@@ -144,6 +144,9 @@ config MEMINFO
 	bool "display memory info"
 	default y
 
+config MEMTEST
+	bool
+
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
 
@@ -185,14 +188,8 @@ config MMU
 	  to enable the data cache which depends on the MMU. See Documentation/mmu.txt
 	  for further information.
 
-config MMU_EARLY
-	bool "Enable MMU early"
-	depends on ARM
-	depends on MMU
-	default y
-	help
-	  This enables the MMU during early startup. This speeds up things during startup
-	  of barebox, but may lead to harder to debug code. If unsure say yes here.
+config MMUINFO
+	bool
 
 config HAVE_CONFIGURABLE_TEXT_BASE
 	bool
@@ -1426,6 +1423,14 @@ config DEBUG_ROCKCHIP_RK3568_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3568.
 
+config DEBUG_ROCKCHIP_RK3588_UART
+	bool "RK3588 Debug UART"
+	depends on ARCH_RK3588
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3588.
+
 config DEBUG_ROCKCHIP_RK3399_UART
 	bool "RK3399 Debug UART"
 	depends on ARCH_RK3399
@@ -1585,6 +1590,7 @@ config DEBUG_ROCKCHIP_UART_PORT
 	int "RK3xxx UART debug port" if DEBUG_ROCKCHIP_RK3188_UART || \
 				DEBUG_ROCKCHIP_RK3288_UART || \
 				DEBUG_ROCKCHIP_RK3568_UART || \
+				DEBUG_ROCKCHIP_RK3588_UART || \
 				DEBUG_ROCKCHIP_RK3399_UART
 	default 2
 	depends on ARCH_ROCKCHIP

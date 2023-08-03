@@ -965,7 +965,10 @@ static int cfi_probe_one(struct flash_info *info, int num)
 		return PTR_ERR(iores);
 	info->base = IOMEM(iores->start);
 
-	/* TODO: either remap memory region or disable NULL pointer page */
+	/*
+	 * Platforms hitting this should remap memory region, e.g. via virtual-reg
+	 * device tree property or disable MMU.
+	 */
 	if (IS_ENABLED(CONFIG_MMU) && iores->start == 0)
 		return -EPERM;
 
@@ -1046,6 +1049,7 @@ static __maybe_unused struct of_device_id cfi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, cfi_dt_ids);
 
 static struct driver cfi_driver = {
 	.name    = "cfi_flash",
