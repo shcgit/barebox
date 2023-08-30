@@ -176,7 +176,7 @@
 	cs-gpios = <&gpio4 24 GPIO_ACTIVE_HIGH>, <&gpio3 3 GPIO_ACTIVE_LOW>,
 		   <&gpio3 13 GPIO_ACTIVE_LOW>;
 
-	relgpios: gpio@1 {
+	gpio@1 {
 		compatible = "fairchild,74hc595";
 		reg = <1>;
 		spi-max-frequency = <4000000>;

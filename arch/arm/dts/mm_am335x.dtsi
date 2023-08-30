@@ -451,7 +451,7 @@
 	pinctrl-0 = <&mm_spi1_pins>;
 	status = "okay";
 
-	outgpios: gpio@0 {
+	gpio@0 {
 		compatible = "fairchild,74hc595";
 		reg = <0>;
 		spi-max-frequency = <4000000>;
