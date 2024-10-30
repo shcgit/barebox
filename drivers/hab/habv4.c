@@ -203,6 +203,8 @@ static uint32_t hab_sip_get_version(void)
 	return (uint32_t)res.a0;
 }
 
+#define HABV4_EVENT_MAX_LEN		0x80
+
 #define IMX8MQ_ROM_OCRAM_ADDRESS	0x9061C0
 #define IMX8MM_ROM_OCRAM_ADDRESS	0x908040
 #define IMX8MN_ROM_OCRAM_ADDRESS	0x908040
@@ -214,10 +216,11 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 {
 	struct hab_event_record *events[10];
 	int num_events = 0;
-	char *sram;
+	u8 *sram;
 	int i = 0;
 	int internal_index = 0;
-	char *end = 0;
+	uint16_t ev_len;
+	u8 *end = 0;
 	struct hab_event_record *search;
 
 	if (cpu_is_mx8mq())
@@ -236,13 +239,26 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 	 * recommends the address and size, however errors are usually contained
 	 * within the first bytes. Scan only the first few bytes to rule out
 	 * lots of false positives.
+	 * The max event length is just a sanity check.
 	 */
-	end = sram +  0x1a0;
+	end = sram + 0x1a0;
 
 	while (sram < end) {
 		if (*sram == 0xdb) {
 			search = (void *)sram;
-			sram = sram + be16_to_cpu(search->hdr.len);
+			ev_len = be16_to_cpu(search->hdr.len);
+			if (ev_len > HABV4_EVENT_MAX_LEN)
+				break;
+
+			sram += ev_len;
+			if (sram > end)
+				break;
+
+			if (num_events == ARRAY_SIZE(events)) {
+				pr_warn("Discarding excess event\n");
+				continue;
+			}
+
 			events[num_events] = search;
 			num_events++;
 		} else {
