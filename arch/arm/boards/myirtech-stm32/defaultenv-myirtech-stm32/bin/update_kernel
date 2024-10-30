@@ -1,0 +1,23 @@
+#!/bin/sh
+
+mmc0.probe=1
+
+MNT=/mnt/mmc0.3
+
+if [ ! -d $MNT ]; then
+	echo "Could not find MMC partition $MNT!"
+	exit 1
+fi
+
+KERNEL=$MNT/zImage
+
+if [ ! -f $KERNEL ]; then
+	echo "Could not find KERNEL image $KERNEL!"
+	exit 1
+fi
+
+ubiupdatevol /dev/nand0.system.ubi.kernel $KERNEL
+
+/env/bin/erase_env
+
+exit 0

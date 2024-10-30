@@ -706,6 +706,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 		for (nr = 0;; nr++)
 			if (!i2c_get_adapter(nr))
 				break;
+
 		adapter->nr = nr;
 	} else {
 		if (i2c_get_adapter(adapter->nr))

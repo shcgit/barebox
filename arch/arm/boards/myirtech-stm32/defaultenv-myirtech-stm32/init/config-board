@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# USB power ON
+gpio_direction_output 406 1
+
+# Beeper ON
+gpio_direction_output 413 1
+
+msleep 240
+
+# Beeper OFF
+gpio_direction_output 413 0

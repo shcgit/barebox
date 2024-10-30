@@ -1,0 +1,41 @@
+#!/bin/sh
+
+mmc0.probe=1
+
+MNT=/mnt/mmc0.3
+
+if [ ! -d $MNT ]; then
+	echo "Could not find MMC partition $MNT!"
+	exit 1
+fi
+
+FSBL=$MNT/tf-a-stm32mp15x-myirtech-myd.stm32
+FIP=$MNT/fip.bin
+
+if [ ! -f $FSBL ]; then
+	echo "Could not find FSBL image $FSBL!"
+	exit 1
+fi
+
+if [ ! -f $FIP ]; then
+	echo "Could not find FIP image $FIP!"
+	exit 1
+fi
+
+erase /dev/nand0.fsbl1
+erase /dev/nand0.fsbl2
+cp $FSBL /dev/nand0.fsbl1
+cp $FSBL /dev/nand0.fsbl2
+
+erase /dev/nand0.fip-a1
+erase /dev/nand0.fip-a2
+erase /dev/nand0.fip-b1
+erase /dev/nand0.fip-b2
+cp $FIP /dev/nand0.fip-a1
+cp $FIP /dev/nand0.fip-a2
+cp $FIP /dev/nand0.fip-b1
+cp $FIP /dev/nand0.fip-b2
+
+/env/bin/erase_env
+
+exit 0

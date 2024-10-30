@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* SPDX-FileCopyrightText: Alexander Shiyan, <shc_work@mail.ru> */
+
+/dts-v1/;
+
+#include "stm32mp151c-myir-myd-ya151c-t.dts"
+#include "stm32mp151.dtsi"
+
+/ {
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &sdmmc2, "partname:env";
+			status = "disabled";
+		};
+
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &fmc, "partname:env";
+			status = "disabled";
+		};
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:env";
+			status = "disabled";
+		};
+	};
+
+	product-info {
+		nvmem-cells = <&product_name>;
+		nvmem-cell-names = "product-name";
+	};
+
+	serial-info {
+		nvmem-cells = <&serial_number>;
+		nvmem-cell-names = "serial-number";
+	};
+};
+
+&bsec {
+	/delete-property/ barebox,provide-mac-address;
+};
+
+&eeprom {
+	product_name: product-name@10 {
+		reg = <0x10 64>;
+		read-only;
+	};
+
+	serial_number: serial-number@50 {
+		reg = <0x50 64>;
+		read-only;
+	};
+};
+
+#include "mm_stm32.dtsi"
