@@ -19,6 +19,7 @@
 #include <asm/cache.h>
 #include <memory.h>
 #include <asm/system_info.h>
+#include <linux/pagemap.h>
 
 #include "mmu_64.h"
 
@@ -45,7 +46,7 @@ static uint64_t *alloc_pte(void)
 	if (idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
 		return NULL;
 
-	return get_ttb() + idx * GRANULE_SIZE;
+	return (void *)get_ttb() + idx * GRANULE_SIZE;
 }
 #else
 static uint64_t *alloc_pte(void)
@@ -99,6 +100,9 @@ static void split_block(uint64_t *pte, int level)
 	levelshift = level2shift(level + 1);
 
 	new_table = alloc_pte();
+	if (!new_table)
+		panic("Unable to allocate PTE\n");
+
 
 	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
 		new_table[i] = old_pte | (i << levelshift);
@@ -128,6 +132,8 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	addr = virt;
 
 	attr &= ~PTE_TYPE_MASK;
+
+	size = PAGE_ALIGN(size);
 
 	while (size) {
 		table = ttb;
