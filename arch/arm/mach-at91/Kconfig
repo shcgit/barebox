@@ -643,14 +643,14 @@ config MACH_SAMA5D27_GIANTBOARD
 	help
 	  Select this if you are using the Groboards sama5d27 Giantboard
 
-config MACH_MM_SM_SAMA5D2_DDR2
-	bool "Mega-Milas SMARC SAMA5D2-DDR2 based board"
+config MACH_MM_SM_SAMA5D2
+	bool "Mega-Milas SMARC SAMA5D2 based board"
 	select SOC_SAMA5D2
 	select OFDEVICE
 	select MCI_ATMEL_SDHCI_PBL
 	select COMMON_CLK_OF_PROVIDER
 	help
-	  Select this if you are using Mega-Milas SMARC SAMA5D2-DDR2 based board
+	  Select this if you are using Mega-Milas SMARC SAMA5D2 based board
 
 config MACH_SAMA5D4_WIFX
 	bool "Wifx L1 LoRaWAN base station"

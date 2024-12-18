@@ -19,7 +19,7 @@
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
 
-SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_ddr2_xload_mmc, r4)
+SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 {
 	void __iomem *dbgu_base;
 	sama5d2_lowlevel_init();
@@ -37,15 +37,12 @@ SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_ddr2_xload_mmc, r4)
 	sama5d2_sdhci_start_image(r4);
 }
 
-//extern char __dtb_z_at91_sama5d27_som1_ek_start[];
-
-SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_ddr2, r4)
+SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2, r4)
 {
-	void *fdt;
+	extern char __dtb_z_mm_sm_sama5d2_evb_start[];
+	void *fdt = __dtb_z_mm_sm_sama5d2_evb_start + get_runtime_offset();
 
 	putc_ll('>');
-
-//	fdt = __dtb_z_at91_sama5d27_som1_ek_start + get_runtime_offset();
 
 	sama5d2_barebox_entry(r4, fdt);
 }
