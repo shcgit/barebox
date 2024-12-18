@@ -4,8 +4,8 @@
 /dts-v1/;
 
 #include <arm/microchip/sama5d2.dtsi>
-//#include <arm/microchip/sama5d2-pinfunc.h>
-//#include <dt-bindings/mfd/atmel-flexcom.h>
+#include <arm/microchip/sama5d2-pinfunc.h>
+#include <dt-bindings/mfd/atmel-flexcom.h>
 //#include <dt-bindings/gpio/gpio.h>
 //#include <dt-bindings/regulator/active-semi,8945a-regulator.h>
 
@@ -13,17 +13,35 @@
 
 / {
 	model = "Mega-Milas MM-SM-SAMA5D2";
-	compatible = "milas,mm-sm-sama5d2", "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+	compatible = "milas,mm-sm-sama5d2",
+		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
 
-//	chosen {
-//		stdout-path = &uart1;
-//
+	aliases {
+		serial0 = &uart8;
+		serial1 = &uart1;
+		serial2 = &uart9;
+		serial3 = &uart3;
+	};
+
+	chosen {
+		stdout-path = &uart1;
+
 //		environment {
 //			compatible = "barebox,environment";
 //			device-path = &sdmmc1;
 //			file-path = "barebox.env";
 //		};
-//	};
+	};
+
+	clocks {
+		slow_xtal {
+			clock-frequency = <32768>;
+		};
+
+		main_xtal {
+			clock-frequency = <12000000>;
+		};
+	};
 
 //	leds {
 //		compatible = "gpio-leds";
@@ -38,15 +56,83 @@
 //	};
 };
 
+&flx3 {
+	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_USART>;
+	status = "okay";
+};
+
+&flx4 {
+	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_USART>;
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	atmel,fifo-size = <32>;
+	status = "okay";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart3>;
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	atmel,fifo-size = <32>;
+	status = "okay";
+};
+
+&uart8 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart8>;
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	atmel,fifo-size = <32>;
+	status = "okay";
+};
+
+&uart9 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart9>;
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	atmel,fifo-size = <32>;
+	status = "okay";
+};
+
+&pioA {
+	pinctrl_uart1: uart1grp {
+		pinmux = <PIN_PD2__URXD1>,
+			 <PIN_PD3__UTXD1>;
+		bias-disable;
+	};
+
+	pinctrl_uart3: uart3grp {
+		pinmux = <PIN_PC12__URXD3>,
+			 <PIN_PC13__UTXD3>;
+		bias-disable;
+	};
+
+	pinctrl_uart8: uart8grp {
+		pinmux = <PIN_PC19__FLEXCOM3_IO1>,
+			 <PIN_PC20__FLEXCOM3_IO0>,
+			 <PIN_PC21__FLEXCOM3_IO3>,
+			 <PIN_PC22__FLEXCOM3_IO4>;
+		bias-disable;
+	};
+
+	pinctrl_uart9: uart9grp {
+		pinmux = <PIN_PD12__FLEXCOM4_IO0>,
+			 <PIN_PD13__FLEXCOM4_IO1>,
+			 <PIN_PD15__FLEXCOM4_IO3>,
+			 <PIN_PD16__FLEXCOM4_IO4>;
+		bias-disable;
+	};
+};
+
 #if 0
-&slow_xtal {
-	clock-frequency = <32768>;
-};
-
-&main_xtal {
-	clock-frequency = <24000000>;
-};
-
 &usb0 {
 	status = "okay";
 };
@@ -62,14 +148,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_spi0_default>;
 	status = "disabled";
-};
-
-&uart1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1_default>;
-	atmel,use-dma-rx;
-	atmel,use-dma-tx;
-	status = "okay";
 };
 
 &shutdown_controller {
@@ -270,12 +348,6 @@
 		pinmux = <PIN_PA14__SPI0_SPCK>,
 			 <PIN_PA15__SPI0_MOSI>,
 			 <PIN_PA16__SPI0_MISO>;
-		bias-disable;
-	};
-
-	pinctrl_uart1_default: uart1_default {
-		pinmux = <PIN_PD2__URXD1>,
-			 <PIN_PD3__UTXD1>;
 		bias-disable;
 	};
 
