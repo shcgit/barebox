@@ -6,7 +6,7 @@
 #include <arm/microchip/sama5d2.dtsi>
 #include <arm/microchip/sama5d2-pinfunc.h>
 #include <dt-bindings/mfd/atmel-flexcom.h>
-//#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/gpio/gpio.h>
 //#include <dt-bindings/regulator/active-semi,8945a-regulator.h>
 
 #include "sama5d2.dtsi"
@@ -17,6 +17,10 @@
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
 
 	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		i2c2 = &i2c3;
+		i2c3 = &i2c4;
 		serial0 = &uart8;
 		serial1 = &uart1;
 		serial2 = &uart9;
@@ -56,6 +60,16 @@
 //	};
 };
 
+&flx1 {
+	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_TWI>;
+	status = "okay";
+};
+
+&flx2 {
+	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_TWI>;
+	status = "okay";
+};
+
 &flx3 {
 	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_USART>;
 	status = "okay";
@@ -66,7 +80,36 @@
 	status = "okay";
 };
 
+&i2c0 {
+	/* I2C_PM */
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c0_default>;
+	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+	sda-gpios = <&pioA PIN_PD29 GPIO_ACTIVE_HIGH>;
+	scl-gpios = <&pioA PIN_PD30 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	status = "okay";
+};
+
+&i2c1 {
+	/* I2C_GP */
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c1_default>;
+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+	sda-gpios = <&pioA PIN_PD4 GPIO_ACTIVE_HIGH>;
+	scl-gpios = <&pioA PIN_PD5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	status = "okay";
+};
+
+&i2c3 {
+	//TODO:
+};
+
+&i2c4 {
+	//TODO:
+};
+
 &uart1 {
+	/* SER1 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
 	atmel,use-dma-rx;
@@ -76,6 +119,7 @@
 };
 
 &uart3 {
+	/* SER3 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
 	atmel,use-dma-rx;
@@ -85,6 +129,7 @@
 };
 
 &uart8 {
+	/* SER0 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart8>;
 	atmel,use-dma-rx;
@@ -94,6 +139,7 @@
 };
 
 &uart9 {
+	/* SER2 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart9>;
 	atmel,use-dma-rx;
@@ -102,7 +148,35 @@
 	status = "okay";
 };
 
+&watchdog {
+	status = "okay";
+};
+
 &pioA {
+	pinctrl_i2c0_default: i2c0grp-default {
+		pinmux = <PIN_PD29__TWD0>,
+			 <PIN_PD30__TWCK0>;
+		bias-disable;
+	};
+
+	pinctrl_i2c0_gpio: i2c0grp-gpio {
+		pinmux = <PIN_PD29__GPIO>,
+			 <PIN_PD30__GPIO>;
+		bias-disable;
+	};
+
+	pinctrl_i2c1_default: i2c1grp-default {
+		pinmux = <PIN_PD4__TWD1>,
+			 <PIN_PD5__TWCK1>;
+		bias-disable;
+	};
+
+	pinctrl_i2c1_gpio: i2c1grp-gpio {
+		pinmux = <PIN_PD4__GPIO>,
+			 <PIN_PD5__GPIO>;
+		bias-disable;
+	};
+
 	pinctrl_uart1: uart1grp {
 		pinmux = <PIN_PD2__URXD1>,
 			 <PIN_PD3__UTXD1>;
@@ -158,10 +232,6 @@
 		reg = <0>;
 		atmel,wakeup-type = "low";
 	};
-};
-
-&watchdog {
-	status = "okay";
 };
 
 &i2c0 {
@@ -301,12 +371,6 @@
 			active-semi,total-timeout = <3>;
 		};
 	};
-};
-
-&adc {
-	vddana-supply = <&vdd_3v3_reg>;
-	vref-supply = <&vdd_3v3_reg>;
-	status = "disabled";
 };
 
 &pioA {
