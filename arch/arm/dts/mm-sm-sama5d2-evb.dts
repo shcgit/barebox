@@ -10,3 +10,4 @@
 	compatible = "milas,informer-sama5d2", "milas,mm-sm-sama5d2",
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
 };
+
