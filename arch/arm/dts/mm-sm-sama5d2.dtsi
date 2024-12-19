@@ -163,6 +163,16 @@
 	status = "okay";
 };
 
+&sdmmc1 {
+	/* SDIO */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdmmc1>;
+	bus-width = <4>;
+//vqmmc-supply = <&vdd_3v3_reg>;
+//vmmc-supply = <&vdd_3v3_reg>;
+	//TODO:
+};
+
 &shutdown_controller {
 	debounce-delay-us = <20000>;
 
@@ -304,6 +314,18 @@
 		};
 	};
 
+	pinctrl_sdmmc1: sdmmc1grp {
+		pinmux = <PIN_PA18__SDMMC1_DAT0>,		/* P39 */
+			 <PIN_PA19__SDMMC1_DAT1>,		/* P40 */
+			 <PIN_PA20__SDMMC1_DAT2>,		/* P41 */
+			 <PIN_PA21__SDMMC1_DAT3>,		/* P42 */
+			 <PIN_PA22__SDMMC1_CK>,			/* P36 */
+			 <PIN_PA28__SDMMC1_CMD>,		/* P34 */
+			 <PIN_PA29__SDMMC1_WP>,			/* P33 */
+			 <PIN_PA30__SDMMC1_CD>;			/* P35 */
+		bias-disable;
+	};
+
 	pinctrl_spi0_default: spi0grp-default {
 		pinmux = <PIN_PA14__SPI0_SPCK>,			/* P44 */
 			 <PIN_PA15__SPI0_MOSI>,			/* P46 */
@@ -350,168 +372,3 @@
 		bias-disable;
 	};
 };
-
-#if 0
-&usb0 {
-	status = "okay";
-};
-
-&sdmmc1 {
-	bus-width = <4>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sdmmc1_default>;
-	status = "okay";
-};
-
-&i2c1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c1_default>;
-	dmas = <0>, <0>;
-	i2c-sda-hold-time-ns = <350>;
-	status = "okay";
-
-	pmic@5b {
-		compatible = "active-semi,act8945a";
-		reg = <0x5b>;
-		active-semi,vsel-low;
-
-		regulators {
-			vdd_1v8_reg: REG_DCDC1 {
-				regulator-name = "VDD_1V8";
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-				regulator-always-on;
-
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_FIXED>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_FIXED>;
-
-				regulator-state-mem {
-					regulator-on-in-suspend;
-					regulator-suspend-min-microvolt=<1850000>;
-					regulator-suspend-max-microvolt=<1850000>;
-					regulator-changeable-in-suspend;
-					regulator-mode=<ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				};
-			};
-
-			vdd_1v2_reg: REG_DCDC2 {
-				regulator-name = "VDD_1V2";
-				regulator-min-microvolt = <1100000>;
-				regulator-max-microvolt = <1300000>;
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_FIXED>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_FIXED>;
-				regulator-always-on;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdd_3v3_reg: REG_DCDC3 {
-				regulator-name = "VDD_3V3";
-				regulator-min-microvolt = <3300000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_FIXED>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_FIXED>;
-				regulator-always-on;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdd_fuse_reg: REG_LDO1 {
-				regulator-name = "VDD_FUSE";
-				regulator-min-microvolt = <2500000>;
-				regulator-max-microvolt = <2500000>;
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
-				regulator-always-on;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdd_3v3_lp_reg: REG_LDO2 {
-				regulator-name = "VDD_3V3_LP";
-				regulator-min-microvolt = <3300000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
-				regulator-always-on;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdd_led_reg: REG_LDO3 {
-				regulator-name = "VDD_LED";
-				regulator-min-microvolt = <3300000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
-				regulator-always-on;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdd_sdhc_1v8_reg: REG_LDO4 {
-				regulator-name = "VDD_SDHC_1V8";
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
-							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
-				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
-				regulator-always-on;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-		};
-
-		charger {
-			compatible = "active-semi,act8945a-charger";
-			pinctrl-names = "default";
-			pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
-			interrupt-parent = <&pioA>;
-			interrupts = <PIN_PB13 IRQ_TYPE_EDGE_RISING>;
-
-			active-semi,chglev-gpios = <&pioA PIN_PA12 GPIO_ACTIVE_HIGH>;
-			active-semi,lbo-gpios = <&pioA PIN_PC8 GPIO_ACTIVE_LOW>;
-			active-semi,input-voltage-threshold-microvolt = <6600>;
-			active-semi,precondition-timeout = <40>;
-			active-semi,total-timeout = <3>;
-		};
-	};
-};
-
-&pioA {
-	pinctrl_sdmmc1_default: sdmmc1_default {
-		cmd_data {
-			pinmux = <PIN_PA28__SDMMC1_CMD>,
-				 <PIN_PA18__SDMMC1_DAT0>,
-				 <PIN_PA19__SDMMC1_DAT1>,
-				 <PIN_PA20__SDMMC1_DAT2>,
-				 <PIN_PA21__SDMMC1_DAT3>;
-			bias-pull-up;
-		};
-
-		conf-ck_cd {
-			pinmux = <PIN_PA22__SDMMC1_CK>,
-			<PIN_PA30__SDMMC1_CD>;
-			bias-disable;
-		};
-	};
-};
-#endif

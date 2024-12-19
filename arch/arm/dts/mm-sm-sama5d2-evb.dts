@@ -11,3 +11,6 @@
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
 };
 
+&sdmmc1 {
+	disable-wp;
+};
