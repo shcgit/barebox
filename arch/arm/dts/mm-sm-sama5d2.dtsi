@@ -7,7 +7,7 @@
 #include <arm/microchip/sama5d2-pinfunc.h>
 #include <dt-bindings/mfd/atmel-flexcom.h>
 #include <dt-bindings/gpio/gpio.h>
-//#include <dt-bindings/regulator/active-semi,8945a-regulator.h>
+#include <dt-bindings/leds/common.h>
 
 #include "sama5d2.dtsi"
 
@@ -25,6 +25,8 @@
 		serial1 = &uart1;
 		serial2 = &uart9;
 		serial3 = &uart3;
+		spi0 = &spi0;
+		spi1 = &qspi1;
 	};
 
 	chosen {
@@ -47,17 +49,21 @@
 		};
 	};
 
-//	leds {
-//		compatible = "gpio-leds";
-//		pinctrl-names = "default";
-//		pinctrl-0 = <&pinctrl_led_gpio_default>;
-//
-//		orange {
-//			label = "orange";
-//			gpios = <&pioA PIN_PA6 GPIO_ACTIVE_HIGH>;
-//			linux,default-trigger = "mmc0";
-//		};
-//	};
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_leds>;
+
+		led-live {
+			label = "smarc:live";
+			gpios = <&pioA PIN_PD18 GPIO_ACTIVE_HIGH>;
+			function = LED_FUNCTION_HEARTBEAT;
+			color = <LED_COLOR_ID_RED>;
+			linux,default-trigger = LED_FUNCTION_HEARTBEAT;
+			default-state = "off";
+			panic-indicator;
+		};
+	};
 };
 
 &flx1 {
@@ -86,11 +92,14 @@
 	pinctrl-0 = <&pinctrl_i2c0_default>;
 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
 	pinctrl-2 = <&pinctrl_i2c0_gpio>;
+	clock-frequency = <1000000>;
 	sda-gpios = <&pioA PIN_PD29 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD30 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-digital-filter;
+	i2c-digital-filter-width-ns = <35>;
 	status = "okay";
 
-	//MCO16502
+	//MCP16502
 };
 
 &i2c1 {
@@ -99,8 +108,11 @@
 	pinctrl-0 = <&pinctrl_i2c1_default>;
 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
 	pinctrl-2 = <&pinctrl_i2c1_gpio>;
+	clock-frequency = <100000>;
 	sda-gpios = <&pioA PIN_PD4 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-digital-filter;
+	i2c-digital-filter-width-ns = <35>;
 	status = "okay";
 
 	//AT24CS32
@@ -114,6 +126,8 @@
 	pinctrl-2 = <&pinctrl_i2c3_gpio>;
 	sda-gpios = <&pioA PIN_PA24 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PA23 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-digital-filter;
+	i2c-digital-filter-width-ns = <35>;
 	status = "okay";
 };
 
@@ -125,6 +139,27 @@
 	pinctrl-2 = <&pinctrl_i2c4_gpio>;
 	sda-gpios = <&pioA PIN_PD26 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD27 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-digital-filter;
+	i2c-digital-filter-width-ns = <35>;
+	status = "okay";
+};
+
+&qspi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_qspi0>;
+	status = "okay";
+
+	flash@0 {
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <166000000>;
+	};
+};
+
+&qspi1 {
+	/* QSPI */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_qspi1>;
 	status = "okay";
 };
 
@@ -134,6 +169,15 @@
 	input@0 {
 		reg = <0>;
 	};
+};
+
+&spi0 {
+	/* SPI0 */
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pinctrl_spi0_default>;
+	pinctrl-1 = <&pinctrl_spi0_sleep>;
+	cs-gpios = <0>, <&pioA PIN_PA13 GPIO_ACTIVE_LOW>;
+	status = "okay";
 };
 
 &uart1 {
@@ -181,8 +225,8 @@
 
 &pioA {
 	pinctrl_i2c0_default: i2c0grp-default {
-		pinmux = <PIN_PD29__TWD0>,		/* P122 */
-			 <PIN_PD30__TWCK0>;		/* P121 */
+		pinmux = <PIN_PD29__TWD0>,			/* P122 */
+			 <PIN_PD30__TWCK0>;			/* P121 */
 		bias-disable;
 	};
 
@@ -193,8 +237,8 @@
 	};
 
 	pinctrl_i2c1_default: i2c1grp-default {
-		pinmux = <PIN_PD4__TWD1>,		/* S49 */
-			 <PIN_PD5__TWCK1>;		/* S48 */
+		pinmux = <PIN_PD4__TWD1>,			/* S49 */
+			 <PIN_PD5__TWCK1>;			/* S48 */
 		bias-disable;
 	};
 
@@ -205,8 +249,8 @@
 	};
 
 	pinctrl_i2c3_default: i2c3grp-default {
-		pinmux = <PIN_PA23__FLEXCOM1_IO1>,	/* S139 */
-			 <PIN_PA24__FLEXCOM1_IO0>;	/* S140 */
+		pinmux = <PIN_PA23__FLEXCOM1_IO1>,		/* S139 */
+			 <PIN_PA24__FLEXCOM1_IO0>;		/* S140 */
 		bias-disable;
 	};
 
@@ -217,8 +261,8 @@
 	};
 
 	pinctrl_i2c4_default: i2c4grp-default {
-		pinmux = <PIN_PD26__FLEXCOM2_IO0>,	/* S7 */
-			 <PIN_PD27__FLEXCOM2_IO1>;	/* S5 */
+		pinmux = <PIN_PD26__FLEXCOM2_IO0>,		/* S7 */
+			 <PIN_PD27__FLEXCOM2_IO1>;		/* S5 */
 		bias-disable;
 	};
 
@@ -228,31 +272,81 @@
 		bias-disable;
 	};
 
+	pinctrl_leds: ledsgrp {
+		pinmux = <PIN_PD18__GPIO>;
+		bias-pull-down;
+	};
+
+	pinctrl_qspi0: qspi0grp {
+		pinmux = <PIN_PA0__QSPI0_SCK>,
+			 <PIN_PA1__QSPI0_CS>,
+			 <PIN_PA2__QSPI0_IO0>,
+			 <PIN_PA3__QSPI0_IO1>,
+			 <PIN_PA4__QSPI0_IO2>,
+			 <PIN_PA5__QSPI0_IO3>;
+		bias-disable;
+	};
+
+	pinctrl_qspi1: qspi1grp {
+		spi {
+			pinmux = <PIN_PA6__QSPI1_SCK>,		/* P56 */
+				 <PIN_PA7__QSPI1_IO0>,		/* P58 */
+				 <PIN_PA8__QSPI1_IO1>,		/* P57 */
+				 <PIN_PA9__QSPI1_IO2>,		/* S56 */
+				 <PIN_PA10__QSPI1_IO3>,		/* S57 */
+				 <PIN_PA11__QSPI1_CS>;		/* P54 */
+			bias-disable;
+		};
+
+		cs1 {
+			pinmux = <PIN_PC25__GPIO>;		/* P55 */
+			bias-pull-up;
+		};
+	};
+
+	pinctrl_spi0_default: spi0grp-default {
+		pinmux = <PIN_PA14__SPI0_SPCK>,			/* P44 */
+			 <PIN_PA15__SPI0_MOSI>,			/* P46 */
+			 <PIN_PA16__SPI0_MISO>,			/* P45 */
+			 <PIN_PA17__SPI0_NPCS0>,		/* P43 */
+			 <PIN_PA13__GPIO>;			/* P31 */
+		bias-disable;
+	};
+
+	pinctrl_spi0_sleep: spi0grp-sleep {
+		pinmux = <PIN_PA14__GPIO>,
+			 <PIN_PA15__GPIO>,
+			 <PIN_PA16__GPIO>,
+			 <PIN_PA17__GPIO>,
+			 <PIN_PA13__GPIO>;
+		bias-disable;
+	};
+
 	pinctrl_uart1: uart1grp {
-		pinmux = <PIN_PD2__URXD1>,		/* P135 */
-			 <PIN_PD3__UTXD1>;		/* P134 */
+		pinmux = <PIN_PD2__URXD1>,			/* P135 */
+			 <PIN_PD3__UTXD1>;			/* P134 */
 		bias-disable;
 	};
 
 	pinctrl_uart3: uart3grp {
-		pinmux = <PIN_PC12__URXD3>,		/* P141 */
-			 <PIN_PC13__UTXD3>;		/* P140 */
+		pinmux = <PIN_PC12__URXD3>,			/* P141 */
+			 <PIN_PC13__UTXD3>;			/* P140 */
 		bias-disable;
 	};
 
 	pinctrl_uart8: uart8grp {
-		pinmux = <PIN_PC19__FLEXCOM3_IO1>,	/* P130 */
-			 <PIN_PC20__FLEXCOM3_IO0>,	/* P129 */
-			 <PIN_PC21__FLEXCOM3_IO3>,	/* P132 */
-			 <PIN_PC22__FLEXCOM3_IO4>;	/* P131 */
+		pinmux = <PIN_PC19__FLEXCOM3_IO1>,		/* P130 */
+			 <PIN_PC20__FLEXCOM3_IO0>,		/* P129 */
+			 <PIN_PC21__FLEXCOM3_IO3>,		/* P132 */
+			 <PIN_PC22__FLEXCOM3_IO4>;		/* P131 */
 		bias-disable;
 	};
 
 	pinctrl_uart9: uart9grp {
-		pinmux = <PIN_PD12__FLEXCOM4_IO0>,	/* P136 */
-			 <PIN_PD13__FLEXCOM4_IO1>,	/* P137 */
-			 <PIN_PD15__FLEXCOM4_IO3>,	/* P139 */
-			 <PIN_PD16__FLEXCOM4_IO4>;	/* P138 */
+		pinmux = <PIN_PD12__FLEXCOM4_IO0>,		/* P136 */
+			 <PIN_PD13__FLEXCOM4_IO1>,		/* P137 */
+			 <PIN_PD15__FLEXCOM4_IO3>,		/* P139 */
+			 <PIN_PD16__FLEXCOM4_IO4>;		/* P138 */
 		bias-disable;
 	};
 };
@@ -267,12 +361,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1_default>;
 	status = "okay";
-};
-
-&spi0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_spi0_default>;
-	status = "disabled";
 };
 
 &i2c1 {
@@ -409,11 +497,6 @@
 };
 
 &pioA {
-	pinctrl_led_gpio_default: led_gpio_default {
-		pinmux = <PIN_PA6__GPIO>;
-		bias-pull-down;
-	};
-
 	pinctrl_sdmmc1_default: sdmmc1_default {
 		cmd_data {
 			pinmux = <PIN_PA28__SDMMC1_CMD>,
@@ -429,28 +512,6 @@
 			<PIN_PA30__SDMMC1_CD>;
 			bias-disable;
 		};
-	};
-
-	pinctrl_spi0_default: spi0_default {
-		pinmux = <PIN_PA14__SPI0_SPCK>,
-			 <PIN_PA15__SPI0_MOSI>,
-			 <PIN_PA16__SPI0_MISO>;
-		bias-disable;
-	};
-
-	pinctrl_charger_chglev: charger_chglev {
-		pinmux = <PIN_PA12__GPIO>;
-		bias-disable;
-	};
-
-	pinctrl_charger_irq: charger_irq {
-		pinmux = <PIN_PB13__GPIO>;
-		bias-disable;
-	};
-
-	pinctrl_charger_lbo: charger_lbo {
-		pinmux = <PIN_PC8__GPIO>;
-		bias-pull-up;
 	};
 };
 #endif
