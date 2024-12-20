@@ -64,6 +64,42 @@
 			panic-indicator;
 		};
 	};
+
+	qspi1_mux: mux-controller {
+		compatible = "gpio-mux";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_qspi1_mux>;
+		mux-gpios = <&pioA PIN_PA11 GPIO_ACTIVE_LOW>,
+			    <&pioA PIN_PC25 GPIO_ACTIVE_LOW>;
+		idle-state = <1>;
+		#mux-control-cells = <0>;
+	};
+
+	vcc_sd: vcc-sd-regulator {
+		compatible = "regulator-gpio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_sd>;
+		regulator-name = "vdd_sd";
+		regulator-type = "voltage";
+		enable-gpios = <&pioA PIN_PA26 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		gpios = <&pioA PIN_PA25 GPIO_ACTIVE_HIGH>;
+		states = <1800000 0x1>,
+			 <3300000 0x0>;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+//		vin-supply
+	};
+
+	vdd_in: vdd-in-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_in";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
 };
 
 &flx1 {
@@ -100,7 +136,10 @@
 	clock-frequency = <1000000>;
 	status = "okay";
 
-	//MCP16502
+	pmic@5b {
+		//MCP16502
+		reg = <0x5b>;
+	};
 };
 
 &i2c1 {
@@ -117,7 +156,10 @@
 	clock-frequency = <400000>;
 	status = "okay";
 
-	//AT24CS32
+	eeprom@50 {
+		//AT24CS32
+		reg = <0x50>;
+	};
 };
 
 &i2c3 {
@@ -151,7 +193,7 @@
 	pinctrl-0 = <&pinctrl_qspi0>;
 	status = "okay";
 
-	flash@0 {
+	flash: flash@0 {
 		compatible = "spi-nand";
 		reg = <0>;
 		spi-max-frequency = <166000000>;
@@ -163,6 +205,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_qspi1>;
 	status = "okay";
+
+	spi@0 {
+		compatible = "spi-mux";
+		reg = <0>;
+		mux-controls = <&qspi1_mux>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
 };
 
 &sdmmc1 {
@@ -170,9 +220,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1>;
 	bus-width = <4>;
-//vqmmc-supply = <&vdd_3v3_reg>;
-//vmmc-supply = <&vdd_3v3_reg>;
-	//TODO:
+	vqmmc-supply = <&vcc_sd>;
 };
 
 &shutdown_controller {
@@ -300,20 +348,24 @@
 	};
 
 	pinctrl_qspi1: qspi1grp {
-		spi {
-			pinmux = <PIN_PA6__QSPI1_SCK>,		/* P56 */
-				 <PIN_PA7__QSPI1_IO0>,		/* P58 */
-				 <PIN_PA8__QSPI1_IO1>,		/* P57 */
-				 <PIN_PA9__QSPI1_IO2>,		/* S56 */
-				 <PIN_PA10__QSPI1_IO3>,		/* S57 */
-				 <PIN_PA11__QSPI1_CS>;		/* P54 */
-			bias-disable;
-		};
+		pinmux = <PIN_PA6__QSPI1_SCK>,			/* P56 */
+			 <PIN_PA7__QSPI1_IO0>,			/* P58 */
+			 <PIN_PA8__QSPI1_IO1>,			/* P57 */
+			 <PIN_PA9__QSPI1_IO2>,			/* S56 */
+			 <PIN_PA10__QSPI1_IO3>;			/* S57 */
+		bias-disable;
+	};
 
-		cs1 {
-			pinmux = <PIN_PC25__GPIO>;		/* P55 */
-			bias-pull-up;
-		};
+	pinctrl_qspi1_mux: qspi1muxgrp {
+		pinmux = <PIN_PA11__GPIO>,			/* P54 */
+			 <PIN_PC25__GPIO>;			/* P55 */
+		bias-pull-up;
+	};
+
+	pinctrl_reg_sd: regsdgrp {
+		pinmux = <PIN_PA25__GPIO>,
+			 <PIN_PA26__GPIO>;
+		bias-pull-up;
 	};
 
 	pinctrl_sdmmc1: sdmmc1grp {

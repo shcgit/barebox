@@ -11,6 +11,16 @@
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
 };
 
+&flash {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
 &sdmmc1 {
 	disable-wp;
+//vmmc-supply = <&vdd_3v3_reg>;
+	status = "okay";
 };
