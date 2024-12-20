@@ -92,11 +92,12 @@
 	pinctrl-0 = <&pinctrl_i2c0_default>;
 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
 	pinctrl-2 = <&pinctrl_i2c0_gpio>;
-	clock-frequency = <1000000>;
 	sda-gpios = <&pioA PIN_PD29 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD30 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	i2c-digital-filter;
 	i2c-digital-filter-width-ns = <35>;
+	/* MCP16502 clock limitation */
+	clock-frequency = <1000000>;
 	status = "okay";
 
 	//MCP16502
@@ -108,11 +109,12 @@
 	pinctrl-0 = <&pinctrl_i2c1_default>;
 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
 	pinctrl-2 = <&pinctrl_i2c1_gpio>;
-	clock-frequency = <100000>;
 	sda-gpios = <&pioA PIN_PD4 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	i2c-digital-filter;
 	i2c-digital-filter-width-ns = <35>;
+	/* AT24CS32 1.8v clock limitation */
+	clock-frequency = <400000>;
 	status = "okay";
 
 	//AT24CS32
