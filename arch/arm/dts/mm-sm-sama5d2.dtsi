@@ -75,6 +75,17 @@
 		#mux-control-cells = <0>;
 	};
 
+	vcc_lan: vcc-lan-regulator {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_lan>;
+		regulator-name = "vcc_lan";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&pioA PIN_PC23 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
 	vcc_sd: vcc-sd-regulator {
 		compatible = "regulator-gpio";
 		pinctrl-names = "default";
@@ -91,15 +102,6 @@
 		regulator-boot-on;
 		vin-supply = <&vcc_3v3>;
 	};
-
-//	vdd_in: vdd-in-regulator {
-//		compatible = "regulator-fixed";
-//		regulator-name = "vdd_in";
-//		regulator-min-microvolt = <5000000>;
-//		regulator-max-microvolt = <5000000>;
-//		regulator-always-on;
-//		regulator-boot-on;
-//	};
 };
 
 &flx1 {
@@ -439,6 +441,11 @@
 	pinctrl_qspi1_mux: qspi1muxgrp {
 		pinmux = <PIN_PA11__GPIO>,			/* P54 */
 			 <PIN_PC25__GPIO>;			/* P55 */
+		bias-pull-up;
+	};
+
+	pinctrl_reg_lan: reglangrp {
+		pinmux = <PIN_PC23__GPIO>;
 		bias-pull-up;
 	};
 
