@@ -89,17 +89,17 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <3300000>;
 		regulator-boot-on;
-//		vin-supply
+		vin-supply = <&vcc_3v3>;
 	};
 
-	vdd_in: vdd-in-regulator {
-		compatible = "regulator-fixed";
-		regulator-name = "vdd_in";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		regulator-always-on;
-		regulator-boot-on;
-	};
+//	vdd_in: vdd-in-regulator {
+//		compatible = "regulator-fixed";
+//		regulator-name = "vdd_in";
+//		regulator-min-microvolt = <5000000>;
+//		regulator-max-microvolt = <5000000>;
+//		regulator-always-on;
+//		regulator-boot-on;
+//	};
 };
 
 &flx1 {
@@ -137,8 +137,86 @@
 	status = "okay";
 
 	pmic@5b {
-		//MCP16502
+		compatible = "microchip,mcp16502";
 		reg = <0x5b>;
+		lpm-gpios = <&pioBU 0 GPIO_ACTIVE_LOW>;
+
+		regulators {
+			vcc_3v3: VDD_IO {
+				regulator-name = "vcc_3v3";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-initial-mode = <2>;
+				regulator-allowed-modes = <2>, <4>;
+				regulator-always-on;
+
+				regulator-state-standby {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <3300000>;
+					regulator-mode = <4>;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+					regulator-mode = <4>;
+				};
+			};
+
+			vcc_1v8: VDD_DDR {
+				regulator-name = "vcc_1v8";
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-initial-mode = <2>;
+				regulator-allowed-modes = <2>, <4>;
+				regulator-always-on;
+
+				regulator-state-standby {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+					regulator-mode = <4>;
+				};
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+					regulator-mode = <4>;
+				};
+			};
+
+			VDD_CORE {
+				regulator-name = "vcc_1v25";
+				regulator-min-microvolt = <1250000>;
+				regulator-max-microvolt = <1250000>;
+				regulator-initial-mode = <2>;
+				regulator-allowed-modes = <2>, <4>;
+				regulator-always-on;
+
+				regulator-state-standby {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1250000>;
+					regulator-mode = <4>;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+					regulator-mode = <4>;
+				};
+			};
+
+			LDO1 {
+				regulator-name = "vcc_2v5";
+				regulator-min-microvolt = <2500000>;
+				regulator-max-microvolt = <2500000>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+		};
 	};
 };
 
@@ -157,8 +235,10 @@
 	status = "okay";
 
 	eeprom@50 {
-		//AT24CS32
+		compatible = "atmel,24cs32", "24c32";
 		reg = <0x50>;
+		pagesize = <32>;
+		vcc-supply = <&vcc_1v8>;
 	};
 };
 
