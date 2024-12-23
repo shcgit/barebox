@@ -26,6 +26,11 @@
 	};
 };
 
+&i2c0 {
+	//TODO: SGTL5000
+	//TODO: TCA9534
+};
+
 &sdmmc1 {
 	disable-wp;
 	status = "okay";
