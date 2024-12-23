@@ -387,67 +387,67 @@
 };
 
 &pioA {
-	pinctrl_can0: can0grp {
+	pinctrl_can0: can0-grp {
 		pinmux = <PIN_PC10__CANTX0>,			/* P143 */
 			 <PIN_PC11__CANRX0>;			/* P144 */
 		bias-disable;
 	};
 
-	pinctrl_can1: can1grp {
+	pinctrl_can1: can1-grp {
 		pinmux = <PIN_PC26__CANTX1>,			/* P145 */
 			 <PIN_PC27__CANRX1>;			/* P146 */
 		bias-disable;
 	};
 
-	pinctrl_i2c0_default: i2c0grp-default {
+	pinctrl_i2c0_default: i2c0-grp-default {
 		pinmux = <PIN_PD29__TWD0>,			/* P122 */
 			 <PIN_PD30__TWCK0>;			/* P121 */
 		bias-disable;
 	};
 
-	pinctrl_i2c0_gpio: i2c0grp-gpio {
+	pinctrl_i2c0_gpio: i2c0-grp-gpio {
 		pinmux = <PIN_PD29__GPIO>,
 			 <PIN_PD30__GPIO>;
 		bias-disable;
 	};
 
-	pinctrl_i2c1_default: i2c1grp-default {
+	pinctrl_i2c1_default: i2c1-grp-default {
 		pinmux = <PIN_PD4__TWD1>,			/* S49 */
 			 <PIN_PD5__TWCK1>;			/* S48 */
 		bias-disable;
 	};
 
-	pinctrl_i2c1_gpio: i2c1grp-gpio {
+	pinctrl_i2c1_gpio: i2c1-grp-gpio {
 		pinmux = <PIN_PD4__GPIO>,
 			 <PIN_PD5__GPIO>;
 		bias-disable;
 	};
 
-	pinctrl_i2c3_default: i2c3grp-default {
+	pinctrl_i2c3_default: i2c3-grp-default {
 		pinmux = <PIN_PA23__FLEXCOM1_IO1>,		/* S139 */
 			 <PIN_PA24__FLEXCOM1_IO0>;		/* S140 */
 		bias-disable;
 	};
 
-	pinctrl_i2c3_gpio: i2c3grp-gpio {
+	pinctrl_i2c3_gpio: i2c3-grp-gpio {
 		pinmux = <PIN_PA23__GPIO>,
 			 <PIN_PA24__GPIO>;
 		bias-disable;
 	};
 
-	pinctrl_i2c4_default: i2c4grp-default {
+	pinctrl_i2c4_default: i2c4-grp-default {
 		pinmux = <PIN_PD26__FLEXCOM2_IO0>,		/* S7 */
 			 <PIN_PD27__FLEXCOM2_IO1>;		/* S5 */
 		bias-disable;
 	};
 
-	pinctrl_i2c4_gpio: i2c4grp-gpio {
+	pinctrl_i2c4_gpio: i2c4-grp-gpio {
 		pinmux = <PIN_PD26__GPIO>,
 			 <PIN_PD27__GPIO>;
 		bias-disable;
 	};
 
-	pinctrl_i2s0: i2s0grp {
+	pinctrl_i2s0: i2s0-grp {
 		pinmux = <PIN_PD19__I2SC0_CK>,			/* S42 */
 			 <PIN_PD20__I2SC0_MCK>,			/* S38 */
 			 <PIN_PD21__I2SC0_WS>,			/* S39 */
@@ -456,12 +456,12 @@
 		bias-disable;
 	};
 
-	pinctrl_leds: ledsgrp {
+	pinctrl_leds: leds-grp {
 		pinmux = <PIN_PD18__GPIO>;
 		bias-pull-down;
 	};
 
-	pinctrl_qspi0: qspi0grp {
+	pinctrl_qspi0: qspi0-grp {
 		pinmux = <PIN_PA0__QSPI0_SCK>,
 			 <PIN_PA1__QSPI0_CS>,
 			 <PIN_PA2__QSPI0_IO0>,
@@ -471,7 +471,7 @@
 		bias-disable;
 	};
 
-	pinctrl_qspi1: qspi1grp {
+	pinctrl_qspi1: qspi1-grp {
 		spi {
 			pinmux = <PIN_PA6__QSPI1_SCK>,		/* P56 */
 				 <PIN_PA7__QSPI1_IO0>,		/* P58 */
@@ -487,18 +487,24 @@
 		};
 	};
 
-	pinctrl_qspi1_mux: qspi1muxgrp {
+	pinctrl_qspi1_mux: qspi1-mux-grp {
 		pinmux = <PIN_PA11__GPIO>,			/* P54 */
 			 <PIN_PC25__GPIO>;			/* P55 */
 		bias-pull-up;
 	};
 
-	pinctrl_reg_lan: reglangrp {
+	pinctrl_reg_lan: reg-lan-grp {
 		pinmux = <PIN_PC23__GPIO>;
 		bias-pull-up;
 	};
 
-	pinctrl_sdmmc1: sdmmc1grp {
+	pinctrl_reg_vqmmc: reg-vqmmc-grp {
+		pinmux = <PIN_PA25__GPIO>,
+			 <PIN_PA26__GPIO>;
+		bias-pull-up;
+	};
+
+	pinctrl_sdmmc1: sdmmc1-grp {
 		pinmux = <PIN_PA18__SDMMC1_DAT0>,		/* P39 */
 			 <PIN_PA19__SDMMC1_DAT1>,		/* P40 */
 			 <PIN_PA20__SDMMC1_DAT2>,		/* P41 */
@@ -510,7 +516,7 @@
 		bias-disable;
 	};
 
-	pinctrl_spi0_default: spi0grp-default {
+	pinctrl_spi0_default: spi0-grp-default {
 		pinmux = <PIN_PA14__SPI0_SPCK>,			/* P44 */
 			 <PIN_PA15__SPI0_MOSI>,			/* P46 */
 			 <PIN_PA16__SPI0_MISO>,			/* P45 */
@@ -519,7 +525,7 @@
 		bias-disable;
 	};
 
-	pinctrl_spi0_sleep: spi0grp-sleep {
+	pinctrl_spi0_sleep: spi0-grp-sleep {
 		pinmux = <PIN_PA14__GPIO>,
 			 <PIN_PA15__GPIO>,
 			 <PIN_PA16__GPIO>,
@@ -528,19 +534,19 @@
 		bias-disable;
 	};
 
-	pinctrl_uart1: uart1grp {
+	pinctrl_uart1: uart1-grp {
 		pinmux = <PIN_PD2__URXD1>,			/* P135 */
 			 <PIN_PD3__UTXD1>;			/* P134 */
 		bias-disable;
 	};
 
-	pinctrl_uart3: uart3grp {
+	pinctrl_uart3: uart3-grp {
 		pinmux = <PIN_PC12__URXD3>,			/* P141 */
 			 <PIN_PC13__UTXD3>;			/* P140 */
 		bias-disable;
 	};
 
-	pinctrl_uart8: uart8grp {
+	pinctrl_uart8: uart8-grp {
 		pinmux = <PIN_PC19__FLEXCOM3_IO1>,		/* P130 */
 			 <PIN_PC20__FLEXCOM3_IO0>,		/* P129 */
 			 <PIN_PC21__FLEXCOM3_IO3>,		/* P132 */
@@ -548,17 +554,11 @@
 		bias-disable;
 	};
 
-	pinctrl_uart9: uart9grp {
+	pinctrl_uart9: uart9-grp {
 		pinmux = <PIN_PD12__FLEXCOM4_IO0>,		/* P136 */
 			 <PIN_PD13__FLEXCOM4_IO1>,		/* P137 */
 			 <PIN_PD15__FLEXCOM4_IO3>,		/* P139 */
 			 <PIN_PD16__FLEXCOM4_IO4>;		/* P138 */
 		bias-disable;
-	};
-
-	pinctrl_reg_vqmmc: regvqmmcgrp {
-		pinmux = <PIN_PA25__GPIO>,
-			 <PIN_PA26__GPIO>;
-		bias-pull-up;
 	};
 };
