@@ -88,11 +88,11 @@
 		enable-active-high;
 	};
 
-	vcc_sd: vcc-sd-regulator {
+	vcc_vqmmc: vcc-vqmmc-regulator {
 		compatible = "regulator-gpio";
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_reg_sd>;
-		regulator-name = "vdd_sd";
+		pinctrl-0 = <&pinctrl_reg_vqmmc>;
+		regulator-name = "vcc_vqmmc";
 		regulator-type = "voltage";
 		enable-gpios = <&pioA PIN_PA26 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
@@ -323,7 +323,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1>;
 	bus-width = <4>;
-	vqmmc-supply = <&vcc_sd>;
+	vqmmc-supply = <&vcc_vqmmc>;
 };
 
 &shutdown_controller {
@@ -472,12 +472,19 @@
 	};
 
 	pinctrl_qspi1: qspi1grp {
-		pinmux = <PIN_PA6__QSPI1_SCK>,			/* P56 */
-			 <PIN_PA7__QSPI1_IO0>,			/* P58 */
-			 <PIN_PA8__QSPI1_IO1>,			/* P57 */
-			 <PIN_PA9__QSPI1_IO2>,			/* S56 */
-			 <PIN_PA10__QSPI1_IO3>;			/* S57 */
-		bias-disable;
+		spi {
+			pinmux = <PIN_PA6__QSPI1_SCK>,		/* P56 */
+				 <PIN_PA7__QSPI1_IO0>,		/* P58 */
+				 <PIN_PA8__QSPI1_IO1>,		/* P57 */
+				 <PIN_PA9__QSPI1_IO2>,		/* S56 */
+				 <PIN_PA10__QSPI1_IO3>;		/* S57 */
+			bias-disable;
+		};
+
+		rst {
+			pinmux = <PIN_PC18__GPIO>;		/* S58 */
+			bias-pull-up;
+		};
 	};
 
 	pinctrl_qspi1_mux: qspi1muxgrp {
@@ -488,12 +495,6 @@
 
 	pinctrl_reg_lan: reglangrp {
 		pinmux = <PIN_PC23__GPIO>;
-		bias-pull-up;
-	};
-
-	pinctrl_reg_sd: regsdgrp {
-		pinmux = <PIN_PA25__GPIO>,
-			 <PIN_PA26__GPIO>;
 		bias-pull-up;
 	};
 
@@ -553,5 +554,11 @@
 			 <PIN_PD15__FLEXCOM4_IO3>,		/* P139 */
 			 <PIN_PD16__FLEXCOM4_IO4>;		/* P138 */
 		bias-disable;
+	};
+
+	pinctrl_reg_vqmmc: regvqmmcgrp {
+		pinmux = <PIN_PA25__GPIO>,
+			 <PIN_PA26__GPIO>;
+		bias-pull-up;
 	};
 };
