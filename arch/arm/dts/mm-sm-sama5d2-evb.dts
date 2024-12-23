@@ -9,6 +9,13 @@
 	model = "Mega-Milas Informer SAMA5D2";
 	compatible = "milas,informer-sama5d2", "milas,mm-sm-sama5d2",
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+
+	vcc_3v3_sys: vcc-3v3-sys-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_3v3_sys";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
 };
 
 &flash {
@@ -21,6 +28,9 @@
 
 &sdmmc1 {
 	disable-wp;
-//vmmc-supply = <&vdd_3v3_reg>;
 	status = "okay";
+};
+
+&vcc_sd {
+	vin-supply = <&vcc_3v3_sys>;
 };

@@ -88,6 +88,17 @@
 		enable-active-high;
 	};
 
+	vcc_sd: vcc-sd-regulator {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_sd>;
+		regulator-name = "vcc_sd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&pioA PIN_PA27 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
 	vcc_vqmmc: vcc-vqmmc-regulator {
 		compatible = "regulator-gpio";
 		pinctrl-names = "default";
@@ -323,6 +334,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1>;
 	bus-width = <4>;
+	vmmc-supply = <&vcc_sd>;
 	vqmmc-supply = <&vcc_vqmmc>;
 };
 
@@ -495,6 +507,11 @@
 
 	pinctrl_reg_lan: reg-lan-grp {
 		pinmux = <PIN_PC23__GPIO>;
+		bias-pull-up;
+	};
+
+	pinctrl_reg_sd: reg-sd-grp {
+		pinmux = <PIN_PA27__GPIO>;			/* P37 */
 		bias-pull-up;
 	};
 
