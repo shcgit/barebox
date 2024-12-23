@@ -51,6 +51,17 @@
 		};
 	};
 
+	backlight {
+		compatible = "pwm-backlight";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_backlight>;
+		pwms = <&hlcdc_pwm 0 100000 0>;
+		brightness-levels = <0 255>;
+		num-interpolated-steps = <16>;
+		default-brightness-level = <0>;
+		enable-gpios = <&pioA PIN_PD28 GPIO_ACTIVE_HIGH>;
+	};
+
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
@@ -147,6 +158,25 @@
 &flx4 {
 	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_USART>;
 	status = "okay";
+};
+
+&hlcdc {
+	status = "okay";
+
+	hlcdc-display-controller {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_hlcdc>;
+		bus-width = <24>;
+
+		port@0 {
+			//TODO:
+		};
+	};
+};
+
+&hlcdc_pwm {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm>;
 };
 
 &i2c0 {
@@ -421,6 +451,11 @@
 };
 
 &pioA {
+	pinctrl_backlight: backlight-grp {
+		pinmux = <PIN_PD28__GPIO>;			/* S127 */
+		bias-disable;
+	};
+
 	pinctrl_can0: can0-grp {
 		pinmux = <PIN_PC10__CANTX0>,			/* P143 */
 			 <PIN_PC11__CANRX0>;			/* P144 */
@@ -430,6 +465,39 @@
 	pinctrl_can1: can1-grp {
 		pinmux = <PIN_PC26__CANTX1>,			/* P145 */
 			 <PIN_PC27__CANRX1>;			/* P146 */
+		bias-disable;
+	};
+
+	pinctrl_hlcdc: hlcdc-grp {
+		pinmux = <PIN_PB11__LCDDAT0>,
+			 <PIN_PB12__LCDDAT1>,
+			 <PIN_PB13__LCDDAT2>,
+			 <PIN_PB14__LCDDAT3>,
+			 <PIN_PB15__LCDDAT4>,
+			 <PIN_PB16__LCDDAT5>,
+			 <PIN_PB17__LCDDAT6>,
+			 <PIN_PB18__LCDDAT7>,
+			 <PIN_PB19__LCDDAT8>,
+			 <PIN_PB20__LCDDAT9>,
+			 <PIN_PB21__LCDDAT10>,
+			 <PIN_PB22__LCDDAT11>,
+			 <PIN_PB23__LCDDAT12>,
+			 <PIN_PB24__LCDDAT13>,
+			 <PIN_PB25__LCDDAT14>,
+			 <PIN_PB26__LCDDAT15>,
+			 <PIN_PB27__LCDDAT16>,
+			 <PIN_PB28__LCDDAT17>,
+			 <PIN_PB29__LCDDAT18>,
+			 <PIN_PB30__LCDDAT19>,
+			 <PIN_PB31__LCDDAT20>,
+			 <PIN_PC0__LCDDAT21>,
+			 <PIN_PC1__LCDDAT22>,
+			 <PIN_PC2__LCDDAT23>,
+			 <PIN_PC4__LCDDISP>,			/* S133 */
+			 <PIN_PC5__LCDVSYNC>,
+			 <PIN_PC6__LCDHSYNC>,
+			 <PIN_PC7__LCDPCK>,
+			 <PIN_PC8__LCDDEN>;
 		bias-disable;
 	};
 
@@ -493,6 +561,11 @@
 	pinctrl_leds: leds-grp {
 		pinmux = <PIN_PD18__GPIO>;
 		bias-pull-down;
+	};
+
+	pinctrl_pwm: pwm-grp {
+		pinmux = <PIN_PC3__LCDPWM>;			/* S141 */
+		bias-disable;
 	};
 
 	pinctrl_qspi0: qspi0-grp {
