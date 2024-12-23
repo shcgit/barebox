@@ -393,6 +393,28 @@
 	status = "okay";
 };
 
+&usb0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_vbus>;
+	atmel,vbus-gpio = <&pioA PIN_PB10 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&usb1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_en &pinctrl_usb1_en>;
+	atmel,vbus-gpio = <&pioA PIN_PB3 GPIO_ACTIVE_LOW
+			   &pioA PIN_PC29 GPIO_ACTIVE_LOW
+			   0>;
+	num-ports = <3>;
+	status = "okay";
+};
+
+&usb2 {
+	phy_type = "hsic";
+	status = "okay";
+};
+
 &watchdog {
 	timeout-sec = <10>;
 	status = "okay";
@@ -577,5 +599,20 @@
 			 <PIN_PD15__FLEXCOM4_IO3>,		/* P139 */
 			 <PIN_PD16__FLEXCOM4_IO4>;		/* P138 */
 		bias-disable;
+	};
+
+	pinctrl_usb0_en: usb0-en-grp {
+		pinmux = <PIN_PB3__GPIO>;			/* P62 */
+		bias-pull-up;
+	};
+
+	pinctrl_usb0_vbus: usb0-vbus-grp {
+		pinmux = <PIN_PB10__GPIO>;			/* P63 */
+		bias-disable;
+	};
+
+	pinctrl_usb1_en: usb1-en-grp {
+		pinmux = <PIN_PC29__GPIO>;			/* P67 */
+		bias-pull-up;
 	};
 };
