@@ -88,17 +88,6 @@
 		#mux-control-cells = <0>;
 	};
 
-	vcc_lan: vcc-lan-regulator {
-		compatible = "regulator-fixed";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_reg_lan>;
-		regulator-name = "vcc_lan";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&pioA PIN_PC23 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-	};
-
 	vcc_sd: vcc-sd-regulator {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -432,10 +421,10 @@
 
 &usb1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usb0_en &pinctrl_usb1_en>;
+	pinctrl-0 = <&pinctrl_usb0_en &pinctrl_usb1_en &pinctrl_usb2_en>;
 	atmel,vbus-gpio = <&pioA PIN_PB3 GPIO_ACTIVE_LOW
 			   &pioA PIN_PC29 GPIO_ACTIVE_LOW
-			   0>;
+			   &pioA PIN_PC23 GPIO_ACTIVE_HIGH>;
 	num-ports = <3>;
 	status = "okay";
 };
@@ -600,11 +589,6 @@
 		bias-pull-up;
 	};
 
-	pinctrl_reg_lan: reg-lan-grp {
-		pinmux = <PIN_PC23__GPIO>;
-		bias-pull-up;
-	};
-
 	pinctrl_reg_sd: reg-sd-grp {
 		pinmux = <PIN_PA27__GPIO>;			/* P37 */
 		bias-pull-up;
@@ -686,6 +670,11 @@
 
 	pinctrl_usb1_en: usb1-en-grp {
 		pinmux = <PIN_PC29__GPIO>;			/* P67 */
+		bias-pull-up;
+	};
+
+	pinctrl_usb2_en: usb2-en-grp {
+		pinmux = <PIN_PC23__GPIO>;
 		bias-pull-up;
 	};
 };
