@@ -162,6 +162,10 @@
 	pinctrl-0 = <&pinctrl_pwm>;
 };
 
+&hsmc {
+	status = "disabled";
+};
+
 &i2c0 {
 	/* I2C_PM */
 	pinctrl-names = "default", "gpio", "sleep";
