@@ -24,6 +24,13 @@
 		};
 	};
 
+	vcc_1v8_sys: vcc-1v8-sys-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_1v8_sys";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+
 	vcc_3v3_sys: vcc-3v3-sys-regulator {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_3v3_sys";
@@ -41,8 +48,28 @@
 };
 
 &i2c0 {
-	//TODO: SGTL5000
-	//TODO: TCA9534
+	/* TCA9534 & SGTL5000 clock limitation */
+	clock-frequency = <400000>;
+
+	gpio@24 {
+		compatible = "ti,tca9534", "nxp,pca9534";
+		reg = <0x24>;
+		gpio-controller;
+
+		#gpio-cells = <2>;
+	};
+
+	codec@a {
+		compatible = "fsl,sgtl5000";
+		reg =<0xa>;
+//		clocks = <&clk24m>;
+		micbias-resistor-k-ohms = <2>;
+		VDDA-supply = <&vcc_3v3_sys>;
+		VDDIO-supply = <&vcc_1v8_sys>;
+		VDDD-supply = <&vcc_1v8_sys>;
+
+		#sound-dai-cells = <0>;
+	};
 };
 
 &sdmmc1 {
