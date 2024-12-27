@@ -170,6 +170,7 @@
 	pinctrl-2 = <&pinctrl_i2c0_gpio>;
 	sda-gpios = <&pioA PIN_PD29 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD30 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-analog-filter;
 	i2c-digital-filter;
 	i2c-digital-filter-width-ns = <35>;
 	/* MCP16502 clock limitation */
@@ -268,6 +269,7 @@
 	pinctrl-2 = <&pinctrl_i2c1_gpio>;
 	sda-gpios = <&pioA PIN_PD4 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-analog-filter;
 	i2c-digital-filter;
 	i2c-digital-filter-width-ns = <35>;
 	/* AT24CS32 1.8v clock limitation */
@@ -290,6 +292,7 @@
 	pinctrl-2 = <&pinctrl_i2c3_gpio>;
 	sda-gpios = <&pioA PIN_PA24 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PA23 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-analog-filter;
 	i2c-digital-filter;
 	i2c-digital-filter-width-ns = <35>;
 	status = "okay";
@@ -303,6 +306,7 @@
 	pinctrl-2 = <&pinctrl_i2c4_gpio>;
 	sda-gpios = <&pioA PIN_PD26 GPIO_ACTIVE_HIGH>;
 	scl-gpios = <&pioA PIN_PD27 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	i2c-analog-filter;
 	i2c-digital-filter;
 	i2c-digital-filter-width-ns = <35>;
 	status = "okay";
