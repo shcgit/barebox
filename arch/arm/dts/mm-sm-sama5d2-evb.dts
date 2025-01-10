@@ -48,9 +48,6 @@
 };
 
 &i2c0 {
-	/* TCA9534 & SGTL5000 clock limitation */
-	clock-frequency = <400000>;
-
 	gpio@24 {
 		compatible = "ti,tca9534", "nxp,pca9534";
 		reg = <0x24>;
