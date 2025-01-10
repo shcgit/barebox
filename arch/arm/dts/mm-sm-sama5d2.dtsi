@@ -384,7 +384,8 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_spi0_default>;
 	pinctrl-1 = <&pinctrl_spi0_sleep>;
-	cs-gpios = <0>, <&pioA PIN_PA13 GPIO_ACTIVE_LOW>;
+	cs-gpios = <&pioA PIN_PA17 GPIO_ACTIVE_LOW>,
+		   <&pioA PIN_PA13 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
@@ -612,7 +613,7 @@
 	};
 
 	pinctrl_qspi1: qspi1-grp {
-		spi {
+		ctl {
 			pinmux = <PIN_PA6__QSPI1_SCK>,		/* P56 */
 				 <PIN_PA7__QSPI1_IO0>,		/* P58 */
 				 <PIN_PA8__QSPI1_IO1>,		/* P57 */
@@ -662,12 +663,18 @@
 	};
 
 	pinctrl_spi0_default: spi0-grp-default {
-		pinmux = <PIN_PA14__SPI0_SPCK>,			/* P44 */
-			 <PIN_PA15__SPI0_MOSI>,			/* P46 */
-			 <PIN_PA16__SPI0_MISO>,			/* P45 */
-			 <PIN_PA17__SPI0_NPCS0>,		/* P43 */
-			 <PIN_PA13__GPIO>;			/* P31 */
-		bias-disable;
+		ctl {
+			pinmux = <PIN_PA14__SPI0_SPCK>,		/* P44 */
+				 <PIN_PA15__SPI0_MOSI>,		/* P46 */
+				 <PIN_PA16__SPI0_MISO>;		/* P45 */
+			bias-disable;
+		};
+
+		cs {
+			pinmux = <PIN_PA17__GPIO>,		/* P43 */
+				 <PIN_PA13__GPIO>;		/* P31 */
+			bias-pull-up;
+		};
 	};
 
 	pinctrl_spi0_sleep: spi0-grp-sleep {
