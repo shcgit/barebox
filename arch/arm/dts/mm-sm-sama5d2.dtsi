@@ -593,7 +593,7 @@
 
 	pinctrl_leds: leds-grp {
 		pinmux = <PIN_PD18__GPIO>;
-		bias-pull-down;
+		bias-disable;
 	};
 
 	pinctrl_pwm: pwm-grp {
@@ -646,7 +646,7 @@
 	pinctrl_reg_vqmmc: reg-vqmmc-grp {
 		pinmux = <PIN_PA25__GPIO>,
 			 <PIN_PA26__GPIO>;
-		bias-pull-up;
+		bias-disable;
 	};
 
 	pinctrl_sdmmc1: sdmmc1-grp {
