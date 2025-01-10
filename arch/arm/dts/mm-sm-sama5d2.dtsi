@@ -457,7 +457,7 @@
 		#size-cells = <0>;
 
 		ethernet@1 {
-			compatible = "usb424,7800";
+			compatible = "usb424,7850";
 			reg = <1>;
 			//local-mac-address = [ 00 11 22 33 44 55 ];
 
