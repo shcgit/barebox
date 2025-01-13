@@ -293,11 +293,18 @@
 	eeprom@50 {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_eeprom>;
-		compatible = "atmel,24cs32", "24c32";
+		compatible = "atmel,24c32";
 		reg = <0x50>;
 		pagesize = <32>;
 		vcc-supply = <&vcc_1v8>;
 		wp-gpios = <&pioA PIN_PD11 GPIO_ACTIVE_HIGH>;
+	};
+
+	eeprom@58 {
+		compatible = "atmel,24cs32";
+		reg = <0x58>;
+		vcc-supply = <&vcc_1v8>;
+		read-only;
 	};
 };
 
