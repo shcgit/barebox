@@ -113,8 +113,7 @@ static void at91_twi_write(struct at91_twi_dev *dev, unsigned reg, unsigned val)
 static void at91_disable_twi_interrupts(struct at91_twi_dev *dev)
 {
 	at91_twi_write(dev, AT91_TWI_IDR,
-		       AT91_TWI_TXCOMP | AT91_TWI_RXRDY |
-		       AT91_TWI_TXRDY | AT91_TWI_NACK);
+		       AT91_TWI_TXCOMP | AT91_TWI_RXRDY | AT91_TWI_TXRDY);
 }
 
 static void at91_init_twi_bus(struct at91_twi_dev *dev)
@@ -224,10 +223,8 @@ static void at91_twi_write_next_byte(struct at91_twi_dev *dev)
 	at91_twi_write(dev, AT91_TWI_THR, *dev->buf);
 
 	/* send stop when last byte has been written */
-	if (--dev->buf_len == 0) {
+	if (--dev->buf_len == 0)
 		at91_twi_write(dev, AT91_TWI_CR, AT91_TWI_STOP);
-		at91_twi_write(dev, AT91_TWI_IDR, AT91_TWI_TXRDY);
-	}
 
 	dev_dbg(dev->dev, "wrote 0x%x, to go %d\n", *dev->buf, dev->buf_len);
 
@@ -279,7 +276,7 @@ static int at91_twi_wait_completion(struct at91_twi_dev *dev)
 
 		dev->transfer_status |= status;
 
-	} while (!(status & AT91_TWI_TXCOMP));
+	} while (!(at91_twi_read(dev, AT91_TWI_SR) & AT91_TWI_TXCOMP));
 
 	at91_disable_twi_interrupts(dev);
 
@@ -314,12 +311,11 @@ static int at91_do_twi_transfer(struct at91_twi_dev *dev)
 		at91_twi_write(dev, AT91_TWI_CR, start_flags);
 
 		at91_twi_write(dev, AT91_TWI_IER,
-			    AT91_TWI_TXCOMP | AT91_TWI_NACK | AT91_TWI_RXRDY);
+			    AT91_TWI_TXCOMP | AT91_TWI_RXRDY);
 	} else {
 		at91_twi_write_next_byte(dev);
 		at91_twi_write(dev, AT91_TWI_IER,
-			       AT91_TWI_TXCOMP | AT91_TWI_NACK |
-			       (dev->buf_len ? AT91_TWI_TXRDY : 0));
+			    AT91_TWI_TXCOMP | AT91_TWI_TXRDY);
 	}
 
 	ret = at91_twi_wait_completion(dev);
