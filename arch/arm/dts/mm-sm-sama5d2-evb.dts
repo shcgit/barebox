@@ -44,6 +44,21 @@
 		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
+
+		partition@0 {
+			label = "bootstrap";
+			reg = <0 0x10000>;
+		};
+
+		partition@10000 {
+			label = "boot";
+			reg = <0x10000 0x100000>;
+		};
+
+		partition@110000 {
+			label = "system";
+			reg = <0x110000 0>;
+		};
 	};
 };
 
