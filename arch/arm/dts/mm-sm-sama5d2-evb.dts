@@ -48,22 +48,22 @@
 
 		partition@0 {
 			label = "bootstrap";
-			reg = <0 0x20000>;
+			reg = <0 0x10000>;
 		};
 
-		partition@20000 {
+		partition@10000 {
 			label = "boot";
-			reg = <0x20000 0xc0000>;
+			reg = <0x10000 0x60000>;
 		};
 
-		partition@e0000 {
+		partition@70000 {
 			label = "env";
-			reg = <0xe0000 0x20000>;
+			reg = <0x70000 0x40000>;
 		};
 
-		partition@100000 {
+		partition@b0000 {
 			label = "system";
-			reg = <0x100000 0>;
+			reg = <0xb0000 0>;
 		};
 	};
 };
