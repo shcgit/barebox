@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# USB network adapter
+usb
+sleep 1
+
+exit 0

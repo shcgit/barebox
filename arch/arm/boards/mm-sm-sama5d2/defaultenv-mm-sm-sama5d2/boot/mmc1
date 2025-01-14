@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Booting from SD"
+
+exit 0

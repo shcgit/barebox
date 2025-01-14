@@ -13,7 +13,8 @@
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &sdmmc1, "partname:env";
+			device-path = &sdmmc1, "partname:0";
+			file-path = "barebox.env";
 			status = "disabled";
 		};
 
@@ -47,17 +48,22 @@
 
 		partition@0 {
 			label = "bootstrap";
-			reg = <0 0x10000>;
+			reg = <0 0x20000>;
 		};
 
-		partition@10000 {
+		partition@20000 {
 			label = "boot";
-			reg = <0x10000 0x100000>;
+			reg = <0x20000 0xc0000>;
 		};
 
-		partition@110000 {
+		partition@e0000 {
+			label = "env";
+			reg = <0xe0000 0x20000>;
+		};
+
+		partition@100000 {
 			label = "system";
-			reg = <0x110000 0>;
+			reg = <0x100000 0>;
 		};
 	};
 };

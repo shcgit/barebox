@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Booting from QSPI"
+
+exit 0

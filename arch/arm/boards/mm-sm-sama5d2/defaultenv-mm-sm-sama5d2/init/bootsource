@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -n "$nv.boot.default" ]; then
+	exit
+fi
+
+global.boot.default=$bootsource$bootsource_instance
+
+exit 0
