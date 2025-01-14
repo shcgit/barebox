@@ -6,7 +6,6 @@ config MTD_NAND_CORE
 	bool
 
 source "drivers/mtd/nand/raw/Kconfig"
-source "drivers/mtd/nand/spi/Kconfig"
 
 menu "ECC engine support"
 
