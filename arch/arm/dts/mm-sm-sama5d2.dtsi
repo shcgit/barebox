@@ -20,6 +20,8 @@
 	aliases {
 		can0 = &can0;
 		can1 = &can1;
+		eeprom0 = &eeprom0;
+		eeprom1 = &eeprom1;
 		ethernet0 = &ethernet0;
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
@@ -291,7 +293,7 @@
 	clock-frequency = <400000>;
 	status = "okay";
 
-	eeprom@50 {
+	eeprom0: eeprom@50 {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_eeprom>;
 		compatible = "atmel,24c32";
@@ -301,11 +303,17 @@
 		wp-gpios = <&pioA PIN_PD11 GPIO_ACTIVE_HIGH>;
 	};
 
-	eeprom@58 {
-		compatible = "atmel,24cs32";
+	eeprom1: eeprom@58 {
+		compatible = "atmel,24c32";
 		reg = <0x58>;
 		vcc-supply = <&vcc_1v8>;
 		read-only;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		serial: serial@800 {
+			reg = <0x800 0x10>;
+		};
 	};
 };
 
