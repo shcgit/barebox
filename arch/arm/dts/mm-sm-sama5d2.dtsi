@@ -20,6 +20,7 @@
 	aliases {
 		can0 = &can0;
 		can1 = &can1;
+		ethernet0 = &ethernet0;
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
 		i2c3 = &i2c3;
@@ -463,30 +464,30 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	usb-port@2 {
+	/* Enable VCC on port 3 later due errata */
+	/* Since we cannot use port 3 for this, lets use port 2 as a workaround */
+	hub@2 {
 		compatible = "usb424,2514";
 		reg = <2>;
 		vdd-supply = <&vcc_lan>;
-		#address-cells = <1>;
-		#size-cells = <0>;
+	};
 
-		ethernet@1 {
-			compatible = "usb424,7850";
-			reg = <1>;
-			//local-mac-address = [ 00 11 22 33 44 55 ];
+	ethernet0: ethernet@3 {
+		compatible = "usb424,7850";
+		reg = <3>;
+		local-mac-address = [00 11 22 33 44 55];
 
-			mdio {
-				#address-cells = <0x1>;
-				#size-cells = <0x0>;
+		mdio {
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
 
-				ethernet-phy@1 {
-					reg = <1>;
-					microchip,led-modes = <
-						LAN78XX_LINK_100_ACTIVITY
-						LAN78XX_LINK_1000_ACTIVITY
-						LAN78XX_LINK_ACTIVITY
-					>;
-				};
+			ethernet-phy@1 {
+				reg = <1>;
+				microchip,led-modes = <
+					LAN78XX_LINK_100_ACTIVITY
+					LAN78XX_LINK_1000_ACTIVITY
+					LAN78XX_LINK_ACTIVITY
+				>;
 			};
 		};
 	};
