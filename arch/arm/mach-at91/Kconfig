@@ -648,6 +648,13 @@ config MACH_MM_SM_SAMA5D2
 	select OFDEVICE
 	select MCI_ATMEL_SDHCI_PBL
 	select COMMON_CLK_OF_PROVIDER
+	select MACHINE_ID
+	select DIGEST
+	select DIGEST_SHA1_ARM if !DIGEST_SHA1_GENERIC
+	select DIGEST_SHA256_ARM if !DIGEST_SHA256_GENERIC
+	select DIGEST_HMAC_GENERIC
+	select NET
+	select NET_ETHADDR_FROM_MACHINE_ID
 	help
 	  Select this if you are using Mega-Milas SMARC SAMA5D2 based board
 

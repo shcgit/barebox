@@ -20,8 +20,6 @@
 	aliases {
 		can0 = &can0;
 		can1 = &can1;
-		eeprom0 = &eeprom0;
-		eeprom1 = &eeprom1;
 		ethernet0 = &ethernet0;
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
@@ -58,6 +56,11 @@
 		num-interpolated-steps = <16>;
 		default-brightness-level = <0>;
 		enable-gpios = <&pioA PIN_PD28 GPIO_ACTIVE_HIGH>;
+	};
+
+	device-info {
+		nvmem-cells = <&serial>;
+		nvmem-cell-names = "serial";
 	};
 
 	leds {
@@ -293,7 +296,7 @@
 	clock-frequency = <400000>;
 	status = "okay";
 
-	eeprom0: eeprom@50 {
+	eeprom@50 {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_eeprom>;
 		compatible = "atmel,24c32";
@@ -303,7 +306,7 @@
 		wp-gpios = <&pioA PIN_PD11 GPIO_ACTIVE_HIGH>;
 	};
 
-	eeprom1: eeprom@58 {
+	eeprom@58 {
 		compatible = "atmel,24c32";
 		reg = <0x58>;
 		vcc-supply = <&vcc_1v8>;
@@ -480,7 +483,6 @@
 	ethernet0: ethernet@3 {
 		compatible = "usb424,7850";
 		reg = <3>;
-		local-mac-address = [00 11 22 33 44 55];
 
 		mdio {
 			#address-cells = <0x1>;
