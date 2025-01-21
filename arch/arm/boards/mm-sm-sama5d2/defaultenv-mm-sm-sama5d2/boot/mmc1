@@ -2,4 +2,7 @@
 
 echo "Booting from SD"
 
+global bootm.image="/mnt/mmc1.0/zImage"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rw rootwait"
+
 exit 0
