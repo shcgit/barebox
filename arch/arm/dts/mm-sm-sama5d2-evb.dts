@@ -69,8 +69,14 @@
 };
 
 &hlcdc {
+	status = "okay";
+
 	hlcdc-display-controller {
 		bus-width = <18>;
+
+		port@0 {
+			//TODO:
+		};
 	};
 };
 

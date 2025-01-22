@@ -171,17 +171,10 @@
 };
 
 &hlcdc {
-	status = "okay";
-
 	hlcdc-display-controller {
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&pinctrl_hlcdc_default>;
 		pinctrl-1 = <&pinctrl_hlcdc_sleep>;
-		bus-width = <24>;
-
-		port@0 {
-			//TODO:
-		};
 	};
 };
 
