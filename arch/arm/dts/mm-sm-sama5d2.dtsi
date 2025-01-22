@@ -89,6 +89,15 @@
 		#mux-control-cells = <0>;
 	};
 
+	sram@220000 {
+		compatible = "mmio-sram";
+		reg = <0x00220000 0x20000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0x00220000 0x20000>;
+		export;
+	};
+
 	vcc_lan: vcc-lan-regulator {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -356,6 +365,10 @@
 	pinctrl-0 = <&pinctrl_i2s0>;
 	status = "okay";
 	#sound-dai-cells = <0>;
+};
+
+&ns_sram {
+	export;
 };
 
 &qspi0 {
