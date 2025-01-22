@@ -41,8 +41,8 @@
 };
 
 &flash {
-	partitions {
-		compatible = "fixed-partitions";
+//	partitions {
+//		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
 
@@ -65,7 +65,7 @@
 			label = "system";
 			reg = <0xb0000 0>;
 		};
-	};
+//	};
 };
 
 &hlcdc {

@@ -79,16 +79,6 @@
 		};
 	};
 
-	qspi1_mux: mux-controller {
-		compatible = "gpio-mux";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_qspi1_mux>;
-		mux-gpios = <&pioA PIN_PA11 GPIO_ACTIVE_LOW>,
-			    <&pioA PIN_PC25 GPIO_ACTIVE_LOW>;
-		idle-state = <1>;
-		#mux-control-cells = <0>;
-	};
-
 	sram@220000 {
 		compatible = "mmio-sram";
 		reg = <0x00220000 0x20000>;
@@ -383,15 +373,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_qspi1>;
 	status = "okay";
-
-/*	spi@0 {
-		compatible = "spi-mux";
-		reg = <0>;
-		mux-controls = <&qspi1_mux>;
-		#address-cells = <1>;
-		#size-cells = <0>;
-	};
-*/
 };
 
 &sdmmc1 {
@@ -685,25 +666,13 @@
 	};
 
 	pinctrl_qspi1: qspi1-grp {
-		ctl {
-			pinmux = <PIN_PA6__QSPI1_SCK>,		/* P56 */
-				 <PIN_PA7__QSPI1_IO0>,		/* P58 */
-				 <PIN_PA8__QSPI1_IO1>,		/* P57 */
-				 <PIN_PA9__QSPI1_IO2>,		/* S56 */
-				 <PIN_PA10__QSPI1_IO3>;		/* S57 */
-			bias-disable;
-		};
-
-		rst {
-			pinmux = <PIN_PC18__GPIO>;		/* S58 */
-			bias-pull-up;
-		};
-	};
-
-	pinctrl_qspi1_mux: qspi1-mux-grp {
-		pinmux = <PIN_PA11__GPIO>,			/* P54 */
-			 <PIN_PC25__GPIO>;			/* P55 */
-		bias-pull-up;
+		pinmux = <PIN_PA6__QSPI1_SCK>,			/* P56 */
+			 <PIN_PA7__QSPI1_IO0>,			/* P58 */
+			 <PIN_PA8__QSPI1_IO1>,			/* P57 */
+			 <PIN_PA9__QSPI1_IO2>,			/* S56 */
+			 <PIN_PA10__QSPI1_IO3>,			/* S57 */
+			 <PIN_PA11__QSPI1_CS>;			/* P54 */
+		bias-disable;
 	};
 
 	pinctrl_reg_lan: reg-lan-grp {
