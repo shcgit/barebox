@@ -10,8 +10,8 @@
 #include <net.h>
 #include <linux/nvmem-consumer.h>
 
-static void *nvmem_read(struct device_node *np, const char *cell_name,
-			size_t *bytes)
+static void __init *nvmem_read(struct device_node *np, const char *cell_name,
+			       size_t *bytes)
 {
 	struct nvmem_cell *cell;
 	void *value;
@@ -104,7 +104,7 @@ static int __init mm_sm_sama5d2_init(void)
 
 	if (bootsource != BOOTSOURCE_MMC || !instance) {
 		if (bootsource != BOOTSOURCE_SPI) {
-			pr_warn("Boot source: %s, instance %i\n",
+			pr_warn("Unhandled boot source: %s, instance %i\n",
 				bootsource_to_string(bootsource), instance);
 		} else
 			of_device_enable_path("/chosen/environment-qspi");

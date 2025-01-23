@@ -2,4 +2,6 @@
 
 echo "Booting from QSPI"
 
-exit 0
+echo "Under construction yet!"
+
+exit 1

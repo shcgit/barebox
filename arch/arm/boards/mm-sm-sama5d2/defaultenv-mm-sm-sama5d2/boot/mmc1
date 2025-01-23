@@ -2,7 +2,21 @@
 
 echo "Booting from SD"
 
-global bootm.image="/mnt/mmc1.0/zImage"
-global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rw rootwait"
+if [ -f /mnt/mmc1.0/zImage ]; then
+	global bootm.image="/mnt/mmc1.0/zImage"
+	global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rw rootwait"
+
+	DTB=/mnt/mmc1.0/mm-sm-sama5d2-evb.dtb
+else
+	echo "Boot image not found!"
+	exit 1
+fi
+
+if [ -f $DTB ]; then
+	echo "Using external devicetree blob from $DTB"
+	global.bootm.oftree=$DTB
+else
+	echo "Using internal devicetree blob"
+fi
 
 exit 0
