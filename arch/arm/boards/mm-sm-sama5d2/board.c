@@ -3,12 +3,17 @@
 #include <bbu.h>
 #include <bootsource.h>
 #include <common.h>
+#include <driver.h>
 #include <envfs.h>
+#include <gpio.h>
 #include <init.h>
 #include <of.h>
 #include <machine_id.h>
 #include <net.h>
 #include <linux/nvmem-consumer.h>
+
+static int __init bootcfg = -1;
+static int __init somrev = -1;
 
 static void __init *nvmem_read(struct device_node *np, const char *cell_name,
 			       size_t *bytes)
@@ -91,6 +96,69 @@ static int __init mm_sm_sama5d2_mac_init(void)
 }
 environment_initcall(mm_sm_sama5d2_mac_init);
 
+static int __init mm_sm_sama5d2_gpio_get(const unsigned gpio)
+{
+	int ret;
+
+	ret = gpio_direction_input(gpio);
+	if (ret)
+		return ret;
+
+	return gpio_get_value(gpio);
+}
+
+static int __init mm_sm_sama5d2_version_init(void)
+{
+	const struct {
+		unsigned id;
+		unsigned shift;
+	} bootgpios[] = {
+		{ 1, 0, },
+		{ 2, 1, },
+		{ 3, 2, },
+	}, vergpios[] = {
+		{ 4, 0, },
+		{ 5, 1, },
+		{ 6, 2, },
+		{ 7, 3, },
+	};
+	struct device *gpiodev;
+	struct gpio_chip *gpiochip;
+	int i, val, ret;
+
+	gpiodev = get_device_by_name("fc040000.secumod@fc040000.of");
+	if (!gpiodev)
+		return -ENODEV;
+
+	gpiochip = gpio_get_chip_by_dev(gpiodev);
+	if (!gpiochip)
+		return -ENODEV;
+
+	ret = 0;
+	for (i = 0; i < ARRAY_SIZE(bootgpios); i++) {
+		val = mm_sm_sama5d2_gpio_get(gpiochip->base + bootgpios[i].id);
+		if (val < 0) {
+			pr_err("Cannot get PIOBU %u\n", bootgpios[i].id);
+			return val;
+		}
+		ret |= val << bootgpios[i].shift;
+	}
+	bootcfg = ret;
+
+	ret = 0;
+	for (i = 0; i < ARRAY_SIZE(vergpios); i++) {
+		val = mm_sm_sama5d2_gpio_get(gpiochip->base + vergpios[i].id);
+		if (val < 0) {
+			pr_err("Cannot get PIOBU %u\n", vergpios[i].id);
+			return val;
+		}
+		ret |= val << vergpios[i].shift;
+	}
+	somrev = ret;
+
+	return 0;
+}
+
 static int __init mm_sm_sama5d2_init(void)
 {
 	enum bootsource bootsource;
@@ -99,8 +167,35 @@ static int __init mm_sm_sama5d2_init(void)
 	if (!of_machine_is_compatible("milas,mm-sm-sama5d2"))
 		return 0;
 
+	if (mm_sm_sama5d2_version_init()) {
+		pr_err("Cannot determine module version.\n");
+		return -ENOTSUPP;
+	}
+
 	bootsource = bootsource_get();
 	instance = bootsource_get_instance();
+
+	switch (bootcfg) {
+	case 0 ... 7:
+		break;
+	default:
+		pr_err("Unhandled SMARC BOOT settings!\n");
+		return -ENOTSUPP;
+	}
+
+	pr_info("SMARC BOOT settings: %i (%d%d%d)\n", bootcfg, !!(bootcfg & 0x4),
+							       !!(bootcfg & 0x2),
+							       !!(bootcfg & 0x1));
+
+	switch (somrev) {
+	case 0:
+		break;
+	default:
+		pr_err("Unhandled module revision!\n");
+		return -ENOTSUPP;
+	}
+
+	pr_info("Module revision: %i\n", somrev);
 
 	if (bootsource != BOOTSOURCE_MMC || !instance) {
 		if (bootsource != BOOTSOURCE_SPI) {
