@@ -294,6 +294,8 @@
 	pinctrl-0 = <&pinctrl_i2c1_default>;
 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
 	pinctrl-2 = <&pinctrl_i2c1_gpio>;
+	/* Disable DMA due garbage while read EEPROM */
+	dmas = <0>, <0>;
 	sda-gpios = <&pioA PIN_PD4 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	scl-gpios = <&pioA PIN_PD5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	i2c-analog-filter;
