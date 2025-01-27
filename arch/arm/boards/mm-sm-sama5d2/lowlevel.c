@@ -4,14 +4,9 @@
 #include <init.h>
 #include <mach/at91/barebox-arm.h>
 #include <mach/at91/sama5d2_ll.h>
-//#include <mach/at91/iomux.h>
 #include <mach/at91/xload.h>
 #include <debug_ll.h>
 #include <mach/at91/sama5d2-sip-ddramc.h>
-
-#define RGB_LED_GREEN (1 << 0)
-#define RGB_LED_RED   (1 << 1)
-#define RGB_LED_BLUE  (1 << 2)
 
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
