@@ -106,15 +106,15 @@
 //
 //		#sound-dai-cells = <0>;
 //	};
-//
-//	gpio@24 {
-//		/* EVB revision */
-//		compatible = "ti,tca9534", "nxp,pca9534";
-//		reg = <0x24>;
-//		gpio-controller;
-//
-//		#gpio-cells = <2>;
-//	};
+
+	gpio@24 {
+		/* EVB revision */
+		compatible = "ti,tca9534", "nxp,pca9534";
+		reg = <0x24>;
+		gpio-controller;
+
+		#gpio-cells = <2>;
+	};
 
 	gpio@41 {
 		/* Display ID */

@@ -193,48 +193,49 @@ static int __init mm_sm_sama5d2_version_init(void)
 
 static int __init mm_sm_sama5d2_evb_init(void)
 {
-	struct device *i2c_dev;
+	struct device *dev;
 	struct i2c_adapter *adapter;
 
-	i2c_dev = of_device_enable_and_register_by_alias("i2c0");
-	if (!i2c_dev)
+	dev = of_device_enable_and_register_by_alias("i2c0");
+	if (!dev)
 		return -ENODEV;
 
 	adapter = i2c_get_adapter(0);
 	if (!adapter)
 		return -ENODEV;
 
-	if (i2c_probe(adapter, 0x24))
-		return -ENODEV;
+	if (i2c_probe(adapter, 0x24)) {
+		//TODO:
+		//return -ENODEV;
+	}
 
 	//TODO:
+	evbrev = 0;
 
-	return -ENOTSUPP;
+	return 0;
 }
 
 static int __init mm_sm_sama5d2_informer_init(void)
 {
-	struct device *i2c_dev;
+	struct device *dev;
 	struct i2c_adapter *adapter;
 
-	i2c_dev = of_device_enable_and_register_by_alias("i2c0");
-	if (!i2c_dev)
+	dev = of_device_enable_and_register_by_alias("i2c0");
+	if (!dev)
 		return -ENODEV;
 
 	adapter = i2c_get_adapter(0);
 	if (!adapter)
 		return -ENODEV;
 
-	//FIXME: Temporary address 0x20
 	if (i2c_probe(adapter, 0x20)) {
 		//TODO:
 		//return -ENODEV;
 	}
 
 	//TODO:
-	infrev = 0;
 
-	return 0;
+	return -ENOTSUPP;
 }
 
 static int __init mm_sm_sama5d2_load_overlay(const void *ovl)

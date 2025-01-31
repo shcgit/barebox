@@ -320,6 +320,7 @@
 	};
 
 	hwrev: gpio@20 {
+		/* HW Revision */
 		compatible = "nxp,pca9534";
 		reg = <0x20>;
 		gpio-controller;
