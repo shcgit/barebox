@@ -341,7 +341,8 @@
 		#interrupt-cells = <2>;
 	};
 
-	dispver: gpio@41 {
+	gpio@41 {
+		/* Display ID */
 		compatible = "nxp,pca9536";
 		reg = <0x41>;
 		gpio-controller;
@@ -392,6 +393,7 @@
 		status = "okay";
 
 		display-timings {
+			/* G104XVN01 */
 			timing0: G104XVN01 {
 				clock-frequency = <50000000 65000000 81000000>;
 				hactive = <1024>;

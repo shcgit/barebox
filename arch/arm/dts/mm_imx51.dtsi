@@ -34,6 +34,7 @@
 		display-timings {
 			native-mode = <&timing0_0>;
 
+			/* PH320240T, G057QN01 */
 			timing0_0: PH320240T {
 				clock-frequency = <6394000>;
 				hactive = <320>;

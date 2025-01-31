@@ -14,6 +14,7 @@
 SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 {
 	void __iomem *dbgu_base;
+
 	sama5d2_lowlevel_init();
 
 	dbgu_base = sama5d2_resetup_uart_console(MASTER_CLOCK);
@@ -31,8 +32,8 @@ SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 
 SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2, r4)
 {
-	extern char __dtb_z_mm_sm_sama5d2_evb_start[];
-	void *fdt = __dtb_z_mm_sm_sama5d2_evb_start + get_runtime_offset();
+	extern char __dtb_z_mm_sm_sama5d2_base_start[];
+	void *fdt = __dtb_z_mm_sm_sama5d2_base_start + get_runtime_offset();
 
 	putc_ll('>');
 

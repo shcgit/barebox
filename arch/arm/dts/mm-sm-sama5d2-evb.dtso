@@ -1,0 +1,163 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
+
+/dts-v1/;
+/plugin/;
+
+#include <arm/microchip/sama5d2-pinfunc.h>
+
+&{/} {
+	model = "Mega-Milas SAMA5D2 EVB";
+	compatible = "milas,mm-sm-sama5d2-evb", "milas,mm-sm-sama5d2",
+		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+
+	panel {
+		compatible = "panel-lvds";
+		backlight = <&backlight>;
+		data-mapping = "jeida-18";
+		power-supply = <&vcc_3v3_sys>;
+		width-mm = <0>;
+		height-mm = <0>;
+
+		/* AT070TN94 */
+		panel-timing {
+			clock-frequency = <26400000 33300000 46800000>;
+			hactive = <800>;
+			vactive = <480>;
+			hback-porch = <46>;
+			hfront-porch = <16 209 354>;
+			hsync-len = <1 1 40>;
+			vback-porch = <23>;
+			vfront-porch = <7 21 147>;
+			vsync-len = <1 1 20>;
+			de-active = <1>;
+			pixelclk-active = <0>;
+		};
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds_out>;
+			};
+		};
+	};
+
+//	vcc_1v8_sys: vcc-1v8-sys-regulator {
+//		compatible = "regulator-fixed";
+//		regulator-name = "vcc_1v8_sys";
+//		regulator-min-microvolt = <1800000>;
+//		regulator-max-microvolt = <1800000>;
+//	};
+
+	vcc_3v3_sys: vcc-3v3-sys-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_3v3_sys";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+};
+
+&flash {
+//	partitions {
+//		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "bootstrap";
+			reg = <0 0x10000>;
+		};
+
+		partition@10000 {
+			label = "boot";
+			reg = <0x10000 0x60000>;
+		};
+
+		partition@70000 {
+			label = "env";
+			reg = <0x70000 0x40000>;
+		};
+
+		partition@b0000 {
+			label = "system";
+			reg = <0xb0000 0>;
+		};
+//	};
+};
+
+&hlcdc {
+	status = "okay";
+
+	hlcdc-display-controller {
+		bus-width = <18>;
+	};
+};
+
+&i2c0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+//	codec@a {
+//		compatible = "fsl,sgtl5000";
+//		reg =<0xa>;
+//		clocks = <&clk24m>;
+//		micbias-resistor-k-ohms = <2>;
+//		VDDA-supply = <&vcc_3v3_sys>;
+//		VDDIO-supply = <&vcc_1v8_sys>;
+//		VDDD-supply = <&vcc_1v8_sys>;
+//
+//		#sound-dai-cells = <0>;
+//	};
+//
+//	gpio@24 {
+//		/* EVB revision */
+//		compatible = "ti,tca9534", "nxp,pca9534";
+//		reg = <0x24>;
+//		gpio-controller;
+//
+//		#gpio-cells = <2>;
+//	};
+
+	gpio@41 {
+		/* Display ID */
+		compatible = "nxp,pca9536";
+		reg = <0x41>;
+		gpio-controller;
+
+		#gpio-cells = <2>;
+	};
+};
+
+&lvds_encoder {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@1 {
+			reg = <1>;
+
+			lvds_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};
+
+&sdmmc1 {
+	disable-wp;
+	status = "okay";
+};
+
+&pioA {
+	pinctrl_hlcdc_default: hlcdc-grp-default {
+		bits24 {
+			pinmux = <PIN_PB11__GPIO>,
+				 <PIN_PB12__GPIO>,
+				 <PIN_PB19__GPIO>,
+				 <PIN_PB20__GPIO>,
+				 <PIN_PB27__GPIO>,
+				 <PIN_PB28__GPIO>;
+			bias-pull-down;
+		};
+	};
+};

@@ -10,10 +10,26 @@
 #include <of.h>
 #include <machine_id.h>
 #include <net.h>
+#include <i2c/i2c.h>
 #include <linux/nvmem-consumer.h>
 
 static int __init bootcfg = -1;
 static int __init somrev = -1;
+static int __init evbrev = -1;
+static int __init infrev = -1;
+
+static int __init i2c_probe(struct i2c_adapter *adapter, const int addr)
+{
+	u8 buf[1];
+	struct i2c_msg msg = {
+		.addr = addr,
+		.buf = buf,
+		.len = sizeof(buf),
+		.flags = I2C_M_RD,
+	};
+
+	return (i2c_transfer(adapter, &msg, 1) == 1) ? 0: -ENODEV;
+}
 
 static void __init *nvmem_read(struct device_node *np, const char *cell_name,
 			       size_t *bytes)
@@ -55,7 +71,7 @@ static int __init mm_sm_sama5d2_serial_init(void)
 	buf = nvmem_read(np, "serial", &len);
 	if (IS_ERR(buf) || len < 16) {
 		pr_err("Cannot read EEPROM!\n");
-		return PTR_ERR(buf);
+		return IS_ERR(buf) ? PTR_ERR(buf) : -ETOOSMALL;
 	};
 
 	machine_id_set_hashable(buf, len);
@@ -96,6 +112,24 @@ static int __init mm_sm_sama5d2_mac_init(void)
 }
 environment_initcall(mm_sm_sama5d2_mac_init);
 
+struct gpioset {
+	unsigned id;
+	unsigned shift;
+};
+
+static const struct gpioset __init bootgpios[] = {
+	{ 1, 0, },
+	{ 2, 1, },
+	{ 3, 2, },
+};
+
+static const struct gpioset __init vergpios[] = {
+	{ 4, 0, },
+	{ 5, 1, },
+	{ 6, 2, },
+	{ 7, 3, },
+};
+
 static int __init mm_sm_sama5d2_gpio_get(const unsigned gpio)
 {
 	int ret;
@@ -107,26 +141,15 @@ static int __init mm_sm_sama5d2_gpio_get(const unsigned gpio)
 	return gpio_get_value(gpio);
 }
 
-static int __init mm_sm_sama5d2_version_init(void)
+static int __init mm_sm_sama5d2_gpios_get(const char *name,
+					  const struct gpioset *gpioset,
+					  int count)
 {
-	const struct {
-		unsigned id;
-		unsigned shift;
-	} bootgpios[] = {
-		{ 1, 0, },
-		{ 2, 1, },
-		{ 3, 2, },
-	}, vergpios[] = {
-		{ 4, 0, },
-		{ 5, 1, },
-		{ 6, 2, },
-		{ 7, 3, },
-	};
 	struct device *gpiodev;
 	struct gpio_chip *gpiochip;
-	int i, val, ret;
+	int i, val, ret = 0;
 
-	gpiodev = get_device_by_name("fc040000.secumod@fc040000.of");
+	gpiodev = get_device_by_name(name);
 	if (!gpiodev)
 		return -ENODEV;
 
@@ -134,46 +157,123 @@ static int __init mm_sm_sama5d2_version_init(void)
 	if (!gpiochip)
 		return -ENODEV;
 
-	ret = 0;
-	for (i = 0; i < ARRAY_SIZE(bootgpios); i++) {
-		val = mm_sm_sama5d2_gpio_get(gpiochip->base + bootgpios[i].id);
+	for (i = 0; i < count; i++) {
+		val = mm_sm_sama5d2_gpio_get(gpiochip->base + gpioset[i].id);
 		if (val < 0) {
-			pr_err("Cannot get PIOBU %u\n", bootgpios[i].id);
+			pr_err("Cannot get GPIO %u\n",
+			       gpiochip->base + gpioset[i].id);
 			return val;
 		}
-		ret |= val << bootgpios[i].shift;
+		ret |= val << gpioset[i].shift;
 	}
+
+	return ret;
+}
+
+static int __init mm_sm_sama5d2_version_init(void)
+{
+	const char *piobu = "fc040000.secumod@fc040000.of";
+	int ret;
+
+	ret = mm_sm_sama5d2_gpios_get(piobu, bootgpios, ARRAY_SIZE(bootgpios));
+	if (ret < 0)
+		return ret;
+
 	bootcfg = ret;
 
-	ret = 0;
-	for (i = 0; i < ARRAY_SIZE(vergpios); i++) {
-		val = mm_sm_sama5d2_gpio_get(gpiochip->base + vergpios[i].id);
-		if (val < 0) {
-			pr_err("Cannot get PIOBU %u\n", vergpios[i].id);
-			return val;
-		}
-		ret |= val << vergpios[i].shift;
-	}
+	ret = mm_sm_sama5d2_gpios_get(piobu, vergpios, ARRAY_SIZE(vergpios));
+	if (ret < 0)
+		return ret;
+
 	somrev = ret;
+
+	return 0;
+}
+
+static int __init mm_sm_sama5d2_evb_init(void)
+{
+	struct device *i2c_dev;
+	struct i2c_adapter *adapter;
+
+	i2c_dev = of_device_enable_and_register_by_alias("i2c0");
+	if (!i2c_dev)
+		return -ENODEV;
+
+	adapter = i2c_get_adapter(0);
+	if (!adapter)
+		return -ENODEV;
+
+	if (i2c_probe(adapter, 0x24))
+		return -ENODEV;
+
+	//TODO:
+
+	return -ENOTSUPP;
+}
+
+static int __init mm_sm_sama5d2_informer_init(void)
+{
+	struct device *i2c_dev;
+	struct i2c_adapter *adapter;
+
+	i2c_dev = of_device_enable_and_register_by_alias("i2c0");
+	if (!i2c_dev)
+		return -ENODEV;
+
+	adapter = i2c_get_adapter(0);
+	if (!adapter)
+		return -ENODEV;
+
+	//FIXME: Temporary address 0x20
+	if (i2c_probe(adapter, 0x20)) {
+		//TODO:
+		//return -ENODEV;
+	}
+
+	//TODO:
+	infrev = 0;
+
+	return 0;
+}
+
+static int __init mm_sm_sama5d2_load_overlay(const void *ovl)
+{
+	int ret;
+
+	if (ovl) {
+		struct device_node *root = of_get_root_node();
+
+		ret = of_overlay_apply_dtbo(root, ovl);
+		if (ret) {
+			pr_err("Cannot apply overlay: %pe!\n", ERR_PTR(ret));
+			return ret;
+		}
+
+		of_probe();
+
+		/* Ensure reload aliases & model name */
+		of_set_root_node(NULL);
+		of_set_root_node(root);
+	}
 
 	return 0;
 }
 
 static int __init mm_sm_sama5d2_init(void)
 {
+	const void *som_ovl = NULL, *brd_ovl = NULL, *ver_ovl = NULL;
+	extern char __dtbo_mm_sm_sama5d2_evb_start[];
+	extern char __dtbo_mm_sm_sama5d2_informer_start[];
 	enum bootsource bootsource;
-	int instance;
+	int instance, ret;
 
 	if (!of_machine_is_compatible("milas,mm-sm-sama5d2"))
 		return 0;
 
 	if (mm_sm_sama5d2_version_init()) {
-		pr_err("Cannot determine module version.\n");
+		pr_err("Cannot determine module version!\n");
 		return -ENOTSUPP;
 	}
-
-	bootsource = bootsource_get();
-	instance = bootsource_get_instance();
 
 	switch (bootcfg) {
 	case 0 ... 7:
@@ -196,6 +296,37 @@ static int __init mm_sm_sama5d2_init(void)
 	}
 
 	pr_info("Module revision: %i\n", somrev);
+
+	ret = mm_sm_sama5d2_load_overlay(som_ovl);
+	if (ret)
+		return ret;
+
+	if (mm_sm_sama5d2_evb_init() && mm_sm_sama5d2_informer_init()) {
+		pr_err("Cannot determine board variant!\n");
+		return -ENOTSUPP;
+	}
+
+	if (evbrev > -1) {
+		pr_info("EVB revision: %i\n", evbrev);
+		brd_ovl = __dtbo_mm_sm_sama5d2_evb_start;
+	} else if (infrev > -1) {
+		pr_info("Informer revision: %i\n", infrev);
+		brd_ovl = __dtbo_mm_sm_sama5d2_informer_start;
+	} else {
+		pr_err("Unsupported hardware\n");
+		hang();
+	}
+
+	ret = mm_sm_sama5d2_load_overlay(brd_ovl);
+	if (ret)
+		return ret;
+
+	ret = mm_sm_sama5d2_load_overlay(ver_ovl);
+	if (ret)
+		return ret;
+
+	bootsource = bootsource_get();
+	instance = bootsource_get_instance();
 
 	if (bootsource != BOOTSOURCE_MMC || !instance) {
 		if (bootsource != BOOTSOURCE_SPI) {

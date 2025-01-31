@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
 
-/dts-v1/;
-
 #include <arm/microchip/sama5d2.dtsi>
 #include <arm/microchip/sama5d2-pinfunc.h>
 #include <dt-bindings/mfd/atmel-flexcom.h>
@@ -37,6 +35,19 @@
 
 	chosen {
 		stdout-path = &uart1;
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:0";
+			file-path = "barebox.env";
+			status = "disabled";
+		};
+
+		environment-qspi {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:env";
+			status = "disabled";
+		};
 	};
 
 	clocks {
@@ -53,7 +64,7 @@
 		compatible = "pwm-backlight";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight>;
-		pwms = <&hlcdc_pwm 0 100000 0>;
+		pwms = <&hlcdc_pwm 0 5000000 0>;
 		brightness-levels = <0 255>;
 		num-interpolated-steps = <16>;
 		default-brightness-level = <0>;
@@ -92,6 +103,25 @@
 		};
 	};
 
+	lvds_encoder: lvds-encoder {
+		compatible = "lvds-encoder";
+		power-supply = <&vcc_3v3>;
+		status = "disabled";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				lvds_in: endpoint {
+					remote-endpoint = <&lcd_out>;
+				};
+			};
+		};
+	};
+
 	sram@220000 {
 		compatible = "mmio-sram";
 		reg = <0x00220000 0x20000>;
@@ -108,8 +138,8 @@
 		regulator-name = "vcc_lan";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		gpio = <&pioA PIN_PC23 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
+		gpio = <&pioA PIN_PC23 GPIO_ACTIVE_HIGH>;
 	};
 
 	vcc_sd: vcc-sd-regulator {
@@ -119,8 +149,8 @@
 		regulator-name = "vcc_sd";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		gpio = <&pioA PIN_PA27 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
+		gpio = <&pioA PIN_PA27 GPIO_ACTIVE_HIGH>;
 	};
 
 	vcc_vqmmc: vcc-vqmmc-regulator {
@@ -178,6 +208,12 @@
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&pinctrl_hlcdc_default>;
 		pinctrl-1 = <&pinctrl_hlcdc_sleep>;
+
+		port@0 {
+			lcd_out: endpoint {
+				remote-endpoint = <&lvds_in>;
+			};
+		};
 	};
 };
 

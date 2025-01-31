@@ -1,0 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
+
+/dts-v1/;
+
+#include "mm-sm-sama5d2.dtsi"
+
+&sdmmc1 {
+	status = "okay";
+};
