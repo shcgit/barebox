@@ -158,7 +158,6 @@
 
 &sdmmc1 {
 	disable-wp;
-	status = "okay";
 };
 
 &spi0 {

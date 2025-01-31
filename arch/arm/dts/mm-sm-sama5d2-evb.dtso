@@ -145,7 +145,6 @@
 
 &sdmmc1 {
 	disable-wp;
-	status = "okay";
 };
 
 &pioA {
