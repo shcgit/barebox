@@ -5,6 +5,7 @@
 /plugin/;
 
 #include <arm/microchip/sama5d2-pinfunc.h>
+#include <dt-bindings/clock/at91.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 
@@ -19,7 +20,7 @@
 		pinctrl-0 = <&pinctrl_gpio_keys>;
 
 		/* SLEEP */
-		button0 {
+		button-sleep {
 			label = "SLEEP";
 			linux,code = <KEY_SLEEP>;
 			linux,input-type = <EV_KEY>;
@@ -83,7 +84,8 @@
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&cpu_dai>;
 		simple-audio-card,frame-master = <&cpu_dai>;
-		simple-audio-card,name = "I2S00SGTL5000";
+		simple-audio-card,mclk-fs = <512>;
+		simple-audio-card,name = "I2S0SGTL5000";
 
 		cpu_dai: simple-audio-card,cpu {
 			sound-dai = <&i2s0>;
@@ -152,8 +154,9 @@
 	codec: codec@a {
 		compatible = "fsl,sgtl5000";
 		reg =<0xa>;
-//		clocks = <&clk24m>;
+		clocks = <&pmc PMC_TYPE_CORE PMC_I2S0_MUX>;
 		micbias-resistor-k-ohms = <2>;
+		micbias-voltage-m-volts = <2250>;
 		VDDA-supply = <&vcc_3v3_sys>;
 		VDDIO-supply = <&vcc_1v8_sys>;
 		VDDD-supply = <&vcc_1v8_sys>;
