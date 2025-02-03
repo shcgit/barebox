@@ -14,10 +14,9 @@
 #include <i2c/i2c.h>
 #include <linux/nvmem-consumer.h>
 
-static int __init bootcfg = -1;
-static int __init somrev = -1;
-static int __init evbrev = -1;
-static int __init infrev = -1;
+static void __init *som = NULL;
+static void __init *board = NULL;
+static void __init *patch = NULL;
 
 static int __init i2c_probe(struct i2c_adapter *adapter, const int addr)
 {
@@ -118,19 +117,6 @@ struct gpioset {
 	unsigned shift;
 };
 
-static const struct gpioset __init bootgpios[] = {
-	{ 1, 0, },
-	{ 2, 1, },
-	{ 3, 2, },
-};
-
-static const struct gpioset __init vergpios[] = {
-	{ 4, 0, },
-	{ 5, 1, },
-	{ 6, 2, },
-	{ 7, 3, },
-};
-
 static int __init mm_sm_sama5d2_gpio_get(const unsigned gpio)
 {
 	int ret;
@@ -171,7 +157,20 @@ static int __init mm_sm_sama5d2_gpios_get(const char *name,
 	return ret;
 }
 
-static int __init mm_sm_sama5d2_version_init(void)
+static const struct gpioset __init bootgpios[] = {
+	{ 1, 0, },
+	{ 2, 1, },
+	{ 3, 2, },
+};
+
+static const struct gpioset __init vergpios[] = {
+	{ 4, 0, },
+	{ 5, 1, },
+	{ 6, 2, },
+	{ 7, 3, },
+};
+
+static int __init mm_sm_sama5d2_som_init(void)
 {
 	const char *piobu = "fc040000.secumod@fc040000.of";
 	int ret;
@@ -180,19 +179,68 @@ static int __init mm_sm_sama5d2_version_init(void)
 	if (ret < 0)
 		return ret;
 
-	bootcfg = ret;
+	switch (ret) {
+	case 0 ... 7:
+		break;
+	default:
+		pr_err("Unhandled SMARC BOOT settings!\n");
+		return -ENOTSUPP;
+	}
+
+	pr_info("SMARC BOOT settings: %i (%d%d%d)\n", ret, !!(ret & 0x4),
+							   !!(ret & 0x2),
+							   !!(ret & 0x1));
 
 	ret = mm_sm_sama5d2_gpios_get(piobu, vergpios, ARRAY_SIZE(vergpios));
 	if (ret < 0)
 		return ret;
 
-	somrev = ret;
+	switch (ret) {
+	case 0:
+		break;
+	default:
+		pr_err("Unhandled module revision!\n");
+		return -ENOTSUPP;
+	}
+
+	pr_info("Module revision: %i\n", ret);
 
 	return 0;
 }
 
-static int __init mm_sm_sama5d2_evb_init(void)
+static const struct gpioset __init evbvergpios[] = {
+	{ 0, 0, },
+	{ 1, 1, },
+	{ 2, 2, },
+	{ 3, 3, },
+};
+
+static int __init mm_sm_sama5d2_patch_init(void)
 {
+	int ret;
+
+	if (of_machine_is_compatible("milas,mm-sm-sama5d2-evb")) {
+		//FIXME: tca95340?
+		ret = mm_sm_sama5d2_gpios_get("tca95340", evbvergpios, ARRAY_SIZE(evbvergpios));
+		if (ret < 0)
+			return ret;
+
+		pr_info("Board revision: %i\n", ret);
+		//TODO:
+	} else if (of_machine_is_compatible("milas,informer-sama5d2")) {
+		//TODO:
+		ret = 0;
+		pr_info("Board revision: %i\n", ret);
+	} else
+		return -ENOTSUPP;
+
+	return 0;
+}
+
+static int __init mm_sm_sama5d2_board_init(void)
+{
+	extern char __dtbo_mm_sm_sama5d2_evb_start[];
+	extern char __dtbo_mm_sm_sama5d2_informer_start[];
 	struct device *dev;
 	struct i2c_adapter *adapter;
 
@@ -204,36 +252,17 @@ static int __init mm_sm_sama5d2_evb_init(void)
 	if (!adapter)
 		return -ENODEV;
 
-	if (i2c_probe(adapter, 0x24)) {
-		//TODO:
-		//return -ENODEV;
+	if (!i2c_probe(adapter, 0x24)) {
+		pr_info("Board variant detected: EVB\n");
+		board = __dtbo_mm_sm_sama5d2_evb_start;
+
+		return 0;
+	} else if (1/*!i2c_probe(adapter, 0x20)*/) {
+		pr_info("Board variant detected: Informer\n");
+		board = __dtbo_mm_sm_sama5d2_informer_start;
+
+		return 0;
 	}
-
-	//TODO:
-	evbrev = 0;
-
-	return 0;
-}
-
-static int __init mm_sm_sama5d2_informer_init(void)
-{
-	struct device *dev;
-	struct i2c_adapter *adapter;
-
-	dev = of_device_enable_and_register_by_alias("i2c0");
-	if (!dev)
-		return -ENODEV;
-
-	adapter = i2c_get_adapter(0);
-	if (!adapter)
-		return -ENODEV;
-
-	if (i2c_probe(adapter, 0x20)) {
-		//TODO:
-		//return -ENODEV;
-	}
-
-	//TODO:
 
 	return -ENOTSUPP;
 }
@@ -263,67 +292,39 @@ static int __init mm_sm_sama5d2_load_overlay(const void *ovl)
 
 static int __init mm_sm_sama5d2_init(void)
 {
-	const void *som_ovl = NULL, *brd_ovl = NULL, *ver_ovl = NULL;
-	extern char __dtbo_mm_sm_sama5d2_evb_start[];
-	extern char __dtbo_mm_sm_sama5d2_informer_start[];
 	enum bootsource bootsource;
 	int instance, ret;
 
 	if (!of_machine_is_compatible("milas,mm-sm-sama5d2"))
 		return 0;
 
-	if (mm_sm_sama5d2_version_init()) {
-		pr_err("Cannot determine module version!\n");
-		return -ENOTSUPP;
+	ret = mm_sm_sama5d2_som_init();
+	if (ret) {
+		pr_err("Cannot determine module revision!\n");
+		return ret;
 	}
 
-	switch (bootcfg) {
-	case 0 ... 7:
-		break;
-	default:
-		pr_err("Unhandled SMARC BOOT settings!\n");
-		return -ENOTSUPP;
-	}
-
-	pr_info("SMARC BOOT settings: %i (%d%d%d)\n", bootcfg, !!(bootcfg & 0x4),
-							       !!(bootcfg & 0x2),
-							       !!(bootcfg & 0x1));
-
-	switch (somrev) {
-	case 0:
-		break;
-	default:
-		pr_err("Unhandled module revision!\n");
-		return -ENOTSUPP;
-	}
-
-	pr_info("Module revision: %i\n", somrev);
-
-	ret = mm_sm_sama5d2_load_overlay(som_ovl);
+	ret = mm_sm_sama5d2_load_overlay(som);
 	if (ret)
 		return ret;
 
-	if (mm_sm_sama5d2_evb_init() && mm_sm_sama5d2_informer_init()) {
+	ret = mm_sm_sama5d2_board_init();
+	if (ret) {
 		pr_err("Cannot determine board variant!\n");
-		return -ENOTSUPP;
+		return ret;
 	}
 
-	if (evbrev > -1) {
-		pr_info("EVB revision: %i\n", evbrev);
-		brd_ovl = __dtbo_mm_sm_sama5d2_evb_start;
-	} else if (infrev > -1) {
-		pr_info("Informer revision: %i\n", infrev);
-		brd_ovl = __dtbo_mm_sm_sama5d2_informer_start;
-	} else {
-		pr_err("Unsupported hardware\n");
-		hang();
-	}
-
-	ret = mm_sm_sama5d2_load_overlay(brd_ovl);
+	ret = mm_sm_sama5d2_load_overlay(board);
 	if (ret)
 		return ret;
 
-	ret = mm_sm_sama5d2_load_overlay(ver_ovl);
+	ret = mm_sm_sama5d2_patch_init();
+	if (ret) {
+		pr_err("Cannot determine board revision!\n");
+		return ret;
+	}
+
+	ret = mm_sm_sama5d2_load_overlay(patch);
 	if (ret)
 		return ret;
 
