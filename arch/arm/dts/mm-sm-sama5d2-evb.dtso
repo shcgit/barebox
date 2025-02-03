@@ -5,11 +5,27 @@
 /plugin/;
 
 #include <arm/microchip/sama5d2-pinfunc.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 
 &{/} {
 	model = "Mega-Milas SAMA5D2 EVB";
 	compatible = "milas,mm-sm-sama5d2-evb", "milas,mm-sm-sama5d2",
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_keys>;
+
+		/* SLEEP */
+		button0 {
+			label = "SLEEP";
+			linux,code = <KEY_SLEEP>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&pioA PIN_PC30 GPIO_ACTIVE_LOW>;
+		};
+	};
 
 	panel {
 		compatible = "panel-lvds";
@@ -19,6 +35,7 @@
 		width-mm = <0>;
 		height-mm = <0>;
 
+#if 0
 		/* AT070TN94 */
 		panel-timing {
 			clock-frequency = <26400000 33300000 46800000>;
@@ -30,6 +47,26 @@
 			vback-porch = <23>;
 			vfront-porch = <7 21 147>;
 			vsync-len = <1 1 20>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
+		};
+#endif
+
+		/* PH320240T, G057QN01 */
+		panel-timing {
+			clock-frequency = <6400000>;
+			hactive = <320>;
+			vactive = <240>;
+			hback-porch = <38>;
+			hfront-porch = <20>;
+			hsync-len = <30>;
+			vback-porch = <15>;
+			vfront-porch = <5>;
+			vsync-len = <1 3 5>;
+			hsync-active = <0>;
+			vsync-active = <0>;
 			de-active = <1>;
 			pixelclk-active = <0>;
 		};
@@ -41,12 +78,28 @@
 		};
 	};
 
-//	vcc_1v8_sys: vcc-1v8-sys-regulator {
-//		compatible = "regulator-fixed";
-//		regulator-name = "vcc_1v8_sys";
-//		regulator-min-microvolt = <1800000>;
-//		regulator-max-microvolt = <1800000>;
-//	};
+	sound: sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,bitclock-master = <&cpu_dai>;
+		simple-audio-card,frame-master = <&cpu_dai>;
+		simple-audio-card,name = "I2S00SGTL5000";
+
+		cpu_dai: simple-audio-card,cpu {
+			sound-dai = <&i2s0>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&codec>;
+		};
+	};
+
+	vcc_1v8_sys: vcc-1v8-sys-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_1v8_sys";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
 
 	vcc_3v3_sys: vcc-3v3-sys-regulator {
 		compatible = "regulator-fixed";
@@ -95,17 +148,18 @@
 &i2c0 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-//	codec@a {
-//		compatible = "fsl,sgtl5000";
-//		reg =<0xa>;
+
+	codec: codec@a {
+		compatible = "fsl,sgtl5000";
+		reg =<0xa>;
 //		clocks = <&clk24m>;
-//		micbias-resistor-k-ohms = <2>;
-//		VDDA-supply = <&vcc_3v3_sys>;
-//		VDDIO-supply = <&vcc_1v8_sys>;
-//		VDDD-supply = <&vcc_1v8_sys>;
-//
-//		#sound-dai-cells = <0>;
-//	};
+		micbias-resistor-k-ohms = <2>;
+		VDDA-supply = <&vcc_3v3_sys>;
+		VDDIO-supply = <&vcc_1v8_sys>;
+		VDDD-supply = <&vcc_1v8_sys>;
+
+		#sound-dai-cells = <0>;
+	};
 
 	gpio@24 {
 		/* EVB revision */
@@ -125,6 +179,10 @@
 		#gpio-cells = <2>;
 	};
 };
+
+//&i2s0 {
+//	assigned-clock-rates = <24000000>;
+//};
 
 &lvds_encoder {
 	status = "okay";
@@ -148,6 +206,11 @@
 };
 
 &pioA {
+	pinctrl_gpio_keys: gpio-keys-grp {
+		pinmux = <PIN_PC30__GPIO>;
+		bias-pull-up;
+	};
+
 	pinctrl_hlcdc_default: hlcdc-grp-default {
 		bits24 {
 			pinmux = <PIN_PB11__GPIO>,

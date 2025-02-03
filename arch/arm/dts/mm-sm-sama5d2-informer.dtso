@@ -131,7 +131,7 @@
 
 	/* TODO: Board Revision (0x42 ?) */
 
-	hwrev: gpio@20 {
+	gpio@20 {
 		/* HW Revision */
 		compatible = "nxp,pca9534";
 		reg = <0x20>;

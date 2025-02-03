@@ -405,6 +405,13 @@
 	export;
 };
 
+//FIXME: Temp
+&pmc {
+	assigned-clocks = <&pmc PMC_TYPE_CORE PMC_I2S0_MUX>, <&pmc PMC_TYPE_GCK 54>;
+	assigned-clock-parents = <&pmc PMC_TYPE_GCK 54>;
+	assigned-clock-rates = <0>, <24000000>;
+};
+
 &qspi0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_qspi0>;
