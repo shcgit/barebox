@@ -237,18 +237,24 @@ static int __init mm_sm_sama5d2_patch_init(void)
 	return 0;
 }
 
+static struct i2c_adapter __init *mm_sm_sama5d2_i2c_get_adapter(const int nr)
+{
+	struct device *dev;
+
+	dev = of_device_enable_and_register_by_alias(basprintf("i2c%i", nr));
+	if (!dev)
+		return NULL;
+
+	return i2c_get_adapter(nr);
+}
+
 static int __init mm_sm_sama5d2_board_init(void)
 {
 	extern char __dtbo_mm_sm_sama5d2_evb_start[];
 	extern char __dtbo_mm_sm_sama5d2_informer_start[];
-	struct device *dev;
 	struct i2c_adapter *adapter;
 
-	dev = of_device_enable_and_register_by_alias("i2c0");
-	if (!dev)
-		return -ENODEV;
-
-	adapter = i2c_get_adapter(0);
+	adapter = mm_sm_sama5d2_i2c_get_adapter(0);
 	if (!adapter)
 		return -ENODEV;
 
