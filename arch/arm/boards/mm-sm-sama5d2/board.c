@@ -239,9 +239,11 @@ static int __init mm_sm_sama5d2_patch_init(void)
 
 static struct i2c_adapter __init *mm_sm_sama5d2_i2c_get_adapter(const int nr)
 {
+	char *alias = basprintf("i2c%i", nr);
 	struct device *dev;
 
-	dev = of_device_enable_and_register_by_alias(basprintf("i2c%i", nr));
+	dev = of_device_enable_and_register_by_alias(alias);
+	free(alias);
 	if (!dev)
 		return NULL;
 
