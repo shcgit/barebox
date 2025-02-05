@@ -277,10 +277,9 @@ static int __init mm_sm_sama5d2_board_init(void)
 
 static int __init mm_sm_sama5d2_load_overlay(const void *ovl)
 {
-	int ret;
-
 	if (ovl) {
 		struct device_node *root = of_get_root_node();
+		int ret;
 
 		ret = of_overlay_apply_dtbo(root, ovl);
 		if (ret) {
