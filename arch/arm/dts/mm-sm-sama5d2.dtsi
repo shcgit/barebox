@@ -417,9 +417,10 @@
 	flash: flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
+		m25p,fast-read;
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
-		spi-max-frequency = <20000000>;
+		spi-max-frequency = <27000000>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
