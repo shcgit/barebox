@@ -420,6 +420,28 @@
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
 		spi-max-frequency = <20000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "bootstrap";
+			reg = <0 0x20000>;
+		};
+
+		partition@20000 {
+			label = "boot";
+			reg = <0x20000 0x40000>;
+		};
+
+		partition@60000 {
+			label = "env";
+			reg = <0x60000 0x40000>;
+		};
+
+		partition@a0000 {
+			label = "system";
+			reg = <0xa0000 0>;
+		};
 	};
 };
 
