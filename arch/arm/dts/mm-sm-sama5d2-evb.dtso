@@ -117,22 +117,22 @@
 
 	partition@0 {
 		label = "bootstrap";
-		reg = <0 0x10000>;
+		reg = <0 0x20000>;
 	};
 
-	partition@10000 {
+	partition@20000 {
 		label = "boot";
-		reg = <0x10000 0x60000>;
+		reg = <0x20000 0x40000>;
 	};
 
-	partition@70000 {
+	partition@60000 {
 		label = "env";
-		reg = <0x70000 0x40000>;
+		reg = <0x60000 0x40000>;
 	};
 
-	partition@b0000 {
+	partition@a0000 {
 		label = "system";
-		reg = <0xb0000 0>;
+		reg = <0xa0000 0>;
 	};
 };
 
