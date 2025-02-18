@@ -150,8 +150,6 @@
 
 	panel {
 		compatible = "ti,tilcdc,panel";
-		pinctrl-names = "default";
-		pinctrl-0 = <&lcdc_pins_default>;
 		backlight = <&backlight>;
 		status = "okay";
 
@@ -392,10 +390,10 @@
 
 &lcdc {
 	blue-and-red-wiring = "crossed";
-	/delete-property/ pinctrl-names;
-	/delete-property/ pinctrl-0;
-	/delete-property/ pinctrl-1;
-	/delete-node/ port;
+};
+
+&lcdc_0 {
+	remote-endpoint = <0>;
 };
 
 &led_mod {
