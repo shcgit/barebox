@@ -12,6 +12,7 @@
 #include <linux/usb/usb_defs.h>
 #include <linux/usb/ehci.h>
 #include <linux/usb/phy.h>
+#include <linux/usb/of.h>
 #include <errno.h>
 #include <io.h>
 
