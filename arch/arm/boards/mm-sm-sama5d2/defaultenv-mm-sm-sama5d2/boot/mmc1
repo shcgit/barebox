@@ -2,6 +2,13 @@
 
 echo "Booting from SD"
 
+if [ ! -e /dev/mmc1.0 ]; then
+	echo "Boot partition not found!"
+	exit 1
+fi
+
+mount mmc1.0 /mnt/mmc1.0
+
 if [ -f /mnt/mmc1.0/zImage ]; then
 	global bootm.image="/mnt/mmc1.0/zImage"
 	global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rw rootwait"
