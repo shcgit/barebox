@@ -101,6 +101,8 @@
 		regulator-name = "vcc_1v8_sys";
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
 	};
 
 	vcc_3v3_sys: vcc-3v3-sys-regulator {
@@ -108,6 +110,8 @@
 		regulator-name = "vcc_3v3_sys";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
 	};
 };
 

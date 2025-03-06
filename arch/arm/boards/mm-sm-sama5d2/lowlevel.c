@@ -23,8 +23,6 @@ SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 	relocate_to_current_adr();
 	setup_c();
 
-	pbl_set_putc(at91_dbgu_putc, dbgu_base);
-
 	sama5d2_udelay_init(MASTER_CLOCK);
 
 	sama5d2_d1g_ddrconf();

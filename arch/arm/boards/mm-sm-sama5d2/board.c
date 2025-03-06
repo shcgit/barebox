@@ -404,10 +404,6 @@ static int __init mm_sm_sama5d2_init(void)
 		mm_sm_sama5d2_fuse();
 	}
 
-	bbu_register_std_file_update("sd", BBU_HANDLER_FLAG_DEFAULT,
-				     "/mnt/mmc1.0/barebox.bin",
-				     filetype_arm_barebox);
-
 	defaultenv_append_directory(defaultenv_mm_sm_sama5d2);
 
 	return 0;

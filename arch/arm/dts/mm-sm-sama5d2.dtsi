@@ -454,8 +454,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1>;
 	bus-width = <4>;
+	cd-gpios = <&pioA PIN_PA30 GPIO_ACTIVE_LOW>;
 	vmmc-supply = <&vcc_sd>;
 	vqmmc-supply = <&vcc_vqmmc>;
+	status = "okay";
 };
 
 &shutdown_controller {
@@ -778,8 +780,7 @@
 			 <PIN_PA21__SDMMC1_DAT3>,		/* P42 */
 			 <PIN_PA22__SDMMC1_CK>,			/* P36 */
 			 <PIN_PA28__SDMMC1_CMD>,		/* P34 */
-			 <PIN_PA29__SDMMC1_WP>,			/* P33 */
-			 <PIN_PA30__SDMMC1_CD>;			/* P35 */
+			 <PIN_PA30__GPIO>;			/* P35 */
 		bias-disable;
 	};
 

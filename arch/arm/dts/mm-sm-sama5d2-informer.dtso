@@ -74,6 +74,8 @@
 		regulator-name = "vcc_3v3_sys";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
 	};
 };
 
@@ -141,6 +143,7 @@
 
 &sdmmc1 {
 	disable-wp;
+	vmmc-supply = <&vcc_3v3_sys>;
 };
 
 &spi0 {
