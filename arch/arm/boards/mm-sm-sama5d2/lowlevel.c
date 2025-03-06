@@ -9,16 +9,15 @@
 #include <debug_ll.h>
 #include <mach/at91/sama5d2-sip-ddramc.h>
 
-/* PCK = 492MHz, MCK = 164MHz */
-#define MASTER_CLOCK	164000000
+/* PCK = 492MHz, MCK = 82MHz */
+#define MASTER_CLOCK	82000000
 
 SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 {
-	void __iomem *dbgu_base;
-
 	sama5d2_lowlevel_init();
 
-	dbgu_base = sama5d2_resetup_uart_console(MASTER_CLOCK);
+	pbl_set_putc(at91_dbgu_putc, sama5d2_resetup_uart_console(MASTER_CLOCK));
+
 	putc_ll('>');
 
 	relocate_to_current_adr();
@@ -27,7 +26,9 @@ SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 	pbl_set_putc(at91_dbgu_putc, dbgu_base);
 
 	sama5d2_udelay_init(MASTER_CLOCK);
+
 	sama5d2_d1g_ddrconf();
+
 	sama5d2_sdhci_start_image(r4);
 }
 
