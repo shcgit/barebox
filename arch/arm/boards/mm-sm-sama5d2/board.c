@@ -13,6 +13,7 @@
 #include <net.h>
 #include <i2c/i2c.h>
 #include <linux/nvmem-consumer.h>
+#include <mach/at91/sama5d2.h>
 
 static void __init *som = NULL;
 static void __init *board = NULL;
@@ -297,6 +298,60 @@ static int __init mm_sm_sama5d2_load_overlay(const void *ovl)
 	return 0;
 }
 
+#define SAMA5D2_SFC_KR			(SAMA5D2_BASE_SFC + 0x00)
+# define SAMA5D2_SFC_KR_KEY_CODE	(0xfb)
+#define SAMA5D2_SFC_SR			(SAMA5D2_BASE_SFC + 0x1c)
+# define SAMA5D2_SFC_SR_PGMC		BIT(0)
+# define SAMA5D2_SFC_SR_PGMF		BIT(1)
+
+static void __init mm_sm_sama5d2_fuse(void)
+{
+	u32 fuse, sr, bootcfg = sama5d2_bootcfg();
+
+	if ((FIELD_GET(SAMA5D2_BOOTCFG_EXT_MEM_BOOT_EN, bootcfg) == 1) &&
+	    (FIELD_GET(SAMA5D2_BOOTCFG_QSPI_0, bootcfg) == 0))
+		return;
+
+	pr_warn("External boot is not programmed (0x%08x)!\n", bootcfg);
+
+	if (FIELD_GET(SAMA5D2_DISABLE_BSC_CR, bootcfg) == 0) {
+		u32 bsc_cr = readl(SAMA5D2_BASE_SYSC + 0x54);
+		if (bsc_cr & SAMA5D2_BUREG_VALID) {
+			pr_err("BUREG_VALID is set (0x%08x)!\n", bsc_cr);
+			return;
+		}
+	}
+
+	if (FIELD_GET(SAMA5D2_BOOTCFG_QSPI_0, bootcfg) != 0) {
+		pr_err("Wrong QSPI0 configuration!\n");
+		return;
+	}
+
+	fuse = FIELD_PREP(SAMA5D2_BOOTCFG_EXT_MEM_BOOT_EN, 0x1) |
+	       FIELD_PREP(SAMA5D2_BOOTCFG_SPI_1, 0x3) |
+	       FIELD_PREP(SAMA5D2_BOOTCFG_SDMMC_0, 0x1) |
+	       FIELD_PREP(SAMA5D2_BOOTCFG_NFC, 0x3);
+
+	writeb(SAMA5D2_SFC_KR_KEY_CODE, SAMA5D2_SFC_KR);
+	writel(fuse, SAMA5D2_SFC_DR(16));
+
+	if (readl_poll_timeout(SAMA5D2_SFC_SR, sr, sr & SAMA5D2_SFC_SR_PGMC,
+			       USEC_PER_MSEC) < 0) {
+		pr_err("Timeout programming fuses (0x%08x)!\n", sr);
+		return;
+	}
+
+	if (sr & SAMA5D2_SFC_SR_PGMF)
+		pr_err("Failure programming fuses (0x%08x)!\n", sr);
+
+	bootcfg = sama5d2_bootcfg();
+
+	if (FIELD_GET(SAMA5D2_BOOTCFG_EXT_MEM_BOOT_EN, bootcfg) == 1)
+		pr_info("External boot successfully programmed.\n");
+	else
+		pr_err("External boot programming failed!\n");
+}
+
 static int __init mm_sm_sama5d2_init(void)
 {
 	enum bootsource bootsource;
@@ -344,8 +399,10 @@ static int __init mm_sm_sama5d2_init(void)
 				bootsource_to_string(bootsource), instance);
 		} else
 			of_device_enable_path("/chosen/environment-qspi");
-	} else
+	} else {
 		of_device_enable_path("/chosen/environment-sd");
+		mm_sm_sama5d2_fuse();
+	}
 
 	bbu_register_std_file_update("sd", BBU_HANDLER_FLAG_DEFAULT,
 				     "/mnt/mmc1.0/barebox.bin",
