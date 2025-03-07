@@ -253,6 +253,7 @@
 				regulator-initial-mode = <2>;
 				regulator-allowed-modes = <2>, <4>;
 				regulator-always-on;
+				regulator-boot-on;
 
 				regulator-state-standby {
 					regulator-on-in-suspend;
@@ -272,6 +273,7 @@
 				regulator-initial-mode = <2>;
 				regulator-allowed-modes = <2>, <4>;
 				regulator-always-on;
+				regulator-boot-on;
 
 				regulator-state-standby {
 					regulator-on-in-suspend;
@@ -291,6 +293,7 @@
 				regulator-initial-mode = <2>;
 				regulator-allowed-modes = <2>, <4>;
 				regulator-always-on;
+				regulator-boot-on;
 
 				regulator-state-standby {
 					regulator-on-in-suspend;
