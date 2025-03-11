@@ -72,9 +72,6 @@ filechk_fwbin = { \
 	echo "_fwname_$(FWSTR):"				;\
 	printf '.ascii "%s"\n' 'firmware/$(FWNAME)\n'		;\
 	echo "\#endif" 						;\
-}
-
-__fwbin_sha = { \
 	echo "    .section .rodata.$(FWSTR).sha"		;\
 	echo "    .p2align ASM_LGPTR"				;\
 	echo ".global _fw_$(FWSTR)_sha_start"			;\
@@ -86,10 +83,9 @@ __fwbin_sha = { \
 
 filechk_fwbin_ext = { \
 	$(filechk_fwbin)					;\
-	$(__fwbin_sha)						;\
 }
 
-$(obj)/%.gen.S: FORCE
+$(obj)/%.gen.S: $(obj)/%.sha.bin FORCE
 	$(call filechk,fwbin,.rodata.$(FWSTR),)
 
 $(obj)/%.extgen.S: $(obj)/%.sha.bin FORCE
