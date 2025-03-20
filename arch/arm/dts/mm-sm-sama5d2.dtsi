@@ -419,7 +419,7 @@
 		m25p,fast-read;
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
-		spi-max-frequency = <27000000>;
+		spi-max-frequency = <90000000>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
@@ -430,17 +430,17 @@
 
 		partition@20000 {
 			label = "boot";
-			reg = <0x20000 0x40000>;
-		};
-
-		partition@60000 {
-			label = "env";
-			reg = <0x60000 0x40000>;
+			reg = <0x20000 0x80000>;
 		};
 
 		partition@a0000 {
+			label = "env";
+			reg = <0xa0000 0x40000>;
+		};
+
+		partition@e0000 {
 			label = "system";
-			reg = <0xa0000 0>;
+			reg = <0xe0000 0>;
 		};
 	};
 };
