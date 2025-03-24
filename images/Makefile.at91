@@ -60,10 +60,10 @@ pblb-$(CONFIG_MACH_MM_SM_SAMA5D2) += start_mm_sm_sama5d2
 FILE_barebox-mm-sm-sama5d2.img = start_mm_sm_sama5d2.pblb
 image-$(CONFIG_MACH_MM_SM_SAMA5D2) += barebox-mm-sm-sama5d2.img
 
-pblb-$(CONFIG_MACH_MM_SM_SAMA5D2) += start_mm_sm_sama5d2_xload_mmc
-MAX_PBL_IMAGE_SIZE_start_mm_sm_sama5d2_xload_mmc = 0xffff
-FILE_barebox-mm-sm-sama5d2-xload-mmc.img = start_mm_sm_sama5d2_xload_mmc.pblb
-image-$(CONFIG_MACH_MM_SM_SAMA5D2) += barebox-mm-sm-sama5d2-xload-mmc.img
+pblb-$(CONFIG_MACH_MM_SM_SAMA5D2) += start_mm_sm_sama5d2_xload
+MAX_PBL_IMAGE_SIZE_start_mm_sm_sama5d2_xload = 0xffff
+FILE_barebox-mm-sm-sama5d2-xload.img = start_mm_sm_sama5d2_xload.pblb
+image-$(CONFIG_MACH_MM_SM_SAMA5D2) += barebox-mm-sm-sama5d2-xload.img
 
 pblb-$(CONFIG_MACH_SKOV_ARM9CPU) += start_skov_arm9cpu_xload_mmc
 FILE_barebox-skov-arm9cpu-xload-mmc.img = start_skov_arm9cpu_xload_mmc.pblb
