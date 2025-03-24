@@ -12,7 +12,7 @@
 /* PCK = 492MHz, MCK = 82MHz */
 #define MASTER_CLOCK	82000000
 
-SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
+SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload, r4)
 {
 	sama5d2_lowlevel_init();
 
@@ -27,7 +27,7 @@ SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2_xload_mmc, r4)
 
 	sama5d2_d1g_ddrconf();
 
-	sama5d2_sdhci_start_image(r4);
+	sama5d2_start_image(r4);
 }
 
 SAMA5D2_ENTRY_FUNCTION(start_mm_sm_sama5d2, r4)
