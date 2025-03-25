@@ -476,6 +476,8 @@
 };
 
 &uart1 {
+	/delete-property/ dmas;
+	/delete-property/ dma-names;
 	/delete-property/ linux,rs485-enabled-at-boot-time;
 };
 
