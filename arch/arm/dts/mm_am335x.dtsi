@@ -483,12 +483,6 @@
 	status = "disabled";
 };
 
-&uart3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&mm_uart3_pins>;
-	status = "okay";
-};
-
 &usb0 {
 	dr_mode = "host";
 };
@@ -560,13 +554,6 @@
 			AM33XX_PADCONF(AM335X_PIN_MII1_COL, PIN_INPUT_PULLUP, MUX_MODE2)	/* spi1_sclk_mux1 */
 			AM33XX_PADCONF(AM335X_PIN_MII1_RX_ER, PIN_OUTPUT, MUX_MODE2)		/* spi1_d1_mux1 */
 			AM33XX_PADCONF(AM335X_PIN_MII1_CRS, PIN_INPUT, MUX_MODE2)		/* spi1_d0_mux1 */
-		>;
-	};
-
-	mm_uart3_pins: pinmux_uart3_pins {
-		pinctrl-single,pins = <
-			AM33XX_PADCONF(AM335X_PIN_ECAP0_IN_PWM0_OUT, PIN_OUTPUT, MUX_MODE1)	/* uart3_txd_mux1 */
-			AM33XX_PADCONF(AM335X_PIN_SPI0_CS1, PIN_INPUT, MUX_MODE1)		/* uart3_rxd_mux1 */
 		>;
 	};
 };
