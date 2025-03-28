@@ -270,6 +270,9 @@ static int __init mm_sm_sama5d2_board_init(void)
 		pr_info("Board variant detected: Informer\n");
 		board = __dtbo_mm_sm_sama5d2_informer_start;
 
+		// if (bootsource_get() != BOOTSOURCE_MMC)
+		// disable mmc node fixup
+
 		return 0;
 	}
 
