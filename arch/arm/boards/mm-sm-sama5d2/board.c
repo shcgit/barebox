@@ -395,8 +395,8 @@ static int __init mm_sm_sama5d2_init(void)
 
 	if (bootsource != BOOTSOURCE_MMC || !instance) {
 		if (bootsource != BOOTSOURCE_SPI) {
-			pr_warn("Unhandled boot source: %s, instance %i\n",
-				bootsource_to_string(bootsource), instance);
+			pr_err("Unhandled boot source: %s, instance %i\n",
+			       bootsource_to_string(bootsource), instance);
 		} else
 			of_device_enable_path("/chosen/environment-qspi");
 	} else {
