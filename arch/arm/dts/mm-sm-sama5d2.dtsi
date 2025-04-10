@@ -420,6 +420,8 @@
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
 		spi-max-frequency = <90000000>;
+		spi-cs-setup-delay-ns = <3>;
+		spi-cs-inactive-delay-ns = <5>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
@@ -452,7 +454,12 @@
 	status = "okay";
 };
 
+&sdmmc0 {
+	/delete-property/ assigned-clock-parents;
+};
+
 &sdmmc1 {
+	/delete-property/ assigned-clock-parents;
 	/* SDIO */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1>;
