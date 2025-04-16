@@ -142,7 +142,6 @@
 };
 
 &sdmmc1 {
-	disable-wp;
 	vmmc-supply = <&vcc_3v3_sys>;
 };
 

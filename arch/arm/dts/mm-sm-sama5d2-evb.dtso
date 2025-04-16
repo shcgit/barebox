@@ -176,10 +176,6 @@
 	};
 };
 
-&sdmmc1 {
-	disable-wp;
-};
-
 &pioA {
 	pinctrl_gpio_keys: gpio-keys-grp {
 		pinmux = <PIN_PC30__GPIO>;
