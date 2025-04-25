@@ -22,14 +22,12 @@ static void __init *patch = NULL;
 static int __init i2c_probe(struct i2c_adapter *adapter, const int addr)
 {
 	u8 buf[1];
-	struct i2c_msg msg = {
-		.addr = addr,
-		.buf = buf,
-		.len = sizeof(buf),
-		.flags = I2C_M_RD,
-	};
+	struct i2c_client client;
 
-	return (i2c_transfer(adapter, &msg, 1) == 1) ? 0: -ENODEV;
+	client.adapter = adapter;
+	client.addr = addr;
+
+	return (i2c_read_reg(&client, 0, buf, sizeof(buf)) == sizeof(buf)) ? 0 : -ENODEV;
 }
 
 static void __init *nvmem_read(struct device_node *np, const char *cell_name,
