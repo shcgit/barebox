@@ -354,11 +354,15 @@
 		reg = <0x58>;
 		vcc-supply = <&vcc_1v8>;
 		read-only;
-		#address-cells = <1>;
-		#size-cells = <1>;
 
-		serial: serial@800 {
-			reg = <0x800 0x10>;
+		nvmem-layout {
+			compatible = "fixed-layout";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			serial: serial@800 {
+				reg = <0x800 0x10>;
+			};
 		};
 	};
 };
