@@ -413,9 +413,10 @@ device_initcall(mm_sm_sama5d2_init);
 
 static int __init mm_sm_sama5d2_clk_init(void)
 {
-	if (!of_machine_is_compatible("milas,mm-sm-sama5d2"))
+	if (!of_machine_is_compatible("atmel,sama5d2"))
 		return 0;
 
+	/* Tune CLK subsystem */
 	return clk_name_set_rate("pllack", 960000000);
 }
 coredevice_initcall(mm_sm_sama5d2_clk_init);

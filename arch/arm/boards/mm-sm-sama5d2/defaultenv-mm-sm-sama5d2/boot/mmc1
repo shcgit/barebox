@@ -9,7 +9,7 @@ fi
 
 if [ -f /mnt/mmc1.0/zImage ]; then
 	global bootm.image="/mnt/mmc1.0/zImage"
-	global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rw rootwait"
+	global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 ro rootdelay=3"
 
 	DTB=/mnt/mmc1.0/mm-sm-sama5d2-evb.dtb
 else
