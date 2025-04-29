@@ -13,7 +13,10 @@
 #include <net.h>
 #include <i2c/i2c.h>
 #include <linux/nvmem-consumer.h>
+
+#include <mach/at91/iomux.h>
 #include <mach/at91/sama5d2.h>
+#include <mach/at91/sama5d2_ll.h>
 
 static void __init *som = NULL;
 static void __init *board = NULL;
@@ -413,10 +416,24 @@ device_initcall(mm_sm_sama5d2_init);
 
 static int __init mm_sm_sama5d2_clk_init(void)
 {
+	int ret;
+
 	if (!of_machine_is_compatible("atmel,sama5d2"))
 		return 0;
 
 	/* Tune CLK subsystem */
-	return clk_name_set_rate("pllack", 960000000);
+	ret = clk_name_set_rate("pllack", 960000000);
+	if (ret)
+		return ret;
+
+	if (!of_machine_is_compatible("milas,mm-sm-sama5d2"))
+		return 0;
+
+	/* Setup I2S0_MCK */
+	at91_mux_pio4_set_periph(SAMA5D2_BASE_PIOD,
+				 pin_to_mask(AT91_PIN_PD20), AT91_MUX_PERIPH_E);
+	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_I2SC0);
+
+	return ret;
 }
 coredevice_initcall(mm_sm_sama5d2_clk_init);
