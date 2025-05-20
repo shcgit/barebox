@@ -518,6 +518,9 @@
 	/* SER1 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	dmas = <0>, <0>;
 	status = "okay";
 };
 
@@ -528,6 +531,7 @@
 	atmel,use-dma-rx;
 	atmel,use-dma-tx;
 	atmel,fifo-size = <32>;
+	dmas = <0>, <0>;
 	status = "okay";
 };
 
@@ -553,7 +557,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usb0_vbus>;
 	atmel,vbus-gpio = <&pioA PIN_PB10 GPIO_ACTIVE_HIGH>;
-	status = "okay";
+	/* Keep disabled, using port 0 as HOST */
 };
 
 &usb1 {
