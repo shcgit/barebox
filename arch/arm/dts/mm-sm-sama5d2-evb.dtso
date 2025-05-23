@@ -12,6 +12,12 @@
 	compatible = "milas,mm-sm-sama5d2-evb", "milas,mm-sm-sama5d2",
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
 
+	clk24m: clk24m {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+		#clock-cells = <0>;
+	};
+
 	panel {
 		compatible = "panel-lvds";
 		backlight = <&backlight>;
@@ -63,15 +69,15 @@
 		};
 	};
 
-	sound: sound {
+	sound {
 		compatible = "simple-audio-card";
 		simple-audio-card,format = "i2s";
-		simple-audio-card,bitclock-master = <&cpu_dai>;
-		simple-audio-card,frame-master = <&cpu_dai>;
+		simple-audio-card,bitclock-master = <&sound_master>;
+		simple-audio-card,frame-master = <&sound_master>;
 		simple-audio-card,mclk-fs = <512>;
 		simple-audio-card,name = "I2S0SGTL5000";
 
-		cpu_dai: simple-audio-card,cpu {
+		sound_master: simple-audio-card,cpu {
 			sound-dai = <&i2s0>;
 		};
 
@@ -114,7 +120,7 @@
 	codec: codec@a {
 		compatible = "fsl,sgtl5000";
 		reg =<0xa>;
-		clocks = <&pmc PMC_TYPE_CORE PMC_I2S0_MUX>;
+		clocks = <&clk24m>;
 		micbias-resistor-k-ohms = <2>;
 		micbias-voltage-m-volts = <2250>;
 		VDDA-supply = <&vcc_3v3_sys>;
