@@ -136,6 +136,13 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
+};
+
+&i2c3 {
+	isl97671a@2c {
+		compatible = "intersil,isl97671a";
+		reg = <0x2c>;
+	};
 
 	gpio@41 {
 		/* Display ID */

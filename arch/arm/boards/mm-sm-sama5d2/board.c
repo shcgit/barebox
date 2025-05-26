@@ -219,7 +219,6 @@ static int __init mm_sm_sama5d2_patch_init(void)
 	int ret;
 
 	if (of_machine_is_compatible("milas,mm-sm-sama5d2-evb")) {
-		//FIXME: tca95340?
 		ret = mm_sm_sama5d2_gpios_get("tca95340", evbvergpios, ARRAY_SIZE(evbvergpios));
 		if (ret < 0)
 			return ret;
