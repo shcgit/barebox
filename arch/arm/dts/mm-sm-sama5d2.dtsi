@@ -89,6 +89,13 @@
 			gpios = <&pioA PIN_PD24 GPIO_ACTIVE_LOW>;
 		};
 
+		recovery {
+			label = "RECOVERY";
+			linux,code = <SW_DOCK>;
+			linux,input-type = <EV_SW>;
+			gpios = <&pioA PIN_PD10 GPIO_ACTIVE_LOW>;
+		};
+
 		sleep {
 			label = "SLEEP";
 			linux,code = <KEY_SLEEP>;
@@ -528,7 +535,6 @@
 	pinctrl-0 = <&pinctrl_uart3>;
 	atmel,use-dma-rx;
 	atmel,use-dma-tx;
-	atmel,fifo-size = <32>;
 	/delete-property/ dmas;
 	/delete-property/ dma-names;
 	status = "okay";
@@ -633,6 +639,7 @@
 
 	pinctrl_gpio_keys: gpio-keys-grp {
 		pinmux = <PIN_PD24__GPIO>,			/* S148 */
+			 <PIN_PD10__GPIO>,			/* S155 */
 			 <PIN_PC30__GPIO>;			/* S149 */
 		bias-disable;
 	};
