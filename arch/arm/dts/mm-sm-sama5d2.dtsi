@@ -820,21 +820,33 @@
 	};
 
 	pinctrl_reg_vqmmc: reg-vqmmc-grp {
-		pinmux = <PIN_PA25__GPIO>,
-			 <PIN_PA26__GPIO>;
-		bias-disable;
+		en {
+			pinmux = <PIN_PA26__GPIO>;
+			bias-pull-up;
+		};
+
+		sw {
+			pinmux = <PIN_PA25__GPIO>;
+			bias-disable;
+		};
 	};
 
 	pinctrl_sdmmc1: sdmmc1-grp {
-		pinmux = <PIN_PA18__SDMMC1_DAT0>,		/* P39 */
-			 <PIN_PA19__SDMMC1_DAT1>,		/* P40 */
-			 <PIN_PA20__SDMMC1_DAT2>,		/* P41 */
-			 <PIN_PA21__SDMMC1_DAT3>,		/* P42 */
-			 <PIN_PA22__SDMMC1_CK>,			/* P36 */
-			 <PIN_PA28__SDMMC1_CMD>,		/* P34 */
-			 <PIN_PA29__GPIO>,			/* P33 */
-			 <PIN_PA30__GPIO>;			/* P35 */
-		bias-disable;
+		sd {
+			pinmux = <PIN_PA18__SDMMC1_DAT0>,	/* P39 */
+				 <PIN_PA19__SDMMC1_DAT1>,	/* P40 */
+				 <PIN_PA20__SDMMC1_DAT2>,	/* P41 */
+				 <PIN_PA21__SDMMC1_DAT3>,	/* P42 */
+				 <PIN_PA22__SDMMC1_CK>,		/* P36 */
+				 <PIN_PA28__SDMMC1_CMD>;	/* P34 */
+			bias-disable;
+		};
+
+		ctl {
+			pinmux = <PIN_PA29__GPIO>,		/* P33 */
+				 <PIN_PA30__GPIO>;		/* P35 */
+			bias-pull-up;
+		};
 	};
 
 	pinctrl_spi0_default: spi0-grp-default {
