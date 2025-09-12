@@ -5,7 +5,6 @@
 /plugin/;
 
 #include <arm/microchip/sama5d2-pinfunc.h>
-#include <dt-bindings/clock/at91.h>
 
 &{/} {
 	model = "Mega-Milas SAMA5D2 EVB";
@@ -139,6 +138,9 @@
 };
 
 &i2c3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
 	isl97671a@2c {
 		compatible = "intersil,isl97671a";
 		reg = <0x2c>;
@@ -170,7 +172,43 @@
 	};
 };
 
+&spi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	spi@0 {
+		compatible = "rohm,dh2228fv";
+		reg = <0>;
+	};
+
+	spi@1 {
+		compatible = "rohm,dh2228fv";
+		reg = <1>;
+	};
+};
+
 &pioA {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio>;
+
+	pinctrl_gpio: gpio-grp {
+		pinmux = <PIN_PB0__GPIO>,			/* P108 GPIO0 */
+			 <PIN_PD17__GPIO>,			/* P109 GPIO1 */
+			 <PIN_PD6__GPIO>,			/* P110 GPIO2 */
+			 <PIN_PC16__GPIO>,			/* P111 GPIO3 */
+			 <PIN_PC14__GPIO>,			/* P112 GPIO4 */
+			 <PIN_PB5__GPIO>,			/* P113 GPIO5 */
+			 <PIN_PB6__GPIO>,			/* P114 GPIO6 */
+			 <PIN_PC28__GPIO>,			/* P115 GPIO7 */
+			 <PIN_PB7__GPIO>,			/* P116 GPIO8 */
+			 <PIN_PB8__GPIO>,			/* P117 GPIO9 */
+			 <PIN_PC15__GPIO>,			/* P118 GPIO10 */
+			 <PIN_PC17__GPIO>,			/* P119 GPIO11 */
+			 <PIN_PC24__GPIO>,			/* S142 GPIO12 */
+			 <PIN_PD8__GPIO>;			/* S123 GPIO13 */
+		bias-disable;
+	};
+
 	pinctrl_hlcdc_default: hlcdc-grp-default {
 		bits24 {
 			pinmux = <PIN_PB11__GPIO>,

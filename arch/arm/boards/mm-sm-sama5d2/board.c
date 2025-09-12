@@ -224,15 +224,28 @@ static int __init mm_sm_sama5d2_patch_init(void)
 			return ret;
 
 		pr_info("Board revision: %i\n", ret);
-		//TODO:
+
+		switch (ret) {
+		case 0:
+			return 0;
+		default:
+			break;
+		};
 	} else if (of_machine_is_compatible("milas,informer-sama5d2")) {
 		//TODO:
 		ret = 0;
-		pr_info("Board revision: %i\n", ret);
-	} else
-		return -ENOTSUPP;
 
-	return 0;
+		pr_info("Board revision: %i\n", ret);
+
+		switch (ret) {
+		case 0:
+			return 0;
+		default:
+			break;
+		};
+	}
+
+	return -ENOTSUPP;
 }
 
 static struct i2c_adapter __init *mm_sm_sama5d2_i2c_get_adapter(const int nr)
@@ -263,7 +276,13 @@ static int __init mm_sm_sama5d2_board_init(void)
 		board = __dtbo_mm_sm_sama5d2_evb_start;
 
 		return 0;
-	} else if (1/*!i2c_probe(adapter, 0x20)*/) {
+	}
+
+	adapter = mm_sm_sama5d2_i2c_get_adapter(1);
+	if (!adapter)
+		return -ENODEV;
+
+	if (!i2c_probe(adapter, 0x20)) {
 		pr_info("Board variant detected: Informer\n");
 		board = __dtbo_mm_sm_sama5d2_informer_start;
 

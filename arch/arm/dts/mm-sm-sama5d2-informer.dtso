@@ -5,11 +5,89 @@
 /plugin/;
 
 #include <arm/microchip/sama5d2-pinfunc.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/leds/common.h>
 
 &{/} {
 	model = "Mega-Milas Informer SAMA5D2";
 	compatible = "milas,informer-sama5d2", "milas,mm-sm-sama5d2",
 		     "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+
+	beeper {
+		compatible = "gpio-beeper";
+		gpios = <&hwrev 4 GPIO_ACTIVE_HIGH>;
+	};
+
+	clk24m: clk24m {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+		#clock-cells = <0>;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		/* DOOR1 (SmallIA) */
+		/* Call (TalkBox) */
+		button0 {
+			label = "BTN0";
+			linux,code = <0x0100>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 0 GPIO_ACTIVE_LOW>;
+		};
+
+		/* DOOR2 (SmallIA) */
+		button1 {
+			label = "BTN1";
+			linux,code = <0x0101>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 1 GPIO_ACTIVE_LOW>;
+		};
+
+		/* DOOR3 (SmallIA) */
+		button2 {
+			label = "BTN2";
+			linux,code = <0x0102>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 2 GPIO_ACTIVE_LOW>;
+		};
+
+		/* REPEAT (SmallIA) */
+		button3 {
+			label = "BTN3";
+			linux,code = <0x0103>;
+			linux,input-type = <EV_KEY>;
+			gpios = <&input 3 GPIO_ACTIVE_LOW>;
+		};
+
+		/* 4 - LED output (TalkBox), SOUND_WORLD (Informer) */
+
+		/* SHIFT/REVERSE (Informer) */
+		button5 {
+			label = "SHIFT";
+			linux,code = <SW_LID>;
+			linux,input-type = <EV_SW>;
+			gpios = <&input 5 GPIO_ACTIVE_LOW>;
+		};
+
+		button6 {
+			label = "PF_LOW";
+			linux,code = <SW_TABLET_MODE>;
+			linux,input-type = <EV_SW>;
+			debounce-interval = <0>;
+			gpios = <&input 6 GPIO_ACTIVE_LOW>;
+		};
+
+		button7 {
+			label = "PF_HIGH";
+			linux,code = <SW_HEADPHONE_INSERT>;
+			linux,input-type = <EV_SW>;
+			debounce-interval = <0>;
+			gpios = <&input 7 GPIO_ACTIVE_LOW>;
+		};
+	};
 
 	panel {
 		compatible = "panel-lvds";
@@ -62,12 +140,31 @@
 		};
 	};
 
-//	vcc_1v8_sys: vcc-1v8-sys-regulator {
-//		compatible = "regulator-fixed";
-//		regulator-name = "vcc_1v8_sys";
-//		regulator-min-microvolt = <1800000>;
-//		regulator-max-microvolt = <1800000>;
-//	};
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,bitclock-master = <&sound_master>;
+		simple-audio-card,frame-master = <&sound_master>;
+		simple-audio-card,mclk-fs = <512>;
+		simple-audio-card,name = "I2S0SGTL5000";
+
+		sound_master: simple-audio-card,cpu {
+			sound-dai = <&i2s0>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&codec>;
+		};
+	};
+
+	vcc_1v8_sys: vcc-1v8-sys-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_1v8_sys";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
 
 	vcc_3v3_sys: vcc-3v3-sys-regulator {
 		compatible = "regulator-fixed";
@@ -87,30 +184,73 @@
 	};
 };
 
-&i2c0 {
+&i2c1 {
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-//	codec@a {
-//		compatible = "fsl,sgtl5000";
-//		reg =<0xa>;
-//		clocks = <&clk24m>;
-//		micbias-resistor-k-ohms = <2>;
-//		VDDA-supply = <&vcc_3v3_sys>;
-//		VDDIO-supply = <&vcc_1v8_sys>;
-//		VDDD-supply = <&vcc_1v8_sys>;
-//
-//		#sound-dai-cells = <0>;
-//	};
+	codec: codec@a {
+		compatible = "fsl,sgtl5000";
+		reg =<0xa>;
+		clocks = <&clk24m>;
+		micbias-resistor-k-ohms = <0>;
+		VDDA-supply = <&vcc_3v3_sys>;
+		VDDIO-supply = <&vcc_1v8_sys>;
+		VDDD-supply = <&vcc_1v8_sys>;
+		#sound-dai-cells = <0>;
+	};
 
-	/* TODO: Board Revision (0x42 ?) */
-
-	gpio@20 {
+	hwrev: gpio@20 {
 		/* HW Revision */
 		compatible = "nxp,pca9534";
 		reg = <0x20>;
 		gpio-controller;
 		#gpio-cells = <2>;
+	};
+
+	input: gpio@21 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_input>;
+		compatible = "nxp,pca9534";
+		reg = <0x21>;
+		gpio-controller;
+		interrupt-parent = <&pioA>;
+		interrupts = <PIN_PD8 IRQ_TYPE_EDGE_BOTH>;
+		interrupt-controller;
+
+		#gpio-cells = <2>;
+		#interrupt-cells = <2>;
+	};
+
+	board_out: gpio@22 {
+		compatible = "nxp,pca9535";
+		reg = <0x22>;
+		gpio-controller;
+
+		#gpio-cells = <2>;
+	};
+
+	board_in: gpio@23 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_board_in>;
+		compatible = "nxp,pca9534";
+		reg = <0x23>;
+		gpio-controller;
+		interrupt-parent = <&pioA>;
+		interrupts = <PIN_PC24 IRQ_TYPE_EDGE_BOTH>;
+		interrupt-controller;
+
+		#gpio-cells = <2>;
+		#interrupt-cells = <2>;
+	};
+};
+
+&i2c3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	isl97671a@2c {
+		compatible = "intersil,isl97671a";
+		reg = <0x2c>;
 	};
 
 	gpio@41 {
@@ -119,6 +259,17 @@
 		reg = <0x41>;
 		gpio-controller;
 		#gpio-cells = <2>;
+	};
+};
+
+&leds {
+	led-mtd {
+		label = "informer:mtd";
+		gpios = <&hwrev 5 GPIO_ACTIVE_HIGH>;
+		function = LED_FUNCTION_MTD;
+		color = <LED_COLOR_ID_RED>;
+		linux,default-trigger = LED_FUNCTION_MTD;
+		default-state = "off";
 	};
 };
 
@@ -158,6 +309,16 @@
 };
 
 &pioA {
+	pinctrl_board_in: board-in-grp {
+		pinmux = <PIN_PC24__GPIO>;
+		bias-disable;
+	};
+
+	pinctrl_input: input-grp {
+		pinmux = <PIN_PD8__GPIO>;
+		bias-disable;
+	};
+
 	pinctrl_hlcdc_default: hlcdc-grp-default {
 		bits24 {
 			pinmux = <PIN_PB11__GPIO>,
