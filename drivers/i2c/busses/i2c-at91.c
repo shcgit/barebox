@@ -90,7 +90,7 @@ struct at91_twi_dev {
 	unsigned transfer_status;
 	struct i2c_adapter adapter;
 	unsigned twi_cwgr_reg;
-	struct at91_twi_pdata *pdata;
+	const struct at91_twi_pdata *pdata;
 	u32 filter_width;
 
 	bool enable_dig_filt;
@@ -117,7 +117,7 @@ static void at91_disable_twi_interrupts(struct at91_twi_dev *dev)
 
 static void at91_init_twi_bus(struct at91_twi_dev *dev)
 {
-	struct at91_twi_pdata *pdata = dev->pdata;
+	const struct at91_twi_pdata *pdata = dev->pdata;
 	u32 filtr = 0;
 
 	at91_disable_twi_interrupts(dev);
@@ -151,7 +151,7 @@ static void at91_init_twi_bus(struct at91_twi_dev *dev)
 static void at91_calc_twi_clock(struct at91_twi_dev *dev)
 {
 	int ckdiv, cdiv, div, hold = 0, filter_width = 0;
-	struct at91_twi_pdata *pdata = dev->pdata;
+	const struct at91_twi_pdata *pdata = dev->pdata;
 	int offset = pdata->clk_offset;
 	int max_ckdiv = pdata->clk_max_div;
 	struct i2c_timings timings, *t = &timings;
@@ -516,17 +516,15 @@ static int at91_twi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct at91_twi_dev *i2c_at91;
-	struct at91_twi_pdata *i2c_data;
+	const struct at91_twi_pdata *i2c_data;
 	int rc = 0;
+
+	i2c_data = device_get_match_data(dev);
+	if (!i2c_data)
+		return -ENODEV;
 
 	i2c_at91 = xzalloc(sizeof(struct at91_twi_dev));
 	i2c_at91->dev = dev;
-
-	rc = dev_get_drvdata(dev, (const void **)&i2c_data);
-	if (rc < 0) {
-		dev_err(dev, "failed to retrieve driver data\n");
-		goto out_free;
-	}
 
 	i2c_at91->pdata = i2c_data;
 
