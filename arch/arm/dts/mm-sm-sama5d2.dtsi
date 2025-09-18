@@ -167,6 +167,7 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		enable-active-high;
+		startup-delay-us = <10000>;
 		gpio = <&pioA PIN_PC23 GPIO_ACTIVE_HIGH>;
 	};
 
@@ -178,6 +179,8 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		enable-active-high;
+		regulator-boot-on;
+		startup-delay-us = <10000>;
 		gpio = <&pioA PIN_PA27 GPIO_ACTIVE_HIGH>;
 	};
 
@@ -195,6 +198,7 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <3300000>;
 		regulator-boot-on;
+		startup-delay-us = <10000>;
 		vin-supply = <&vcc_3v3>;
 	};
 };
@@ -483,16 +487,17 @@
 	status = "okay";
 };
 
-&sdmmc0 {
-	/delete-property/ assigned-clock-parents;
-};
-
 &sdmmc1 {
 	/delete-property/ assigned-clock-parents;
 	/* SDIO */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sdmmc1>;
 	bus-width = <4>;
+	cap-sd-highspeed;
+	cap-mmc-highspeed;
+	/* SDR104 and above modes are works unstable */
+	sd-uhs-sdr50;
+	cap-sdio-irq;
 	cd-gpios = <&pioA PIN_PA30 GPIO_ACTIVE_LOW>;
 	wp-gpios = <&pioA PIN_PA29 GPIO_ACTIVE_HIGH>;
 	vmmc-supply = <&vcc_sd>;
