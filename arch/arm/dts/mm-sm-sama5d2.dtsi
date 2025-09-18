@@ -502,7 +502,6 @@
 	wp-gpios = <&pioA PIN_PA29 GPIO_ACTIVE_HIGH>;
 	vmmc-supply = <&vcc_sd>;
 	vqmmc-supply = <&vcc_vqmmc>;
-	status = "okay";
 };
 
 &shutdown_controller {
