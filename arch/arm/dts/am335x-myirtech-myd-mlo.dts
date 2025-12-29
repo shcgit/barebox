@@ -4,8 +4,8 @@
 /dts-v1/;
 
 #include "am335x-myirtech-myd.dts"
-#include "am33xx-strip.dtsi"
-#include "am33xx-clocks-strip.dtsi"
+//#include "am33xx-strip.dtsi"
+//#include "am33xx-clocks-strip.dtsi"
 
 /delete-node/ &{/sound};
 
