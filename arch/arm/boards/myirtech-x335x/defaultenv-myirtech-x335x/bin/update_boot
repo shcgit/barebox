@@ -1,14 +1,11 @@
 #!/bin/sh
 
 mmc0.probe=1
-mount /dev/mmc0.0 /mnt
 
 erase /dev/nand0.MLO
-cp /mnt/MLO /dev/nand0.MLO
+cp /mnt/mmc0.0/MLO /dev/nand0.MLO
 
 erase /dev/nand0.boot
-cp /mnt/barebox.bin /dev/nand0.boot
-
-umount /mnt
+cp /mnt/mmc0.0/barebox.bin /dev/nand0.boot
 
 /env/bin/erase_env

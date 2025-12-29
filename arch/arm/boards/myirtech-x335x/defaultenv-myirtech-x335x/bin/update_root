@@ -1,8 +1,7 @@
 #!/bin/sh
 
 mmc0.probe=1
-mount /dev/mmc0.0 /mnt
-ubiupdatevol /dev/nand0.system.ubi.root /mnt/rootfs.squashfs
-umount /mnt
+
+ubiupdatevol /dev/nand0.system.ubi.root /mnt/mmc0.0/rootfs.squashfs
 
 /env/bin/erase_env
