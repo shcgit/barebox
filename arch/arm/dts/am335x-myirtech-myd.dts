@@ -34,5 +34,3 @@
 		reg = <0x1c0000 0>;
 	};
 };
-
-#include "mm_am335x.dtsi"

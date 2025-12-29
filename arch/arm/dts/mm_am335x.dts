@@ -1,4 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
+
+/dts-v1/;
+
 #include <dt-bindings/sound/tlv320aic31xx.h>
+
+#include "am335x-myirtech-myd.dts"
 
 / {
 	model = "Mega-Milas Informer/Spider AM335x";

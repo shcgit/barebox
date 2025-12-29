@@ -99,13 +99,13 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 	am335x_barebox_entry(fdt);
 }
 
-extern char __dtb_z_am335x_myirtech_myd_start[];
+extern char __dtb_z_mm_am335x_start[];
 
 ENTRY_FUNCTION(start_am33xx_myirtech_sdram, r0, r1, r2)
 {
 	void *fdt;
 
-	fdt = __dtb_z_am335x_myirtech_myd_start;
+	fdt = __dtb_z_mm_am335x_start;
 
 	fdt += get_runtime_offset();
 
