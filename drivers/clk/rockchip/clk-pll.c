@@ -923,6 +923,7 @@ static int rockchip_rk3588_pll_set_params(struct rockchip_clk_pll *pll,
 	struct clk_mux *pll_mux = &pll->pll_mux;
 	struct rockchip_pll_rate_table cur;
 	int rate_change_remuxed = 0;
+	bool is_cpll = false;
 	int cur_parent;
 	int ret;
 
@@ -938,12 +939,23 @@ static int rockchip_rk3588_pll_set_params(struct rockchip_clk_pll *pll,
 			pll_mux_ops->set_parent(&pll_mux->hw, PLL_MODE_SLOW);
 			rate_change_remuxed = 1;
 		}
+
+		/*
+		 * CPLL on RK3588 requires the PLL source to be disabled during
+		 * configuration. We temporarily disable it here and restore
+		 * the original state after PLL setup.
+		 */
+		is_cpll = (pll->reg_base - pll->ctx->reg_base == 0x1a0);
+		if (is_cpll) {
+			writel(HIWORD_UPDATE(BIT(1), BIT(1), 0),
+			       pll->ctx->reg_base + 0x84c);
+		}
 	}
 
 	/* set pll power down */
 	writel(HIWORD_UPDATE(RK3588_PLLCON1_PWRDOWN,
 			     RK3588_PLLCON1_PWRDOWN, 0),
-	       pll->reg_base + RK3399_PLLCON(1));
+	       pll->reg_base + RK3588_PLLCON(1));
 
 	/* update pll values */
 	writel_relaxed(HIWORD_UPDATE(rate->m, RK3588_PLLCON0_M_MASK, RK3588_PLLCON0_M_SHIFT),
@@ -970,6 +982,17 @@ static int rockchip_rk3588_pll_set_params(struct rockchip_clk_pll *pll,
 
 	if ((pll->type == pll_rk3588) && rate_change_remuxed)
 		pll_mux_ops->set_parent(&pll_mux->hw, PLL_MODE_NORM);
+
+	if (is_cpll) {
+		/*
+		 * Restore CPLL source clock setting after PLL configuration.
+		 * This ensures the clock source returns to its original state
+		 * now that the PLL is properly configured and can maintain
+		 * stability without the temporary disablement.
+		 */
+		writel(HIWORD_UPDATE(0, BIT(1), 0),
+		       pll->ctx->reg_base + 0x84c);
+	}
 
 	return ret;
 }
@@ -1169,6 +1192,7 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
 		break;
 	case pll_rk3588:
 	case pll_rk3588_core:
+	case pll_rk3588_ddr:
 		if (!pll->rate_table)
 			init.ops = &rockchip_rk3588_pll_clk_norate_ops;
 		else
