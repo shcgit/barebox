@@ -407,6 +407,10 @@
 	status = "okay";
 };
 
+&usbphy0 {
+	vbus-supply = <&vusb_reg>;
+};
+
 &usbphy1 {
 	status = "disabled";
 };
