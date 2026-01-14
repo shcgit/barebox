@@ -407,6 +407,10 @@
 	status = "okay";
 };
 
+&usbphy1 {
+	status = "disabled";
+};
+
 &wdog1 {
 	timeout-sec = <10>;
 };
