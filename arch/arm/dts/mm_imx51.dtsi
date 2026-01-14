@@ -248,6 +248,10 @@
 	non-removable;
 };
 
+&esdhc2 {
+	status = "disabled";
+};
+
 &gpio3 {
 	ioen {
 		gpio-hog;

@@ -12,8 +12,8 @@ if [ -e /dev/fb0 ]; then
 	[ -e /env/milas.png ] && splash -f /dev/fb0 /env/milas.png
 
 	# Backlight1 PWM set to 75% and Turn ON
-	i2c_write -a 0x2c -b 0 -r 0x00 0xbf
-	i2c_write -a 0x2c -b 0 -r 0x01 0x05
+	i2c_write -a 0x2c -b 1 -r 0x00 0xbf
+	i2c_write -a 0x2c -b 1 -r 0x01 0x05
 fi
 
 # Beeper OFF
