@@ -273,6 +273,8 @@
 &i2c2 {
 	/* WM8753 SCLK Low pulse-width MIN 1.3us */
 	clock-frequency = <350000>;
+	scl-gpios = <&gpio1 2 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio1 3 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 
 	wm8753: codec@1b {
 		#sound-dai-cells = <0>;
