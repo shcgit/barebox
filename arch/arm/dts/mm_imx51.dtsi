@@ -337,6 +337,7 @@
 };
 
 &nfc {
+	nand-is-boot-medium;
 	/delete-node/ partition@c0000;
 	/delete-node/ partition@400000;
 
